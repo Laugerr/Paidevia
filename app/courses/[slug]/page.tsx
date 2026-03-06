@@ -1,52 +1,38 @@
+import Link from "next/link";
 import { courses } from "@/lib/courses";
 
-type CoursePageProps = {
-  params: Promise<{
-    slug: string;
-  }>;
-};
-
-export default async function CoursePage({ params }: CoursePageProps) {
-  const { slug } = await params;
-  const course = courses.find((course) => course.slug === slug);
-
-  if (!course) {
-    return (
-      <main className="mx-auto max-w-5xl px-6 py-16">
-        <h1 className="text-4xl font-bold text-gray-900">Course Not Found</h1>
-        <p className="mt-4 text-gray-600">
-          The course you are looking for does not exist.
-        </p>
-      </main>
-    );
-  }
-
+export default function CoursesPage() {
   return (
-    <main className="mx-auto max-w-5xl px-6 py-16">
+    <main className="mx-auto max-w-6xl px-6 py-16">
       <section className="mb-10">
-        <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
-          {course.level}
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
+          Learning Paths
         </p>
-        <h1 className="mt-2 text-4xl font-bold text-gray-900">
-          {course.title}
+        <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
+          Courses
         </h1>
-        <p className="mt-4 max-w-3xl text-lg text-gray-600">
-          {course.description}
+        <p className="mt-3 text-lg text-slate-600">
+          Explore available learning paths on Paidevia.
         </p>
       </section>
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="text-2xl font-semibold text-gray-900">Course Lessons</h2>
-        <ul className="mt-6 space-y-3">
-          {course.lessonList.map((lesson, index) => (
-            <li
-              key={lesson}
-              className="rounded-lg border border-gray-100 px-4 py-3 text-gray-700"
-            >
-              Lesson {index + 1} — {lesson}
-            </li>
-          ))}
-        </ul>
+      <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {courses.map((course) => (
+          <Link key={course.id} href={`/courses/${course.slug}`}>
+            <article className="h-full rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition duration-200 hover:-translate-y-1 hover:shadow-md">
+              <p className="mb-3 text-sm font-medium text-blue-600">
+                {course.level}
+              </p>
+              <h2 className="mb-3 text-xl font-semibold text-slate-900">
+                {course.title}
+              </h2>
+              <p className="mb-4 text-slate-600">{course.description}</p>
+              <p className="text-sm font-medium text-slate-500">
+                {course.lessons} lessons
+              </p>
+            </article>
+          </Link>
+        ))}
       </section>
     </main>
   );
