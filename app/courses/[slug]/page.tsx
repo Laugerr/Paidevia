@@ -1,31 +1,98 @@
-type Props = {
-  params: {
+type CoursePageProps = {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 };
 
-export default function CoursePage({ params }: Props) {
-  const { slug } = params;
+const courseData: Record<
+  string,
+  {
+    title: string;
+    description: string;
+    lessons: string[];
+    level: string;
+  }
+> = {
+  "cybersecurity-fundamentals": {
+    title: "Cybersecurity Fundamentals",
+    description:
+      "Learn the foundations of cybersecurity, threats, and defense concepts.",
+    level: "Beginner",
+    lessons: [
+      "Introduction to Cybersecurity",
+      "CIA Triad",
+      "Common Threats",
+      "Basic Defense Practices",
+    ],
+  },
+  "introduction-to-web-development": {
+    title: "Introduction to Web Development",
+    description:
+      "Understand HTML, CSS, JavaScript, and modern frontend basics.",
+    level: "Beginner",
+    lessons: [
+      "HTML Basics",
+      "CSS Fundamentals",
+      "JavaScript Introduction",
+      "Responsive Design",
+    ],
+  },
+  "python-for-beginners": {
+    title: "Python for Beginners",
+    description:
+      "Start coding with Python and build confidence through practice.",
+    level: "Beginner",
+    lessons: [
+      "Python Syntax",
+      "Variables and Data Types",
+      "Conditions and Loops",
+      "Functions",
+    ],
+  },
+};
+
+export default async function CoursePage({ params }: CoursePageProps) {
+  const { slug } = await params;
+  const course = courseData[slug];
+
+  if (!course) {
+    return (
+      <main className="mx-auto max-w-5xl px-6 py-16">
+        <h1 className="text-4xl font-bold text-gray-900">Course Not Found</h1>
+        <p className="mt-4 text-gray-600">
+          The course you are looking for does not exist.
+        </p>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-16">
-      <h1 className="text-4xl font-bold capitalize">
-        {slug.replace(/-/g, " ")}
-      </h1>
+      <section className="mb-10">
+        <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
+          {course.level}
+        </p>
+        <h1 className="mt-2 text-4xl font-bold text-gray-900">
+          {course.title}
+        </h1>
+        <p className="mt-4 max-w-3xl text-lg text-gray-600">
+          {course.description}
+        </p>
+      </section>
 
-      <p className="mt-4 text-lg text-gray-600">
-        This is the course detail page.
-      </p>
-
-      <div className="mt-10 rounded-xl border p-6">
-        <h2 className="text-xl font-semibold">Course Lessons</h2>
-
-        <ul className="mt-4 space-y-2 text-gray-700">
-          <li>Lesson 1 — Introduction</li>
-          <li>Lesson 2 — Core Concepts</li>
-          <li>Lesson 3 — Practical Example</li>
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <h2 className="text-2xl font-semibold text-gray-900">Course Lessons</h2>
+        <ul className="mt-6 space-y-3">
+          {course.lessons.map((lesson, index) => (
+            <li
+              key={lesson}
+              className="rounded-lg border border-gray-100 px-4 py-3 text-gray-700"
+            >
+              Lesson {index + 1} — {lesson}
+            </li>
+          ))}
         </ul>
-      </div>
+      </section>
     </main>
   );
 }
