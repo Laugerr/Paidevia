@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const courses = [
   {
     id: 1,
@@ -30,20 +32,23 @@ export default function CoursesPage() {
       </section>
 
       <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {courses.map((course) => (
-          <article
-            key={course.id}
-            className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
-          >
-            <h2 className="mb-3 text-xl font-semibold text-gray-900">
-              {course.title}
-            </h2>
-            <p className="mb-4 text-gray-600">{course.description}</p>
-            <p className="text-sm font-medium text-gray-500">
-              {course.lessons} lessons
-            </p>
-          </article>
-        ))}
+        {courses.map((course) => {
+          const slug = course.title.toLowerCase().replace(/\s+/g, "-");
+
+          return (
+            <Link key={course.id} href={`/courses/${slug}`}>
+              <article className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+                <h2 className="mb-3 text-xl font-semibold text-gray-900">
+                  {course.title}
+                </h2>
+                <p className="mb-4 text-gray-600">{course.description}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  {course.lessons} lessons
+                </p>
+              </article>
+            </Link>
+          );
+        })}
       </section>
     </main>
   );
