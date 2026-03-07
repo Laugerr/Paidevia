@@ -93,7 +93,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
         <ul className="mt-8 space-y-4">
           {course.lessonList.map((lesson, index) => (
             <li
-              key={lesson}
+              key={lesson.slug}
               className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 transition hover:bg-slate-100"
             >
               <div className="flex items-center justify-between gap-4">
@@ -102,13 +102,16 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     Lesson {index + 1}
                   </p>
                   <h3 className="mt-1 text-lg font-semibold text-slate-900">
-                    {lesson}
+                    {lesson.title}
                   </h3>
                 </div>
 
-                <span className="rounded-full bg-white px-3 py-1 text-sm font-medium text-slate-600 ring-1 ring-slate-200">
-                  Preview
-                </span>
+                <Link
+                  href={`/lesson/${lesson.slug}`}
+                  className="rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100"
+                >
+                  Open Lesson
+                </Link>
               </div>
             </li>
           ))}

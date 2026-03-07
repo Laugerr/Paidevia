@@ -1,3 +1,8 @@
+export type Lesson = {
+  title: string;
+  slug: string;
+};
+
 export type Course = {
   id: number;
   slug: string;
@@ -5,7 +10,7 @@ export type Course = {
   description: string;
   lessons: number;
   level: string;
-  lessonList: string[];
+  lessonList: Lesson[];
 };
 
 export const courses: Course[] = [
@@ -15,13 +20,25 @@ export const courses: Course[] = [
     title: "Cybersecurity Fundamentals",
     description:
       "Learn the foundations of cybersecurity, threats, and defense concepts.",
-    lessons: 12,
+    lessons: 4,
     level: "Beginner",
     lessonList: [
-      "Introduction to Cybersecurity",
-      "CIA Triad",
-      "Common Threats",
-      "Basic Defense Practices",
+      {
+        title: "Introduction to Cybersecurity",
+        slug: "introduction-to-cybersecurity",
+      },
+      {
+        title: "CIA Triad",
+        slug: "cia-triad",
+      },
+      {
+        title: "Common Threats",
+        slug: "common-threats",
+      },
+      {
+        title: "Basic Defense Practices",
+        slug: "basic-defense-practices",
+      },
     ],
   },
   {
@@ -30,13 +47,25 @@ export const courses: Course[] = [
     title: "Introduction to Web Development",
     description:
       "Understand HTML, CSS, JavaScript, and modern frontend basics.",
-    lessons: 18,
+    lessons: 4,
     level: "Beginner",
     lessonList: [
-      "HTML Basics",
-      "CSS Fundamentals",
-      "JavaScript Introduction",
-      "Responsive Design",
+      {
+        title: "HTML Basics",
+        slug: "html-basics",
+      },
+      {
+        title: "CSS Fundamentals",
+        slug: "css-fundamentals",
+      },
+      {
+        title: "JavaScript Introduction",
+        slug: "javascript-introduction",
+      },
+      {
+        title: "Responsive Design",
+        slug: "responsive-design",
+      },
     ],
   },
   {
@@ -45,13 +74,25 @@ export const courses: Course[] = [
     title: "Python for Beginners",
     description:
       "Start coding with Python and build confidence through practice.",
-    lessons: 15,
+    lessons: 4,
     level: "Beginner",
     lessonList: [
-      "Python Syntax",
-      "Variables and Data Types",
-      "Conditions and Loops",
-      "Functions",
+      {
+        title: "Python Syntax",
+        slug: "python-syntax",
+      },
+      {
+        title: "Variables and Data Types",
+        slug: "variables-and-data-types",
+      },
+      {
+        title: "Conditions and Loops",
+        slug: "conditions-and-loops",
+      },
+      {
+        title: "Functions",
+        slug: "functions",
+      },
     ],
   },
 ];
