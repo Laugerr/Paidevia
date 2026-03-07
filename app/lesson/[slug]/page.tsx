@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { courses } from "@/lib/courses";
+import { markLessonCompleted } from "@/lib/progress";
 
 type LessonPageProps = {
   params: Promise<{
@@ -71,6 +74,13 @@ export default async function LessonPage({ params }: LessonPageProps) {
               In future steps, this section can contain lesson text, summaries,
               practical exercises, downloadable files, and quizzes.
             </p>
+
+            <button
+              onClick={() => markLessonCompleted(foundLesson.slug)}
+              className="mt-6 rounded-xl bg-green-600 px-6 py-3 font-medium text-white transition hover:bg-green-700"
+            >
+              Mark Lesson as Completed
+            </button>
           </div>
         </section>
 
