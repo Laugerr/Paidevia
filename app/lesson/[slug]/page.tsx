@@ -1,17 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { courses } from "@/lib/courses";
-import { markLessonCompleted } from "@/lib/progress";
+import { markLessonCompleted, setCurrentLesson } from "@/lib/progress";
 
-type LessonPageProps = {
-  params: Promise<{
-    slug: string;
-  }>;
-};
-
-export default async function LessonPage({ params }: LessonPageProps) {
-  const { slug } = await params;
+export default function LessonPage() {
+  const params = useParams();
+  const slug = params.slug as string;
 
   const foundCourse = courses.find((course) =>
     course.lessonList.some((lesson) => lesson.slug === slug)
@@ -20,6 +17,12 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const foundLesson = foundCourse?.lessonList.find(
     (lesson) => lesson.slug === slug
   );
+
+  useEffect(() => {
+    if (foundLesson) {
+      setCurrentLesson(foundLesson.slug);
+    }
+  }, [foundLesson]);
 
   if (!foundCourse || !foundLesson) {
     return (

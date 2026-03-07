@@ -12,3 +12,11 @@ export function markLessonCompleted(slug: string) {
 export function getCompletedLessons(): string[] {
   return JSON.parse(localStorage.getItem("completedLessons") || "[]");
 }
+
+export function setCurrentLesson(slug: string) {
+  localStorage.setItem("currentLesson", slug);
+}
+
+export function getCurrentLesson(): string | null {
+  return localStorage.getItem("currentLesson");
+}

@@ -1,16 +1,22 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getCompletedLessons } from "@/lib/progress";
+import {
+  getCompletedLessons,
+  getCurrentLesson,
+} from "@/lib/progress";
 import { getEnrolledCourses } from "@/lib/enrollment";
 
 export default function DashboardPage() {
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
-  
+  const [currentLesson, setCurrentLessonState] = useState<string | null>(null);
+
   useEffect(() => {
     setCompletedLessons(getCompletedLessons());
     setEnrolledCourses(getEnrolledCourses());
+    setCurrentLessonState(getCurrentLesson());
   }, []);
 
   return (
@@ -34,9 +40,8 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold text-slate-900">
             Enrolled Courses
           </h2>
-
           <p className="mt-3 text-3xl font-bold text-blue-600">
-            3
+            {enrolledCourses.length}
           </p>
         </div>
 
@@ -44,7 +49,6 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold text-slate-900">
             Completed Lessons
           </h2>
-
           <p className="mt-3 text-3xl font-bold text-blue-600">
             {completedLessons.length}
           </p>
@@ -54,11 +58,29 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold text-slate-900">
             Progress
           </h2>
-
           <p className="mt-3 text-3xl font-bold text-blue-600">
             {completedLessons.length * 25}%
           </p>
         </div>
+      </section>
+
+      <section className="mt-10 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <h2 className="text-xl font-semibold text-slate-900">
+          Continue Learning
+        </h2>
+
+        {currentLesson ? (
+          <Link
+            href={`/lesson/${currentLesson}`}
+            className="mt-4 inline-block rounded-xl bg-blue-600 px-6 py-3 font-medium text-white transition hover:bg-blue-700"
+          >
+            Resume Lesson
+          </Link>
+        ) : (
+          <p className="mt-4 text-slate-600">
+            Start a course to begin learning.
+          </p>
+        )}
       </section>
 
       <section className="mt-10 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
