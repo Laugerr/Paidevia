@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { getCompletedLessons } from "@/lib/progress";
+import { getEnrolledCourses } from "@/lib/enrollment";
 
 export default function DashboardPage() {
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
-
+  const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
+  
   useEffect(() => {
-    const lessons = getCompletedLessons();
-    setCompletedLessons(lessons);
+    setCompletedLessons(getCompletedLessons());
+    setEnrolledCourses(getEnrolledCourses());
   }, []);
 
   return (
@@ -57,6 +59,29 @@ export default function DashboardPage() {
             {completedLessons.length * 25}%
           </p>
         </div>
+      </section>
+
+      <section className="mt-10 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <h2 className="text-xl font-semibold text-slate-900">
+          Enrolled Courses
+        </h2>
+
+        {enrolledCourses.length === 0 ? (
+          <p className="mt-4 text-slate-600">
+            You are not enrolled in any courses yet.
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-2">
+            {enrolledCourses.map((course) => (
+              <li
+                key={course}
+                className="rounded-lg bg-slate-50 px-4 py-2 text-sm text-slate-700 ring-1 ring-slate-200"
+              >
+                {course.replaceAll("-", " ")}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section className="mt-10 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">

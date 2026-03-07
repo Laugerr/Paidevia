@@ -1,33 +1,26 @@
+"use client";
+
 import Link from "next/link";
 import { courses } from "@/lib/courses";
+import { enrollCourse } from "@/lib/enrollment";
 
-type CoursePageProps = {
+type Props = {
   params: Promise<{
     slug: string;
   }>;
 };
 
-export default async function CoursePage({ params }: CoursePageProps) {
+export default async function CoursePage({ params }: Props) {
   const { slug } = await params;
-  const course = courses.find((course) => course.slug === slug);
 
-  if (!course) {
+  const foundCourse = courses.find((course) => course.slug === slug);
+
+  if (!foundCourse) {
     return (
       <main className="mx-auto max-w-5xl px-6 py-16">
-        <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-            Course Not Found
-          </h1>
-          <p className="mt-4 text-slate-600">
-            The course you are looking for does not exist.
-          </p>
-          <Link
-            href="/courses"
-            className="mt-6 inline-block rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
-          >
-            Back to Courses
-          </Link>
-        </div>
+        <h1 className="text-4xl font-bold text-slate-900">
+          Course Not Found
+        </h1>
       </main>
     );
   }
@@ -35,88 +28,86 @@ export default async function CoursePage({ params }: CoursePageProps) {
   return (
     <main className="mx-auto max-w-6xl px-6 py-16">
       <section className="grid gap-8 lg:grid-cols-[2fr_1fr]">
+
+        {/* LEFT SIDE */}
         <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
-            {course.level}
+            {foundCourse.level}
           </p>
 
-          <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
-            {course.title}
+          <h1 className="mt-3 text-4xl font-bold text-slate-900">
+            {foundCourse.title}
           </h1>
 
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
-            {course.description}
+          <p className="mt-4 text-slate-600">
+            {foundCourse.description}
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
-              {course.lessons} lessons
-            </span>
-            <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
-              Self-paced
-            </span>
-            <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
-              Certificate later
+          <div className="mt-8 flex gap-3">
+            <span className="rounded-full bg-slate-100 px-4 py-2 text-sm">
+              {foundCourse.lessons} lessons
             </span>
           </div>
+
         </div>
 
+        {/* RIGHT SIDE */}
         <aside className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+
           <h2 className="text-2xl font-semibold text-slate-900">
             Course Access
           </h2>
-          <p className="mt-4 text-slate-600">
-            Enroll in this course and start learning step by step through structured lessons.
-          </p>
 
-          <button className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700">
-            Enroll Now
+          <button
+            onClick={() => enrollCourse(foundCourse.slug)}
+            className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
+          >
+            Enroll in Course
           </button>
 
           <Link
             href="/dashboard"
-            className="mt-3 block w-full rounded-xl border border-slate-300 px-5 py-3 text-center font-medium text-slate-900 transition hover:bg-slate-50"
+            className="mt-4 block w-full rounded-xl border border-slate-300 px-5 py-3 text-center font-medium hover:bg-slate-50"
           >
             Go to Dashboard
           </Link>
+
         </aside>
+
       </section>
 
+      {/* LESSON LIST */}
       <section className="mt-10 rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+
         <h2 className="text-2xl font-semibold text-slate-900">
           Course Lessons
         </h2>
-        <p className="mt-2 text-slate-600">
-          Follow the lessons in order and build your knowledge progressively.
-        </p>
 
-        <ul className="mt-8 space-y-4">
-          {course.lessonList.map((lesson, index) => (
+        <ul className="mt-6 space-y-3">
+
+          {foundCourse.lessonList.map((lesson, index) => (
             <li
               key={lesson.slug}
-              className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 transition hover:bg-slate-100"
+              className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3"
             >
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-medium text-blue-600">
-                    Lesson {index + 1}
-                  </p>
-                  <h3 className="mt-1 text-lg font-semibold text-slate-900">
-                    {lesson.title}
-                  </h3>
-                </div>
+              <span>
+                Lesson {index + 1} — {lesson.title}
+              </span>
 
-                <Link
-                  href={`/lesson/${lesson.slug}`}
-                  className="rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100"
-                >
-                  Open Lesson
-                </Link>
-              </div>
+              <Link
+                href={`/lesson/${lesson.slug}`}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Open Lesson
+              </Link>
             </li>
           ))}
+
         </ul>
+
       </section>
+
     </main>
   );
 }
