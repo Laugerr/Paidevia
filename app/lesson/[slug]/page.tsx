@@ -45,71 +45,71 @@ export default function LessonPage() {
     );
   }
 
+  const currentLessonIndex = foundCourse.lessonList.findIndex(
+    (lesson) => lesson.slug === foundLesson.slug
+  );
+
+  const previousLesson =
+    currentLessonIndex > 0
+      ? foundCourse.lessonList[currentLessonIndex - 1]
+      : null;
+
+  const nextLesson =
+    currentLessonIndex < foundCourse.lessonList.length - 1
+      ? foundCourse.lessonList[currentLessonIndex + 1]
+      : null;
+
   return (
-    <main className="mx-auto max-w-6xl px-6 py-16">
-      <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
-        <section className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+    <main className="min-h-[calc(100vh-80px)] bg-slate-50">
+      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[320px_1fr]">
+        {/* Sidebar */}
+        <aside className="h-fit rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 lg:sticky lg:top-24">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
+            Course Player
+          </p>
+
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
             {foundCourse.title}
-          </p>
-
-          <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900">
-            {foundLesson.title}
-          </h1>
-
-          <p className="mt-4 text-slate-600">
-            This is the lesson page where video content, reading materials,
-            downloadable resources, and completion tracking will appear later.
-          </p>
-
-          <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-            <p className="text-lg font-medium text-slate-700">Lesson Video Area</p>
-            <p className="mt-2 text-sm text-slate-500">
-              Video player or embedded lesson content will go here.
-            </p>
-          </div>
-
-          <div className="mt-8 rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200">
-            <h2 className="text-xl font-semibold text-slate-900">
-              Lesson Notes
-            </h2>
-            <p className="mt-3 leading-7 text-slate-600">
-              In future steps, this section can contain lesson text, summaries,
-              practical exercises, downloadable files, and quizzes.
-            </p>
-
-            <button
-              onClick={() => markLessonCompleted(foundLesson.slug)}
-              className="mt-6 rounded-xl bg-green-600 px-6 py-3 font-medium text-white transition hover:bg-green-700"
-            >
-              Mark Lesson as Completed
-            </button>
-          </div>
-        </section>
-
-        <aside className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-          <h2 className="text-2xl font-semibold text-slate-900">
-            Lesson Navigation
           </h2>
 
-          <p className="mt-4 text-slate-600">
-            Continue learning through the lessons in this course.
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            Follow the lessons in order and continue learning step by step.
           </p>
 
+          <div className="mt-6 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+            <p className="text-sm font-medium text-slate-700">
+              Lesson {currentLessonIndex + 1} of {foundCourse.lessonList.length}
+            </p>
+            <p className="mt-1 text-sm text-slate-500">
+              Current lesson in this course
+            </p>
+          </div>
+
           <div className="mt-6 space-y-3">
-            {foundCourse.lessonList.map((lesson, index) => (
-              <Link
-                key={lesson.slug}
-                href={`/lesson/${lesson.slug}`}
-                className={`block rounded-xl px-4 py-3 text-sm font-medium transition ${
-                  lesson.slug === foundLesson.slug
-                    ? "bg-blue-600 text-white"
-                    : "bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100"
-                }`}
-              >
-                Lesson {index + 1} — {lesson.title}
-              </Link>
-            ))}
+            {foundCourse.lessonList.map((lesson, index) => {
+              const isActive = lesson.slug === foundLesson.slug;
+
+              return (
+                <Link
+                  key={lesson.slug}
+                  href={`/lesson/${lesson.slug}`}
+                  className={`block rounded-2xl px-4 py-4 text-sm transition ${
+                    isActive
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100"
+                  }`}
+                >
+                  <p
+                    className={`text-xs font-semibold uppercase tracking-wide ${
+                      isActive ? "text-blue-100" : "text-blue-600"
+                    }`}
+                  >
+                    Lesson {index + 1}
+                  </p>
+                  <p className="mt-1 font-medium">{lesson.title}</p>
+                </Link>
+              );
+            })}
           </div>
 
           <Link
@@ -119,6 +119,98 @@ export default function LessonPage() {
             Back to Course
           </Link>
         </aside>
+
+        {/* Content */}
+        <section className="space-y-6">
+          <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
+              {foundCourse.title}
+            </p>
+
+            <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900">
+              {foundLesson.title}
+            </h1>
+
+            <p className="mt-4 max-w-3xl text-slate-600">
+              Learn through structured lessons inside the Paidevia course player.
+              This layout is designed to feel more like a real LMS experience.
+            </p>
+          </div>
+
+          <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-16 text-center">
+              <p className="text-xl font-semibold text-slate-800">
+                Lesson Video Area
+              </p>
+              <p className="mt-3 text-sm text-slate-500">
+                Embedded video player or lesson media will go here later.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+            <h2 className="text-2xl font-semibold text-slate-900">
+              Lesson Notes
+            </h2>
+
+            <p className="mt-4 leading-7 text-slate-600">
+              This section can later include full lesson text, practical
+              exercises, downloadable files, references, and quizzes. For now,
+              it acts as the content area of the course player.
+            </p>
+
+            <button
+              onClick={() => markLessonCompleted(foundLesson.slug)}
+              className="mt-6 rounded-xl bg-green-600 px-6 py-3 font-medium text-white transition hover:bg-green-700"
+            >
+              Mark Lesson as Completed
+            </button>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {previousLesson ? (
+              <Link
+                href={`/lesson/${previousLesson.slug}`}
+                className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
+              >
+                <p className="text-sm font-medium text-slate-500">
+                  Previous Lesson
+                </p>
+                <h3 className="mt-2 text-lg font-semibold text-slate-900">
+                  {previousLesson.title}
+                </h3>
+              </Link>
+            ) : (
+              <div className="rounded-2xl bg-slate-100 p-5 text-slate-400 ring-1 ring-slate-200">
+                <p className="text-sm font-medium">Previous Lesson</p>
+                <h3 className="mt-2 text-lg font-semibold">
+                  This is the first lesson
+                </h3>
+              </div>
+            )}
+
+            {nextLesson ? (
+              <Link
+                href={`/lesson/${nextLesson.slug}`}
+                className="rounded-2xl bg-white p-5 text-right shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
+              >
+                <p className="text-sm font-medium text-slate-500">
+                  Next Lesson
+                </p>
+                <h3 className="mt-2 text-lg font-semibold text-slate-900">
+                  {nextLesson.title}
+                </h3>
+              </Link>
+            ) : (
+              <div className="rounded-2xl bg-slate-100 p-5 text-right text-slate-400 ring-1 ring-slate-200">
+                <p className="text-sm font-medium">Next Lesson</p>
+                <h3 className="mt-2 text-lg font-semibold">
+                  You reached the last lesson
+                </h3>
+              </div>
+            )}
+          </div>
+        </section>
       </div>
     </main>
   );
