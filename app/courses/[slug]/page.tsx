@@ -1,113 +1,178 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { courses } from "@/lib/courses";
-import { enrollCourse } from "@/lib/enrollment";
+import {
+  enrollCourse,
+  getEnrolledCourses,
+} from "@/lib/enrollment";
+import { getCurrentLesson } from "@/lib/progress";
 
-type Props = {
-  params: Promise<{
-    slug: string;
-  }>;
-};
+export default function CoursePage() {
+  const params = useParams();
+  const slug = params.slug as string;
 
-export default async function CoursePage({ params }: Props) {
-  const { slug } = await params;
+  const foundCourse = useMemo(
+    () => courses.find((course) => course.slug === slug),
+    [slug]
+  );
 
-  const foundCourse = courses.find((course) => course.slug === slug);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [currentLesson, setCurrentLesson] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!foundCourse) return;
+
+    const enrolledCourses = getEnrolledCourses();
+    setIsEnrolled(enrolledCourses.includes(foundCourse.slug));
+
+    const savedCurrentLesson = getCurrentLesson();
+
+    const belongsToThisCourse = foundCourse.lessonList.some(
+      (lesson) => lesson.slug === savedCurrentLesson
+    );
+
+    if (belongsToThisCourse) {
+      setCurrentLesson(savedCurrentLesson);
+    } else {
+      setCurrentLesson(foundCourse.lessonList[0]?.slug ?? null);
+    }
+  }, [foundCourse]);
 
   if (!foundCourse) {
     return (
       <main className="mx-auto max-w-5xl px-6 py-16">
-        <h1 className="text-4xl font-bold text-slate-900">
-          Course Not Found
-        </h1>
+        <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
+            Course Not Found
+          </h1>
+          <p className="mt-4 text-slate-600">
+            The course you are looking for does not exist.
+          </p>
+          <Link
+            href="/courses"
+            className="mt-6 inline-block rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
+          >
+            Back to Courses
+          </Link>
+        </div>
       </main>
     );
   }
 
+  const handleEnroll = () => {
+    enrollCourse(foundCourse.slug);
+    setIsEnrolled(true);
+  };
+
   return (
     <main className="mx-auto max-w-6xl px-6 py-16">
       <section className="grid gap-8 lg:grid-cols-[2fr_1fr]">
-
-        {/* LEFT SIDE */}
         <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
             {foundCourse.level}
           </p>
 
-          <h1 className="mt-3 text-4xl font-bold text-slate-900">
+          <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
             {foundCourse.title}
           </h1>
 
-          <p className="mt-4 text-slate-600">
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
             {foundCourse.description}
           </p>
 
-          <div className="mt-8 flex gap-3">
-            <span className="rounded-full bg-slate-100 px-4 py-2 text-sm">
+          <div className="mt-8 flex flex-wrap gap-3">
+            <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
               {foundCourse.lessons} lessons
             </span>
+            <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
+              Self-paced
+            </span>
+            <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
+              LMS Course
+            </span>
           </div>
-
         </div>
 
-        {/* RIGHT SIDE */}
         <aside className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-
           <h2 className="text-2xl font-semibold text-slate-900">
             Course Access
           </h2>
 
-          <button
-            onClick={() => enrollCourse(foundCourse.slug)}
-            className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
-          >
-            Enroll in Course
-          </button>
+          <p className="mt-4 text-slate-600">
+            Enroll in this course and start learning step by step through structured lessons.
+          </p>
+
+          {!isEnrolled ? (
+            <button
+              onClick={handleEnroll}
+              className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
+            >
+              Enroll in Course
+            </button>
+          ) : (
+            <>
+              <div className="mt-6 rounded-2xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700 ring-1 ring-green-200">
+                Enrolled ✓ You have access to this course
+              </div>
+
+              {currentLesson && (
+                <Link
+                  href={`/lesson/${currentLesson}`}
+                  className="mt-4 block w-full rounded-xl bg-blue-600 px-5 py-3 text-center font-medium text-white transition hover:bg-blue-700"
+                >
+                  Continue Learning
+                </Link>
+              )}
+            </>
+          )}
 
           <Link
             href="/dashboard"
-            className="mt-4 block w-full rounded-xl border border-slate-300 px-5 py-3 text-center font-medium hover:bg-slate-50"
+            className="mt-4 block w-full rounded-xl border border-slate-300 px-5 py-3 text-center font-medium text-slate-900 transition hover:bg-slate-50"
           >
             Go to Dashboard
           </Link>
-
         </aside>
-
       </section>
 
-      {/* LESSON LIST */}
       <section className="mt-10 rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-
         <h2 className="text-2xl font-semibold text-slate-900">
           Course Lessons
         </h2>
+        <p className="mt-2 text-slate-600">
+          Follow the lessons in order and build your knowledge progressively.
+        </p>
 
-        <ul className="mt-6 space-y-3">
-
+        <ul className="mt-8 space-y-4">
           {foundCourse.lessonList.map((lesson, index) => (
             <li
               key={lesson.slug}
-              className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3"
+              className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 transition hover:bg-slate-100"
             >
-              <span>
-                Lesson {index + 1} — {lesson.title}
-              </span>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-blue-600">
+                    Lesson {index + 1}
+                  </p>
+                  <h3 className="mt-1 text-lg font-semibold text-slate-900">
+                    {lesson.title}
+                  </h3>
+                </div>
 
-              <Link
-                href={`/lesson/${lesson.slug}`}
-                className="text-sm text-blue-600 hover:underline"
-              >
-                Open Lesson
-              </Link>
+                <Link
+                  href={`/lesson/${lesson.slug}`}
+                  className="rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100"
+                >
+                  Open Lesson
+                </Link>
+              </div>
             </li>
           ))}
-
         </ul>
-
       </section>
-
     </main>
   );
 }
