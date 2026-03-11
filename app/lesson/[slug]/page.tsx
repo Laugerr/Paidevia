@@ -15,6 +15,7 @@ export default function LessonPage() {
   const slug = params.slug as string;
 
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+  const [justCompleted, setJustCompleted] = useState(false);
 
   const foundCourse = courses.find((course) =>
     course.lessonList.some((lesson) => lesson.slug === slug)
@@ -26,6 +27,7 @@ export default function LessonPage() {
 
   useEffect(() => {
     setCompletedLessons(getCompletedLessons());
+    setJustCompleted(false);
 
     if (foundLesson) {
       setCurrentLesson(foundLesson.slug);
@@ -80,6 +82,7 @@ export default function LessonPage() {
   const handleMarkCompleted = () => {
     markLessonCompleted(foundLesson.slug);
     setCompletedLessons(getCompletedLessons());
+    setJustCompleted(true);
   };
 
   return (
@@ -99,27 +102,28 @@ export default function LessonPage() {
           </p>
 
           <div className="mt-6 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
-            <div className="mt-4">
-              <p className="text-sm font-medium text-slate-700">
-                Course Progress
-              </p>
-
-              <div className="mt-2 h-3 w-full overflow-hidden rounded-full bg-slate-200">
-                <div
-                  className="h-full rounded-full bg-blue-600 transition-all"
-                  style={{ width: `${progressPercentage}%` }}
-                />
-              </div>
-
-              <p className="mt-2 text-xs text-slate-500">
-                {completedLessonsInCourse} / {totalLessons} lessons completed
-              </p>
-            </div>
             <p className="text-sm font-medium text-slate-700">
               Lesson {currentLessonIndex + 1} of {foundCourse.lessonList.length}
             </p>
             <p className="mt-1 text-sm text-slate-500">
               Current lesson in this course
+            </p>
+          </div>
+
+          <div className="mt-4">
+            <p className="text-sm font-medium text-slate-700">
+              Course Progress
+            </p>
+
+            <div className="mt-2 h-3 w-full overflow-hidden rounded-full bg-slate-200">
+              <div
+                className="h-full rounded-full bg-blue-600 transition-all"
+                style={{ width: `${progressPercentage}%` }}
+              />
+            </div>
+
+            <p className="mt-2 text-xs text-slate-500">
+              {completedLessonsInCourse} / {totalLessons} lessons completed
             </p>
           </div>
 
@@ -208,6 +212,27 @@ export default function LessonPage() {
             >
               Mark Lesson as Completed
             </button>
+
+            {justCompleted && (
+              <div className="mt-6 rounded-2xl bg-green-50 p-4 ring-1 ring-green-200">
+                <p className="font-medium text-green-700">
+                  Lesson completed successfully ✓
+                </p>
+
+                {nextLesson ? (
+                  <Link
+                    href={`/lesson/${nextLesson.slug}`}
+                    className="mt-4 inline-block rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
+                  >
+                    Go to Next Lesson
+                  </Link>
+                ) : (
+                  <div className="mt-4 rounded-xl bg-white px-4 py-3 text-sm font-medium text-slate-700 ring-1 ring-slate-200">
+                    Course completed 🎉 You reached the final lesson.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
