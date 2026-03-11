@@ -1,14 +1,20 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { courses } from "@/lib/courses";
-import { markLessonCompleted, setCurrentLesson } from "@/lib/progress";
+import {
+  getCompletedLessons,
+  markLessonCompleted,
+  setCurrentLesson,
+} from "@/lib/progress";
 
 export default function LessonPage() {
   const params = useParams();
   const slug = params.slug as string;
+
+  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
 
   const foundCourse = courses.find((course) =>
     course.lessonList.some((lesson) => lesson.slug === slug)
@@ -19,6 +25,8 @@ export default function LessonPage() {
   );
 
   useEffect(() => {
+    setCompletedLessons(getCompletedLessons());
+
     if (foundLesson) {
       setCurrentLesson(foundLesson.slug);
     }
@@ -59,10 +67,14 @@ export default function LessonPage() {
       ? foundCourse.lessonList[currentLessonIndex + 1]
       : null;
 
+  const handleMarkCompleted = () => {
+    markLessonCompleted(foundLesson.slug);
+    setCompletedLessons(getCompletedLessons());
+  };
+
   return (
     <main className="min-h-[calc(100vh-80px)] bg-slate-50">
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[320px_1fr]">
-        {/* Sidebar */}
         <aside className="h-fit rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 lg:sticky lg:top-24">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
             Course Player
@@ -88,25 +100,31 @@ export default function LessonPage() {
           <div className="mt-6 space-y-3">
             {foundCourse.lessonList.map((lesson, index) => {
               const isActive = lesson.slug === foundLesson.slug;
+              const isCompleted = completedLessons.includes(lesson.slug);
 
               return (
                 <Link
                   key={lesson.slug}
                   href={`/lesson/${lesson.slug}`}
-                  className={`block rounded-2xl px-4 py-4 text-sm transition ${
+                  className={`flex items-center gap-3 rounded-2xl px-4 py-4 text-sm transition ${
                     isActive
                       ? "bg-blue-600 text-white shadow-sm"
                       : "bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100"
                   }`}
                 >
-                  <p
-                    className={`text-xs font-semibold uppercase tracking-wide ${
-                      isActive ? "text-blue-100" : "text-blue-600"
+                  <span
+                    className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                      isActive
+                        ? "bg-white/20 text-white"
+                        : isCompleted
+                        ? "bg-green-100 text-green-700"
+                        : "bg-white text-slate-600 ring-1 ring-slate-200"
                     }`}
                   >
-                    Lesson {index + 1}
-                  </p>
-                  <p className="mt-1 font-medium">{lesson.title}</p>
+                    {isCompleted ? "✓" : index + 1}
+                  </span>
+
+                  <span className="font-medium">{lesson.title}</span>
                 </Link>
               );
             })}
@@ -120,7 +138,6 @@ export default function LessonPage() {
           </Link>
         </aside>
 
-        {/* Content */}
         <section className="space-y-6">
           <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
@@ -160,7 +177,7 @@ export default function LessonPage() {
             </p>
 
             <button
-              onClick={() => markLessonCompleted(foundLesson.slug)}
+              onClick={handleMarkCompleted}
               className="mt-6 rounded-xl bg-green-600 px-6 py-3 font-medium text-white transition hover:bg-green-700"
             >
               Mark Lesson as Completed
