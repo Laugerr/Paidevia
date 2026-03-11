@@ -8,7 +8,10 @@ import {
   enrollCourse,
   getEnrolledCourses,
 } from "@/lib/enrollment";
-import { getCurrentLesson } from "@/lib/progress";
+import {
+  getCompletedLessons,
+  getCurrentLesson,
+} from "@/lib/progress";
 
 export default function CoursePage() {
   const params = useParams();
@@ -21,6 +24,7 @@ export default function CoursePage() {
 
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [currentLesson, setCurrentLesson] = useState<string | null>(null);
+  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
 
   useEffect(() => {
     if (!foundCourse) return;
@@ -29,6 +33,7 @@ export default function CoursePage() {
     setIsEnrolled(enrolledCourses.includes(foundCourse.slug));
 
     const savedCurrentLesson = getCurrentLesson();
+    setCompletedLessons(getCompletedLessons());
 
     const belongsToThisCourse = foundCourse.lessonList.some(
       (lesson) => lesson.slug === savedCurrentLesson
@@ -62,6 +67,16 @@ export default function CoursePage() {
     );
   }
 
+  const totalLessons = foundCourse.lessonList.length;
+
+  const completedLessonsInCourse = foundCourse.lessonList.filter((lesson) =>
+    completedLessons.includes(lesson.slug)
+  ).length;
+
+  const progressPercentage = Math.round(
+    (completedLessonsInCourse / totalLessons) * 100
+  );
+
   const handleEnroll = () => {
     enrollCourse(foundCourse.slug);
     setIsEnrolled(true);
@@ -93,6 +108,23 @@ export default function CoursePage() {
             <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
               LMS Course
             </span>
+          </div>
+
+          <div className="mt-8">
+            <p className="text-sm font-medium text-slate-700">
+              Course Progress
+            </p>
+
+            <div className="mt-2 h-3 w-full overflow-hidden rounded-full bg-slate-200">
+              <div
+                className="h-full rounded-full bg-blue-600 transition-all"
+                style={{ width: `${progressPercentage}%` }}
+              />
+            </div>
+
+            <p className="mt-2 text-sm text-slate-600">
+              {completedLessonsInCourse} / {totalLessons} lessons completed
+            </p>
           </div>
         </div>
 
@@ -147,30 +179,46 @@ export default function CoursePage() {
         </p>
 
         <ul className="mt-8 space-y-4">
-          {foundCourse.lessonList.map((lesson, index) => (
-            <li
-              key={lesson.slug}
-              className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 transition hover:bg-slate-100"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-medium text-blue-600">
-                    Lesson {index + 1}
-                  </p>
-                  <h3 className="mt-1 text-lg font-semibold text-slate-900">
-                    {lesson.title}
-                  </h3>
-                </div>
+          {foundCourse.lessonList.map((lesson, index) => {
+            const isCompleted = completedLessons.includes(lesson.slug);
 
-                <Link
-                  href={`/lesson/${lesson.slug}`}
-                  className="rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100"
-                >
-                  Open Lesson
-                </Link>
-              </div>
-            </li>
-          ))}
+            return (
+              <li
+                key={lesson.slug}
+                className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 transition hover:bg-slate-100"
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <span
+                      className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
+                        isCompleted
+                          ? "bg-green-100 text-green-700"
+                          : "bg-white text-slate-600 ring-1 ring-slate-200"
+                      }`}
+                    >
+                      {isCompleted ? "✓" : index + 1}
+                    </span>
+
+                    <div>
+                      <p className="text-sm font-medium text-blue-600">
+                        Lesson {index + 1}
+                      </p>
+                      <h3 className="mt-1 text-lg font-semibold text-slate-900">
+                        {lesson.title}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <Link
+                    href={`/lesson/${lesson.slug}`}
+                    className="rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100"
+                  >
+                    Open Lesson
+                  </Link>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </section>
     </main>
