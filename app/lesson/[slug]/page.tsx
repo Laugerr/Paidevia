@@ -57,6 +57,16 @@ export default function LessonPage() {
     (lesson) => lesson.slug === foundLesson.slug
   );
 
+  const totalLessons = foundCourse.lessonList.length;
+
+  const completedLessonsInCourse = foundCourse.lessonList.filter((lesson) =>
+    completedLessons.includes(lesson.slug)
+  ).length;
+
+  const progressPercentage = Math.round(
+    (completedLessonsInCourse / totalLessons) * 100
+  );
+
   const previousLesson =
     currentLessonIndex > 0
       ? foundCourse.lessonList[currentLessonIndex - 1]
@@ -89,6 +99,22 @@ export default function LessonPage() {
           </p>
 
           <div className="mt-6 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+            <div className="mt-4">
+              <p className="text-sm font-medium text-slate-700">
+                Course Progress
+              </p>
+
+              <div className="mt-2 h-3 w-full overflow-hidden rounded-full bg-slate-200">
+                <div
+                  className="h-full rounded-full bg-blue-600 transition-all"
+                  style={{ width: `${progressPercentage}%` }}
+                />
+              </div>
+
+              <p className="mt-2 text-xs text-slate-500">
+                {completedLessonsInCourse} / {totalLessons} lessons completed
+              </p>
+            </div>
             <p className="text-sm font-medium text-slate-700">
               Lesson {currentLessonIndex + 1} of {foundCourse.lessonList.length}
             </p>
