@@ -182,10 +182,18 @@ export default function CoursePage() {
           {foundCourse.lessonList.map((lesson, index) => {
             const isCompleted = completedLessons.includes(lesson.slug);
 
+            const isUnlocked =
+              index === 0 ||
+              completedLessons.includes(foundCourse.lessonList[index - 1].slug);
+
             return (
               <li
                 key={lesson.slug}
-                className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 transition hover:bg-slate-100"
+                className={`rounded-2xl border px-5 py-4 transition ${
+                  isUnlocked
+                    ? "border-slate-200 bg-slate-50 hover:bg-slate-100"
+                    : "border-slate-200 bg-slate-100 opacity-70"
+                }`}
               >
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
@@ -193,10 +201,12 @@ export default function CoursePage() {
                       className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
                         isCompleted
                           ? "bg-green-100 text-green-700"
-                          : "bg-white text-slate-600 ring-1 ring-slate-200"
+                          : isUnlocked
+                          ? "bg-white text-slate-600 ring-1 ring-slate-200"
+                          : "bg-slate-200 text-slate-500"
                       }`}
                     >
-                      {isCompleted ? "✓" : index + 1}
+                      {isCompleted ? "✓" : isUnlocked ? index + 1 : "🔒"}
                     </span>
 
                     <div>
@@ -209,12 +219,18 @@ export default function CoursePage() {
                     </div>
                   </div>
 
-                  <Link
-                    href={`/lesson/${lesson.slug}`}
-                    className="rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100"
-                  >
-                    Open Lesson
-                  </Link>
+                  {isUnlocked ? (
+                    <Link
+                      href={`/lesson/${lesson.slug}`}
+                      className="rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100"
+                    >
+                      Open Lesson
+                    </Link>
+                  ) : (
+                    <span className="rounded-full bg-slate-200 px-4 py-2 text-sm font-medium text-slate-500">
+                      Locked
+                    </span>
+                  )}
                 </div>
               </li>
             );
