@@ -132,6 +132,41 @@ export default function LessonPage() {
               const isActive = lesson.slug === foundLesson.slug;
               const isCompleted = completedLessons.includes(lesson.slug);
 
+              const isUnlocked =
+                index === 0 ||
+                completedLessons.includes(foundCourse.lessonList[index - 1].slug);
+
+              const content = (
+                <>
+                  <span
+                    className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                      isActive
+                        ? "bg-white/20 text-white"
+                        : isCompleted
+                        ? "bg-green-100 text-green-700"
+                        : isUnlocked
+                        ? "bg-white text-slate-600 ring-1 ring-slate-200"
+                        : "bg-slate-200 text-slate-500"
+                    }`}
+                  >
+                    {isCompleted ? "✓" : isUnlocked ? index + 1 : "🔒"}
+                  </span>
+
+                  <span className="font-medium">{lesson.title}</span>
+                </>
+              );
+
+              if (!isUnlocked) {
+                return (
+                  <div
+                    key={lesson.slug}
+                    className="flex items-center gap-3 rounded-2xl px-4 py-4 text-sm bg-slate-100 text-slate-400"
+                  >
+                    {content}
+                  </div>
+                );
+              }
+
               return (
                 <Link
                   key={lesson.slug}
@@ -142,19 +177,7 @@ export default function LessonPage() {
                       : "bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100"
                   }`}
                 >
-                  <span
-                    className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
-                      isActive
-                        ? "bg-white/20 text-white"
-                        : isCompleted
-                        ? "bg-green-100 text-green-700"
-                        : "bg-white text-slate-600 ring-1 ring-slate-200"
-                    }`}
-                  >
-                    {isCompleted ? "✓" : index + 1}
-                  </span>
-
-                  <span className="font-medium">{lesson.title}</span>
+                  {content}
                 </Link>
               );
             })}
