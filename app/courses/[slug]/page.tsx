@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { courses } from "@/lib/courses";
-import { getCompletedLessons, getCurrentLesson } from "@/lib/progress";
 
 export default function CoursePage() {
   const params = useParams();
@@ -28,45 +27,46 @@ export default function CoursePage() {
       return;
     }
 
-    const savedCurrentLesson = getCurrentLesson();
-    const savedCompletedLessons = getCompletedLessons();
+    const course = foundCourse;
 
-    setCompletedLessons(savedCompletedLessons);
-
-    const belongsToThisCourse = foundCourse.lessonList.some(
-      (lesson) => lesson.slug === savedCurrentLesson
-    );
-
-    if (belongsToThisCourse && savedCurrentLesson) {
-      setCurrentLesson(savedCurrentLesson);
-    } else {
-      setCurrentLesson(foundCourse.lessonList[0]?.slug ?? null);
-    }
-
-    async function loadEnrollment() {
+    async function loadCourseState() {
       try {
-        const response = await fetch("/api/enrollments", {
-          cache: "no-store",
-        });
+        const [enrollmentResponse, progressResponse] = await Promise.all([
+          fetch("/api/enrollments", { cache: "no-store" }),
+          fetch("/api/progress", { cache: "no-store" }),
+        ]);
 
-        if (!response.ok) {
+        if (!enrollmentResponse.ok) {
           throw new Error("Failed to load enrollments");
         }
 
-        const data = await response.json();
-        const enrolledCourses: string[] = data.enrolledCourses ?? [];
-
-        if (foundCourse) {
-          setIsEnrolled(enrolledCourses.includes(foundCourse.slug));
+        if (!progressResponse.ok) {
+          throw new Error("Failed to load progress");
         }
+
+        const enrollmentData = await enrollmentResponse.json();
+        const progressData = await progressResponse.json();
+
+        const enrolledCourses: string[] = enrollmentData.enrolledCourses ?? [];
+        const completedLessonSlugs: string[] = progressData.completedLessons ?? [];
+
+        setIsEnrolled(enrolledCourses.includes(course.slug));
+        setCompletedLessons(completedLessonSlugs);
+
+        const firstIncompleteLesson =
+          course.lessonList.find(
+            (lesson) => !completedLessonSlugs.includes(lesson.slug)
+          ) ?? course.lessonList[0];
+
+        setCurrentLesson(firstIncompleteLesson?.slug ?? null);
       } catch (error) {
-        console.error("Failed to load enrollments:", error);
+        console.error("Failed to load course state:", error);
       } finally {
         setIsLoadingEnrollment(false);
       }
     }
 
-    loadEnrollment();
+    loadCourseState();
   }, [foundCourse]);
 
   if (!slug || !foundCourse) {

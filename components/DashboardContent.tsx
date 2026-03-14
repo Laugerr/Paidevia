@@ -2,19 +2,57 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { getCompletedLessons, getCurrentLesson } from "@/lib/progress";
-import { getEnrolledCourses } from "@/lib/enrollment";
 import { courses } from "@/lib/courses";
 
 export default function DashboardContent() {
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
-  const [currentLesson, setCurrentLessonState] = useState<string | null>(null);
+  const [currentLesson, setCurrentLesson] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setCompletedLessons(getCompletedLessons());
-    setEnrolledCourses(getEnrolledCourses());
-    setCurrentLessonState(getCurrentLesson());
+    async function loadDashboardState() {
+      try {
+        const [enrollmentResponse, progressResponse] = await Promise.all([
+          fetch("/api/enrollments", { cache: "no-store" }),
+          fetch("/api/progress", { cache: "no-store" }),
+        ]);
+
+        if (!enrollmentResponse.ok) {
+          throw new Error("Failed to load enrollments");
+        }
+
+        if (!progressResponse.ok) {
+          throw new Error("Failed to load progress");
+        }
+
+        const enrollmentData = await enrollmentResponse.json();
+        const progressData = await progressResponse.json();
+
+        const enrolledCourseSlugs: string[] = enrollmentData.enrolledCourses ?? [];
+        const completedLessonSlugs: string[] = progressData.completedLessons ?? [];
+
+        setEnrolledCourses(enrolledCourseSlugs);
+        setCompletedLessons(completedLessonSlugs);
+
+        const enrolledCourseObjects = courses.filter((course) =>
+          enrolledCourseSlugs.includes(course.slug)
+        );
+
+        const firstIncompleteLesson =
+          enrolledCourseObjects
+            .flatMap((course) => course.lessonList)
+            .find((lesson) => !completedLessonSlugs.includes(lesson.slug)) ?? null;
+
+        setCurrentLesson(firstIncompleteLesson?.slug ?? null);
+      } catch (error) {
+        console.error("Failed to load dashboard state:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadDashboardState();
   }, []);
 
   const enrolledCourseObjects = useMemo(() => {
@@ -44,6 +82,14 @@ export default function DashboardContent() {
             100
         )
       : 0;
+
+  if (isLoading) {
+    return (
+      <main className="mx-auto max-w-6xl px-6 py-16">
+        <p className="text-slate-600">Loading dashboard...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-16">
@@ -138,8 +184,7 @@ export default function DashboardContent() {
                         {course.title}
                       </h3>
                       <p className="text-sm text-slate-600">
-                        {courseCompletedCount} / {course.lessonList.length}{" "}
-                        lessons completed
+                        {courseCompletedCount} / {course.lessonList.length} lessons completed
                       </p>
                     </div>
 
