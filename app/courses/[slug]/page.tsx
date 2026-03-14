@@ -4,49 +4,72 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { courses } from "@/lib/courses";
-import {
-  enrollCourse,
-  getEnrolledCourses,
-} from "@/lib/enrollment";
-import {
-  getCompletedLessons,
-  getCurrentLesson,
-} from "@/lib/progress";
+import { getCompletedLessons, getCurrentLesson } from "@/lib/progress";
 
 export default function CoursePage() {
   const params = useParams();
-  const slug = params.slug as string;
+  const slugParam = params?.slug;
+  const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam;
 
-  const foundCourse = useMemo(
-    () => courses.find((course) => course.slug === slug),
-    [slug]
-  );
+  const foundCourse = useMemo(() => {
+    if (!slug) return undefined;
+    return courses.find((course) => course.slug === slug);
+  }, [slug]);
 
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [currentLesson, setCurrentLesson] = useState<string | null>(null);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+  const [isLoadingEnrollment, setIsLoadingEnrollment] = useState(true);
+  const [isEnrolling, setIsEnrolling] = useState(false);
 
   useEffect(() => {
-    if (!foundCourse) return;
-
-    const enrolledCourses = getEnrolledCourses();
-    setIsEnrolled(enrolledCourses.includes(foundCourse.slug));
+    if (!foundCourse) {
+      setIsLoadingEnrollment(false);
+      return;
+    }
 
     const savedCurrentLesson = getCurrentLesson();
-    setCompletedLessons(getCompletedLessons());
+    const savedCompletedLessons = getCompletedLessons();
+
+    setCompletedLessons(savedCompletedLessons);
 
     const belongsToThisCourse = foundCourse.lessonList.some(
       (lesson) => lesson.slug === savedCurrentLesson
     );
 
-    if (belongsToThisCourse) {
+    if (belongsToThisCourse && savedCurrentLesson) {
       setCurrentLesson(savedCurrentLesson);
     } else {
       setCurrentLesson(foundCourse.lessonList[0]?.slug ?? null);
     }
+
+    async function loadEnrollment() {
+      try {
+        const response = await fetch("/api/enrollments", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to load enrollments");
+        }
+
+        const data = await response.json();
+        const enrolledCourses: string[] = data.enrolledCourses ?? [];
+
+        if (foundCourse) {
+          setIsEnrolled(enrolledCourses.includes(foundCourse.slug));
+        }
+      } catch (error) {
+        console.error("Failed to load enrollments:", error);
+      } finally {
+        setIsLoadingEnrollment(false);
+      }
+    }
+
+    loadEnrollment();
   }, [foundCourse]);
 
-  if (!foundCourse) {
+  if (!slug || !foundCourse) {
     return (
       <main className="mx-auto max-w-5xl px-6 py-16">
         <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
@@ -73,13 +96,35 @@ export default function CoursePage() {
     completedLessons.includes(lesson.slug)
   ).length;
 
-  const progressPercentage = Math.round(
-    (completedLessonsInCourse / totalLessons) * 100
-  );
+  const progressPercentage =
+    totalLessons > 0
+      ? Math.round((completedLessonsInCourse / totalLessons) * 100)
+      : 0;
 
-  const handleEnroll = () => {
-    enrollCourse(foundCourse.slug);
-    setIsEnrolled(true);
+  const handleEnroll = async () => {
+    try {
+      setIsEnrolling(true);
+
+      const response = await fetch("/api/enroll", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          courseSlug: foundCourse.slug,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to enroll");
+      }
+
+      setIsEnrolled(true);
+    } catch (error) {
+      console.error("Enrollment failed:", error);
+    } finally {
+      setIsEnrolling(false);
+    }
   };
 
   return (
@@ -134,15 +179,21 @@ export default function CoursePage() {
           </h2>
 
           <p className="mt-4 text-slate-600">
-            Enroll in this course and start learning step by step through structured lessons.
+            Enroll in this course and start learning step by step through
+            structured lessons.
           </p>
 
-          {!isEnrolled ? (
+          {isLoadingEnrollment ? (
+            <div className="mt-6 rounded-xl bg-slate-100 px-5 py-3 text-center text-sm font-medium text-slate-500">
+              Checking enrollment...
+            </div>
+          ) : !isEnrolled ? (
             <button
               onClick={handleEnroll}
-              className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
+              disabled={isEnrolling}
+              className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Enroll in Course
+              {isEnrolling ? "Enrolling..." : "Enroll in Course"}
             </button>
           ) : (
             <>

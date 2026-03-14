@@ -4,11 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { courses } from "@/lib/courses";
-import {
-  getCompletedLessons,
-  markLessonCompleted,
-  setCurrentLesson,
-} from "@/lib/progress";
 
 export default function LessonPage() {
   const params = useParams();
@@ -16,6 +11,7 @@ export default function LessonPage() {
 
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [justCompleted, setJustCompleted] = useState(false);
+  const [isMarkingCompleted, setIsMarkingCompleted] = useState(false);
 
   const foundCourse = courses.find((course) =>
     course.lessonList.some((lesson) => lesson.slug === slug)
@@ -26,13 +22,20 @@ export default function LessonPage() {
   );
 
   useEffect(() => {
-    setCompletedLessons(getCompletedLessons());
     setJustCompleted(false);
 
-    if (foundLesson) {
-      setCurrentLesson(foundLesson.slug);
+    async function loadProgress() {
+      try {
+        const response = await fetch("/api/progress");
+        const data = await response.json();
+        setCompletedLessons(data.completedLessons ?? []);
+      } catch (error) {
+        console.error("Failed to load progress:", error);
+      }
     }
-  }, [foundLesson]);
+
+    loadProgress();
+  }, [foundLesson?.slug]);
 
   if (!foundCourse || !foundLesson) {
     return (
@@ -79,10 +82,35 @@ export default function LessonPage() {
       ? foundCourse.lessonList[currentLessonIndex + 1]
       : null;
 
-  const handleMarkCompleted = () => {
-    markLessonCompleted(foundLesson.slug);
-    setCompletedLessons(getCompletedLessons());
-    setJustCompleted(true);
+  const handleMarkCompleted = async () => {
+    try {
+      setIsMarkingCompleted(true);
+
+      const response = await fetch("/api/progress", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          courseSlug: foundCourse.slug,
+          lessonSlug: foundLesson.slug,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to mark lesson completed");
+      }
+
+      const progressResponse = await fetch("/api/progress");
+      const progressData = await progressResponse.json();
+
+      setCompletedLessons(progressData.completedLessons ?? []);
+      setJustCompleted(true);
+    } catch (error) {
+      console.error("Failed to mark lesson completed:", error);
+    } finally {
+      setIsMarkingCompleted(false);
+    }
   };
 
   return (
@@ -131,7 +159,6 @@ export default function LessonPage() {
             {foundCourse.lessonList.map((lesson, index) => {
               const isActive = lesson.slug === foundLesson.slug;
               const isCompleted = completedLessons.includes(lesson.slug);
-
               const isUnlocked =
                 index === 0 ||
                 completedLessons.includes(foundCourse.lessonList[index - 1].slug);
@@ -160,7 +187,7 @@ export default function LessonPage() {
                 return (
                   <div
                     key={lesson.slug}
-                    className="flex items-center gap-3 rounded-2xl px-4 py-4 text-sm bg-slate-100 text-slate-400"
+                    className="flex items-center gap-3 rounded-2xl bg-slate-100 px-4 py-4 text-sm text-slate-400"
                   >
                     {content}
                   </div>
@@ -231,9 +258,10 @@ export default function LessonPage() {
 
             <button
               onClick={handleMarkCompleted}
-              className="mt-6 rounded-xl bg-green-600 px-6 py-3 font-medium text-white transition hover:bg-green-700"
+              disabled={isMarkingCompleted}
+              className="mt-6 rounded-xl bg-green-600 px-6 py-3 font-medium text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Mark Lesson as Completed
+              {isMarkingCompleted ? "Saving..." : "Mark Lesson as Completed"}
             </button>
 
             {justCompleted && (
