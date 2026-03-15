@@ -1,9 +1,25 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import UserMenu from "./UserMenu";
 
 export default async function Navbar() {
   const session = await auth();
+
+  let isAdmin = false;
+
+  if (session?.user?.email) {
+    const user = await prisma.user.findUnique({
+      where: {
+        email: session.user.email,
+      },
+      select: {
+        role: true,
+      },
+    });
+
+    isAdmin = user?.role === "admin";
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur">
@@ -28,7 +44,7 @@ export default async function Navbar() {
             Dashboard
           </Link>
 
-          <UserMenu session={session} />
+          <UserMenu session={session} isAdmin={isAdmin} />
         </div>
       </nav>
     </header>

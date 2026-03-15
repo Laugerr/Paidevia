@@ -4,7 +4,15 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
 
-export default function UserMenu({ session }: any) {
+type UserMenuProps = {
+  session: any;
+  isAdmin?: boolean;
+};
+
+export default function UserMenu({
+  session,
+  isAdmin = false,
+}: UserMenuProps) {
   const [open, setOpen] = useState(false);
 
   if (!session?.user) {
@@ -26,7 +34,7 @@ export default function UserMenu({ session }: any) {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center rounded-full hover:bg-slate-100 p-1"
+        className="flex items-center rounded-full p-1 hover:bg-slate-100"
       >
         {image ? (
           <img
@@ -43,10 +51,11 @@ export default function UserMenu({ session }: any) {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-44 rounded-xl bg-white shadow-lg ring-1 ring-slate-200">
+        <div className="absolute right-0 mt-2 w-48 rounded-xl bg-white shadow-lg ring-1 ring-slate-200">
           <Link
             href="/profile"
             className="block px-4 py-2 text-sm hover:bg-slate-50"
+            onClick={() => setOpen(false)}
           >
             Profile
           </Link>
@@ -54,13 +63,24 @@ export default function UserMenu({ session }: any) {
           <Link
             href="/dashboard"
             className="block px-4 py-2 text-sm hover:bg-slate-50"
+            onClick={() => setOpen(false)}
           >
             Dashboard
           </Link>
 
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="block px-4 py-2 text-sm text-red-600 hover:bg-slate-50"
+              onClick={() => setOpen(false)}
+            >
+              Admin
+            </Link>
+          )}
+
           <button
             onClick={() => signOut({ callbackUrl: "/home" })}
-            className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50"
+            className="w-full px-4 py-2 text-left text-sm hover:bg-slate-50"
           >
             Sign Out
           </button>
