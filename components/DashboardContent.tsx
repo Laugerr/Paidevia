@@ -75,6 +75,12 @@ export default function DashboardContent() {
     ).length;
   }, [completedLessons, enrolledCourseObjects]);
 
+  const completedCourses = useMemo(() => {
+    return enrolledCourseObjects.filter((course) =>
+      course.lessonList.every((lesson) => completedLessons.includes(lesson.slug))
+    );
+  }, [enrolledCourseObjects, completedLessons]);
+
   const progressPercentage =
     totalLessonsInEnrolledCourses > 0
       ? Math.round(
@@ -107,7 +113,7 @@ export default function DashboardContent() {
         </p>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-3">
+      <section className="grid gap-6 md:grid-cols-4">
         <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <h2 className="text-lg font-semibold text-slate-900">
             Enrolled Courses
@@ -123,6 +129,15 @@ export default function DashboardContent() {
           </h2>
           <p className="mt-3 text-3xl font-bold text-blue-600">
             {completedLessonsInEnrolledCourses}
+          </p>
+        </div>
+
+        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <h2 className="text-lg font-semibold text-slate-900">
+            Completed Courses
+          </h2>
+          <p className="mt-3 text-3xl font-bold text-green-600">
+            {completedCourses.length}
           </p>
         </div>
 
@@ -148,7 +163,7 @@ export default function DashboardContent() {
           </Link>
         ) : (
           <p className="mt-4 text-slate-600">
-            Start a course to begin learning.
+            You completed all available lessons. Great job 🎉
           </p>
         )}
       </section>
@@ -173,6 +188,9 @@ export default function DashboardContent() {
                 (courseCompletedCount / course.lessonList.length) * 100
               );
 
+              const isCourseCompleted =
+                courseCompletedCount === course.lessonList.length;
+
               return (
                 <li
                   key={course.slug}
@@ -180,9 +198,18 @@ export default function DashboardContent() {
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <h3 className="text-lg font-semibold text-slate-900">
-                        {course.title}
-                      </h3>
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          {course.title}
+                        </h3>
+
+                        {isCourseCompleted && (
+                          <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                            Completed ✅
+                          </span>
+                        )}
+                      </div>
+
                       <p className="text-sm text-slate-600">
                         {courseCompletedCount} / {course.lessonList.length} lessons completed
                       </p>
@@ -209,6 +236,29 @@ export default function DashboardContent() {
                 </li>
               );
             })}
+          </ul>
+        )}
+      </section>
+
+      <section className="mt-10 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <h2 className="text-xl font-semibold text-slate-900">
+          Completed Courses
+        </h2>
+
+        {completedCourses.length === 0 ? (
+          <p className="mt-4 text-slate-600">
+            You have not completed any courses yet.
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-3">
+            {completedCourses.map((course) => (
+              <li
+                key={course.slug}
+                className="rounded-xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700 ring-1 ring-green-200"
+              >
+                {course.title} — Course Completed ✅
+              </li>
+            ))}
           </ul>
         )}
       </section>

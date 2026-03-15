@@ -19,6 +19,8 @@ export default async function ProfilePage() {
     redirect("/login");
   }
 
+  const fallbackLetter = (user.name?.[0] ?? user.email?.[0] ?? "U").toUpperCase();
+
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
       <section className="mb-10">
@@ -35,17 +37,20 @@ export default async function ProfilePage() {
 
       <section className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-          {user.image ? (
-            <img
-              src={user.image}
-              alt="Profile avatar"
-              className="h-24 w-24 rounded-full object-cover ring-2 ring-slate-200"
-            />
-          ) : (
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-slate-100 text-2xl font-bold text-slate-600 ring-2 ring-slate-200">
-              {(user.name?.[0] ?? user.email?.[0] ?? "U").toUpperCase()}
-            </div>
-          )}
+          <div className="relative h-24 w-24">
+            {user.image ? (
+              <img
+                src={user.image}
+                alt="Profile avatar"
+                className="h-24 w-24 rounded-full object-cover ring-2 ring-slate-200"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-slate-100 text-2xl font-bold text-slate-600 ring-2 ring-slate-200">
+                {fallbackLetter}
+              </div>
+            )}
+          </div>
 
           <div>
             <h2 className="text-2xl font-semibold text-slate-900">

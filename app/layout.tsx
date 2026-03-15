@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "Paidevia",
-  description: "A modern Learning Management System",
+  description: "A modern LMS platform built with Next.js",
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-gray-50 text-gray-900">
+      <body className="bg-slate-100 text-slate-900 antialiased">
         <Navbar />
         {children}
       </body>
