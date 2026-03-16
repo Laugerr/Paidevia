@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 
 export default async function AdminPage() {
   const session = await auth();
@@ -80,6 +81,27 @@ export default async function AdminPage() {
             {totalCompletedLessons}
           </p>
         </div>
+      </section>
+      <section className="mt-10 grid gap-6 md:grid-cols-2">
+        <Link
+          href="/admin/users"
+          className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
+        >
+          <h2 className="text-xl font-semibold text-slate-900">Manage Users</h2>
+          <p className="mt-2 text-slate-600">
+            View registered users and manage their roles.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/courses"
+          className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
+        >
+          <h2 className="text-xl font-semibold text-slate-900">Manage Courses</h2>
+          <p className="mt-2 text-slate-600">
+            View all courses, enrollments, and course activity.
+          </p>
+        </Link>
       </section>
     </main>
   );
