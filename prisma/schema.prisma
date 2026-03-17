@@ -72,6 +72,7 @@ model Course {
   description String
   level       String
   lessons     Int
+  status      String    @default("published")
 
   enrollments Enrollment[]
   progress    LessonProgress[]

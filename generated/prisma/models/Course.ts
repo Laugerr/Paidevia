@@ -41,6 +41,7 @@ export type CourseMinAggregateOutputType = {
   description: string | null
   level: string | null
   lessons: number | null
+  status: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -52,6 +53,7 @@ export type CourseMaxAggregateOutputType = {
   description: string | null
   level: string | null
   lessons: number | null
+  status: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -63,6 +65,7 @@ export type CourseCountAggregateOutputType = {
   description: number
   level: number
   lessons: number
+  status: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -84,6 +87,7 @@ export type CourseMinAggregateInputType = {
   description?: true
   level?: true
   lessons?: true
+  status?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -95,6 +99,7 @@ export type CourseMaxAggregateInputType = {
   description?: true
   level?: true
   lessons?: true
+  status?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -106,6 +111,7 @@ export type CourseCountAggregateInputType = {
   description?: true
   level?: true
   lessons?: true
+  status?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -204,6 +210,7 @@ export type CourseGroupByOutputType = {
   description: string
   level: string
   lessons: number
+  status: string
   createdAt: Date
   updatedAt: Date
   _count: CourseCountAggregateOutputType | null
@@ -238,6 +245,7 @@ export type CourseWhereInput = {
   description?: Prisma.StringFilter<"Course"> | string
   level?: Prisma.StringFilter<"Course"> | string
   lessons?: Prisma.IntFilter<"Course"> | number
+  status?: Prisma.StringFilter<"Course"> | string
   createdAt?: Prisma.DateTimeFilter<"Course"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Course"> | Date | string
   enrollments?: Prisma.EnrollmentListRelationFilter
@@ -251,6 +259,7 @@ export type CourseOrderByWithRelationInput = {
   description?: Prisma.SortOrder
   level?: Prisma.SortOrder
   lessons?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   enrollments?: Prisma.EnrollmentOrderByRelationAggregateInput
@@ -267,6 +276,7 @@ export type CourseWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringFilter<"Course"> | string
   level?: Prisma.StringFilter<"Course"> | string
   lessons?: Prisma.IntFilter<"Course"> | number
+  status?: Prisma.StringFilter<"Course"> | string
   createdAt?: Prisma.DateTimeFilter<"Course"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Course"> | Date | string
   enrollments?: Prisma.EnrollmentListRelationFilter
@@ -280,6 +290,7 @@ export type CourseOrderByWithAggregationInput = {
   description?: Prisma.SortOrder
   level?: Prisma.SortOrder
   lessons?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.CourseCountOrderByAggregateInput
@@ -299,6 +310,7 @@ export type CourseScalarWhereWithAggregatesInput = {
   description?: Prisma.StringWithAggregatesFilter<"Course"> | string
   level?: Prisma.StringWithAggregatesFilter<"Course"> | string
   lessons?: Prisma.IntWithAggregatesFilter<"Course"> | number
+  status?: Prisma.StringWithAggregatesFilter<"Course"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Course"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Course"> | Date | string
 }
@@ -310,6 +322,7 @@ export type CourseCreateInput = {
   description: string
   level: string
   lessons: number
+  status?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   enrollments?: Prisma.EnrollmentCreateNestedManyWithoutCourseInput
@@ -323,6 +336,7 @@ export type CourseUncheckedCreateInput = {
   description: string
   level: string
   lessons: number
+  status?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutCourseInput
@@ -336,6 +350,7 @@ export type CourseUpdateInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.StringFieldUpdateOperationsInput | string
   lessons?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   enrollments?: Prisma.EnrollmentUpdateManyWithoutCourseNestedInput
@@ -349,6 +364,7 @@ export type CourseUncheckedUpdateInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.StringFieldUpdateOperationsInput | string
   lessons?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutCourseNestedInput
@@ -362,6 +378,7 @@ export type CourseCreateManyInput = {
   description: string
   level: string
   lessons: number
+  status?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -373,6 +390,7 @@ export type CourseUpdateManyMutationInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.StringFieldUpdateOperationsInput | string
   lessons?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -384,6 +402,7 @@ export type CourseUncheckedUpdateManyInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.StringFieldUpdateOperationsInput | string
   lessons?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -395,6 +414,7 @@ export type CourseCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   level?: Prisma.SortOrder
   lessons?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -410,6 +430,7 @@ export type CourseMaxOrderByAggregateInput = {
   description?: Prisma.SortOrder
   level?: Prisma.SortOrder
   lessons?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -421,6 +442,7 @@ export type CourseMinOrderByAggregateInput = {
   description?: Prisma.SortOrder
   level?: Prisma.SortOrder
   lessons?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -477,6 +499,7 @@ export type CourseCreateWithoutEnrollmentsInput = {
   description: string
   level: string
   lessons: number
+  status?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   progress?: Prisma.LessonProgressCreateNestedManyWithoutCourseInput
@@ -489,6 +512,7 @@ export type CourseUncheckedCreateWithoutEnrollmentsInput = {
   description: string
   level: string
   lessons: number
+  status?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   progress?: Prisma.LessonProgressUncheckedCreateNestedManyWithoutCourseInput
@@ -517,6 +541,7 @@ export type CourseUpdateWithoutEnrollmentsInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.StringFieldUpdateOperationsInput | string
   lessons?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   progress?: Prisma.LessonProgressUpdateManyWithoutCourseNestedInput
@@ -529,6 +554,7 @@ export type CourseUncheckedUpdateWithoutEnrollmentsInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.StringFieldUpdateOperationsInput | string
   lessons?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   progress?: Prisma.LessonProgressUncheckedUpdateManyWithoutCourseNestedInput
@@ -541,6 +567,7 @@ export type CourseCreateWithoutProgressInput = {
   description: string
   level: string
   lessons: number
+  status?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   enrollments?: Prisma.EnrollmentCreateNestedManyWithoutCourseInput
@@ -553,6 +580,7 @@ export type CourseUncheckedCreateWithoutProgressInput = {
   description: string
   level: string
   lessons: number
+  status?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutCourseInput
@@ -581,6 +609,7 @@ export type CourseUpdateWithoutProgressInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.StringFieldUpdateOperationsInput | string
   lessons?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   enrollments?: Prisma.EnrollmentUpdateManyWithoutCourseNestedInput
@@ -593,6 +622,7 @@ export type CourseUncheckedUpdateWithoutProgressInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.StringFieldUpdateOperationsInput | string
   lessons?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutCourseNestedInput
@@ -645,6 +675,7 @@ export type CourseSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   description?: boolean
   level?: boolean
   lessons?: boolean
+  status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   enrollments?: boolean | Prisma.Course$enrollmentsArgs<ExtArgs>
@@ -659,6 +690,7 @@ export type CourseSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   description?: boolean
   level?: boolean
   lessons?: boolean
+  status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["course"]>
@@ -670,6 +702,7 @@ export type CourseSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   description?: boolean
   level?: boolean
   lessons?: boolean
+  status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["course"]>
@@ -681,11 +714,12 @@ export type CourseSelectScalar = {
   description?: boolean
   level?: boolean
   lessons?: boolean
+  status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CourseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "title" | "description" | "level" | "lessons" | "createdAt" | "updatedAt", ExtArgs["result"]["course"]>
+export type CourseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "title" | "description" | "level" | "lessons" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["course"]>
 export type CourseInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   enrollments?: boolean | Prisma.Course$enrollmentsArgs<ExtArgs>
   progress?: boolean | Prisma.Course$progressArgs<ExtArgs>
@@ -707,6 +741,7 @@ export type $CoursePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     description: string
     level: string
     lessons: number
+    status: string
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["course"]>
@@ -1140,6 +1175,7 @@ export interface CourseFieldRefs {
   readonly description: Prisma.FieldRef<"Course", 'String'>
   readonly level: Prisma.FieldRef<"Course", 'String'>
   readonly lessons: Prisma.FieldRef<"Course", 'Int'>
+  readonly status: Prisma.FieldRef<"Course", 'String'>
   readonly createdAt: Prisma.FieldRef<"Course", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Course", 'DateTime'>
 }
