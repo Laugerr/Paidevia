@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import AdminUsersTable from "@/components/AdminUsersTable";
+import { isUserRole } from "@/lib/roles";
 
 export default async function AdminUsersPage() {
   const session = await auth();
@@ -42,5 +43,12 @@ export default async function AdminUsersPage() {
     },
   });
 
-  return <AdminUsersTable users={users} currentUserId={currentUser.id} />;
+  const normalizedUsers = users.map((user) => ({
+    ...user,
+    role: isUserRole(user.role) ? user.role : "student",
+  }));
+
+  return (
+    <AdminUsersTable users={normalizedUsers} currentUserId={currentUser.id} />
+  );
 }

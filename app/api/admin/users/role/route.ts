@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { isUserRole } from "@/lib/roles";
 
 export async function PATCH(request: Request) {
   const session = await auth();
@@ -33,7 +34,7 @@ export async function PATCH(request: Request) {
     );
   }
 
-  if (!["student", "admin"].includes(role)) {
+  if (typeof role !== "string" || !isUserRole(role)) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }
 

@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { USER_ROLES, type UserRole } from "@/lib/roles";
 
 type AdminUser = {
   id: string;
   name: string | null;
   email: string | null;
-  role: string;
+  role: UserRole;
   createdAt: Date;
   image: string | null;
 };
@@ -24,7 +25,7 @@ export default function AdminUsersTable({
   const [users, setUsers] = useState(initialUsers);
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
 
-  const handleRoleChange = async (userId: string, role: "student" | "admin") => {
+  const handleRoleChange = async (userId: string, role: UserRole) => {
     try {
       setLoadingUserId(userId);
 
@@ -116,6 +117,13 @@ export default function AdminUsersTable({
 
                 const isCurrentUser = user.id === currentUserId;
                 const isLoading = loadingUserId === user.id;
+                const canChangeRole = !(isCurrentUser && user.role === "admin");
+                const roleBadgeClassName =
+                  user.role === "admin"
+                    ? "bg-red-100 text-red-700"
+                    : user.role === "instructor"
+                    ? "bg-amber-100 text-amber-700"
+                    : "bg-blue-100 text-blue-700";
 
                 return (
                   <tr key={user.id} className="hover:bg-slate-50">
@@ -149,11 +157,7 @@ export default function AdminUsersTable({
 
                     <td className="px-6 py-4">
                       <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                          user.role === "admin"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-blue-100 text-blue-700"
-                        }`}
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${roleBadgeClassName}`}
                       >
                         {user.role}
                       </span>
@@ -165,27 +169,35 @@ export default function AdminUsersTable({
 
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-2">
-                        {user.role !== "admin" ? (
-                          <button
-                            onClick={() => handleRoleChange(user.id, "admin")}
-                            disabled={isLoading}
-                            className="rounded-lg bg-red-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            {isLoading ? "Updating..." : "Make Admin"}
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleRoleChange(user.id, "student")}
-                            disabled={isLoading || isCurrentUser}
-                            className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            {isCurrentUser
-                              ? "Current Admin"
-                              : isLoading
-                              ? "Updating..."
-                              : "Make Student"}
-                          </button>
-                        )}
+                        {USER_ROLES.map((roleOption) => {
+                          const isActiveRole = user.role === roleOption;
+                          const isDisabled =
+                            isLoading ||
+                            isActiveRole ||
+                            (!canChangeRole && roleOption !== "admin");
+
+                          const buttonClassName =
+                            roleOption === "admin"
+                              ? "border-red-300 text-red-700 hover:bg-red-50"
+                              : roleOption === "instructor"
+                              ? "border-amber-300 text-amber-700 hover:bg-amber-50"
+                              : "border-slate-300 text-slate-700 hover:bg-slate-50";
+
+                          return (
+                            <button
+                              key={roleOption}
+                              onClick={() => handleRoleChange(user.id, roleOption)}
+                              disabled={isDisabled}
+                              className={`rounded-lg border px-3 py-2 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${buttonClassName}`}
+                            >
+                              {isLoading
+                                ? "Updating..."
+                                : isActiveRole
+                                ? `Current ${roleOption[0].toUpperCase()}${roleOption.slice(1)}`
+                                : `Make ${roleOption[0].toUpperCase()}${roleOption.slice(1)}`}
+                            </button>
+                          );
+                        })}
                       </div>
                     </td>
                   </tr>
