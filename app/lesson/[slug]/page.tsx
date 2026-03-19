@@ -39,21 +39,23 @@ export default function LessonPage() {
 
   if (!foundCourse || !foundLesson) {
     return (
-      <main className="mx-auto max-w-5xl px-6 py-16">
-        <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-            Lesson Not Found
-          </h1>
-          <p className="mt-4 text-slate-600">
-            The lesson you are looking for does not exist.
-          </p>
-          <Link
-            href="/courses"
-            className="mt-6 inline-block rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
-          >
-            Back to Courses
-          </Link>
-        </div>
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <section className="overflow-hidden rounded-[36px] border border-white/70 bg-white/72 p-6 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
+          <div className="rounded-[32px] border border-white/70 bg-white/90 p-8">
+            <h1 className="text-4xl font-semibold tracking-tight text-slate-950">
+              Lesson Not Found
+            </h1>
+            <p className="mt-4 text-slate-600">
+              The lesson you are looking for does not exist.
+            </p>
+            <Link
+              href="/courses"
+              className="mt-6 inline-flex rounded-2xl bg-[linear-gradient(135deg,_#1d4ed8_0%,_#0ea5e9_100%)] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:brightness-105"
+            >
+              Back to Courses
+            </Link>
+          </div>
+        </section>
       </main>
     );
   }
@@ -114,223 +116,277 @@ export default function LessonPage() {
   };
 
   return (
-    <main className="min-h-[calc(100vh-80px)] bg-slate-50">
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[320px_1fr]">
-        <aside className="h-fit rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 lg:sticky lg:top-24">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
-            Course Player
-          </p>
-
-          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
-            {foundCourse.title}
-          </h2>
-
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            Follow the lessons in order and continue learning step by step.
-          </p>
-
-          <div className="mt-6 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
-            <p className="text-sm font-medium text-slate-700">
-              Lesson {currentLessonIndex + 1} of {foundCourse.lessonList.length}
-            </p>
-            <p className="mt-1 text-sm text-slate-500">
-              Current lesson in this course
-            </p>
-          </div>
-
-          <div className="mt-4">
-            <p className="text-sm font-medium text-slate-700">
-              Course Progress
+    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <section className="overflow-hidden rounded-[36px] border border-white/70 bg-white/72 p-6 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
+        <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
+          <aside className="h-fit rounded-[30px] border border-white/70 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.2),_transparent_26%),linear-gradient(180deg,_#10213f_0%,_#081428_100%)] p-6 text-white shadow-[0_24px_60px_rgba(15,23,42,0.24)] xl:sticky xl:top-28">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-300">
+              Lesson Player
             </p>
 
-            <div className="mt-2 h-3 w-full overflow-hidden rounded-full bg-slate-200">
-              <div
-                className="h-full rounded-full bg-blue-600 transition-all"
-                style={{ width: `${progressPercentage}%` }}
-              />
-            </div>
-
-            <p className="mt-2 text-xs text-slate-500">
-              {completedLessonsInCourse} / {totalLessons} lessons completed
-            </p>
-          </div>
-
-          <div className="mt-6 space-y-3">
-            {foundCourse.lessonList.map((lesson, index) => {
-              const isActive = lesson.slug === foundLesson.slug;
-              const isCompleted = completedLessons.includes(lesson.slug);
-              const isUnlocked =
-                index === 0 ||
-                completedLessons.includes(foundCourse.lessonList[index - 1].slug);
-
-              const content = (
-                <>
-                  <span
-                    className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
-                      isActive
-                        ? "bg-white/20 text-white"
-                        : isCompleted
-                        ? "bg-green-100 text-green-700"
-                        : isUnlocked
-                        ? "bg-white text-slate-600 ring-1 ring-slate-200"
-                        : "bg-slate-200 text-slate-500"
-                    }`}
-                  >
-                    {isCompleted ? "✓" : isUnlocked ? index + 1 : "🔒"}
-                  </span>
-
-                  <span className="font-medium">{lesson.title}</span>
-                </>
-              );
-
-              if (!isUnlocked) {
-                return (
-                  <div
-                    key={lesson.slug}
-                    className="flex items-center gap-3 rounded-2xl bg-slate-100 px-4 py-4 text-sm text-slate-400"
-                  >
-                    {content}
-                  </div>
-                );
-              }
-
-              return (
-                <Link
-                  key={lesson.slug}
-                  href={`/lesson/${lesson.slug}`}
-                  className={`flex items-center gap-3 rounded-2xl px-4 py-4 text-sm transition ${
-                    isActive
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100"
-                  }`}
-                >
-                  {content}
-                </Link>
-              );
-            })}
-          </div>
-
-          <Link
-            href={`/courses/${foundCourse.slug}`}
-            className="mt-6 block w-full rounded-xl border border-slate-300 px-5 py-3 text-center font-medium text-slate-900 transition hover:bg-slate-50"
-          >
-            Back to Course
-          </Link>
-        </aside>
-
-        <section className="space-y-6">
-          <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight">
               {foundCourse.title}
-            </p>
-
-            <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900">
-              {foundLesson.title}
-            </h1>
-
-            <p className="mt-4 max-w-3xl text-slate-600">
-              Learn through structured lessons inside the Paidevia course player.
-              This layout is designed to feel more like a real LMS experience.
-            </p>
-          </div>
-
-          <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-16 text-center">
-              <p className="text-xl font-semibold text-slate-800">
-                Lesson Video Area
-              </p>
-              <p className="mt-3 text-sm text-slate-500">
-                Embedded video player or lesson media will go here later.
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-            <h2 className="text-2xl font-semibold text-slate-900">
-              Lesson Notes
             </h2>
 
-            <p className="mt-4 leading-7 text-slate-600">
-              This section can later include full lesson text, practical
-              exercises, downloadable files, references, and quizzes. For now,
-              it acts as the content area of the course player.
+            <p className="mt-3 text-sm leading-6 text-slate-300">
+              Follow the lesson sequence and keep your progress moving inside a
+              more polished player experience.
             </p>
 
-            <button
-              onClick={handleMarkCompleted}
-              disabled={isMarkingCompleted}
-              className="mt-6 rounded-xl bg-green-600 px-6 py-3 font-medium text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isMarkingCompleted ? "Saving..." : "Mark Lesson as Completed"}
-            </button>
+            <div className="mt-6 rounded-[24px] bg-white/8 px-4 py-4 ring-1 ring-white/10">
+              <p className="text-sm font-medium text-slate-200">
+                Lesson {currentLessonIndex + 1} of {foundCourse.lessonList.length}
+              </p>
+              <p className="mt-1 text-xs uppercase tracking-[0.16em] text-cyan-300">
+                Current step
+              </p>
+            </div>
 
-            {justCompleted && (
-              <div className="mt-6 rounded-2xl bg-green-50 p-4 ring-1 ring-green-200">
-                <p className="font-medium text-green-700">
-                  Lesson completed successfully ✓
-                </p>
+            <div className="mt-5">
+              <p className="text-sm font-medium text-slate-200">Course Progress</p>
+              <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 transition-all"
+                  style={{ width: `${progressPercentage}%` }}
+                />
+              </div>
+              <p className="mt-3 text-xs text-slate-300">
+                {completedLessonsInCourse} / {totalLessons} lessons completed
+              </p>
+            </div>
 
-                {nextLesson ? (
+            <div className="mt-6 space-y-3">
+              {foundCourse.lessonList.map((lesson, index) => {
+                const isActive = lesson.slug === foundLesson.slug;
+                const isCompleted = completedLessons.includes(lesson.slug);
+                const isUnlocked =
+                  index === 0 ||
+                  completedLessons.includes(foundCourse.lessonList[index - 1].slug);
+
+                const content = (
+                  <>
+                    <span
+                      className={`flex h-8 w-8 items-center justify-center rounded-2xl text-xs font-bold ${
+                        isActive
+                          ? "bg-white/20 text-white"
+                          : isCompleted
+                          ? "bg-emerald-400 text-emerald-950"
+                          : isUnlocked
+                          ? "bg-white text-slate-700"
+                          : "bg-white/10 text-slate-400"
+                      }`}
+                    >
+                      {isCompleted ? "OK" : isUnlocked ? index + 1 : "..."}
+                    </span>
+
+                    <span className="font-medium">{lesson.title}</span>
+                  </>
+                );
+
+                if (!isUnlocked) {
+                  return (
+                    <div
+                      key={lesson.slug}
+                      className="flex items-center gap-3 rounded-[22px] bg-white/6 px-4 py-4 text-sm text-slate-400"
+                    >
+                      {content}
+                    </div>
+                  );
+                }
+
+                return (
                   <Link
-                    href={`/lesson/${nextLesson.slug}`}
-                    className="mt-4 inline-block rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
+                    key={lesson.slug}
+                    href={`/lesson/${lesson.slug}`}
+                    className={`flex items-center gap-3 rounded-[22px] px-4 py-4 text-sm transition ${
+                      isActive
+                        ? "bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-lg shadow-cyan-500/20"
+                        : "bg-white/8 text-slate-100 hover:bg-white/12"
+                    }`}
                   >
-                    Go to Next Lesson
+                    {content}
                   </Link>
-                ) : (
-                  <div className="mt-4 rounded-xl bg-white px-4 py-3 text-sm font-medium text-slate-700 ring-1 ring-slate-200">
-                    Course completed 🎉 You reached the final lesson.
+                );
+              })}
+            </div>
+
+            <Link
+              href={`/courses/${foundCourse.slug}`}
+              className="mt-6 block w-full rounded-2xl border border-white/15 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/8"
+            >
+              Back to Course
+            </Link>
+          </aside>
+
+          <section className="space-y-6">
+            <div className="relative overflow-hidden rounded-[32px] border border-cyan-100 bg-[radial-gradient(circle_at_left,_rgba(125,211,252,0.3),_transparent_26%),linear-gradient(135deg,_#f3fbff_0%,_#ffffff_58%,_#eef6ff_100%)] p-8">
+              <div className="absolute -left-4 top-7 h-24 w-24 rounded-full border-[10px] border-cyan-200/40" />
+              <div className="relative">
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">
+                  {foundCourse.title}
+                </p>
+                <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
+                  {foundLesson.title}
+                </h1>
+                <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
+                  Learn through a more immersive player layout designed to feel
+                  closer to a real LMS lesson experience while keeping your
+                  existing progress tracking intact.
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-[30px] border border-white/70 bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+              <div className="rounded-[28px] border border-cyan-100 bg-[radial-gradient(circle_at_top,_rgba(191,219,254,0.35),_transparent_30%),linear-gradient(135deg,_#0b1730_0%,_#17396a_100%)] p-10 text-white">
+                <div className="mx-auto max-w-3xl text-center">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-300">
+                    Lesson Media
+                  </p>
+                  <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+                    Video player area
+                  </h2>
+                  <p className="mt-4 text-sm leading-7 text-slate-200">
+                    Embedded media, interactive content, or live lesson visuals
+                    can live here later. For now, this panel acts as the premium
+                    player frame for the lesson flow.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-[30px] border border-white/70 bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-600">
+                    Lesson Notes
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                    Key learning space
+                  </h2>
+                </div>
+
+                <div className="rounded-[24px] bg-slate-50 px-5 py-4 ring-1 ring-slate-200">
+                  <p className="text-sm font-medium text-slate-500">Progress</p>
+                  <p className="mt-1 text-3xl font-semibold tracking-tight text-slate-950">
+                    {progressPercentage}%
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_320px]">
+                <div className="space-y-5">
+                  <div className="rounded-[26px] bg-slate-50 px-5 py-5 ring-1 ring-slate-200">
+                    <p className="text-sm leading-7 text-slate-600">
+                      This is where lesson text, instructor notes, downloadable
+                      files, and follow-up exercises can live later. Right now,
+                      the layout is built to feel production-ready, with enough
+                      structure for richer course content to slot in cleanly.
+                    </p>
                   </div>
-                )}
-              </div>
-            )}
-          </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            {previousLesson ? (
-              <Link
-                href={`/lesson/${previousLesson.slug}`}
-                className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
-              >
-                <p className="text-sm font-medium text-slate-500">
-                  Previous Lesson
-                </p>
-                <h3 className="mt-2 text-lg font-semibold text-slate-900">
-                  {previousLesson.title}
-                </h3>
-              </Link>
-            ) : (
-              <div className="rounded-2xl bg-slate-100 p-5 text-slate-400 ring-1 ring-slate-200">
-                <p className="text-sm font-medium">Previous Lesson</p>
-                <h3 className="mt-2 text-lg font-semibold">
-                  This is the first lesson
-                </h3>
-              </div>
-            )}
+                  <button
+                    onClick={handleMarkCompleted}
+                    disabled={isMarkingCompleted}
+                    className="rounded-2xl bg-[linear-gradient(135deg,_#16a34a_0%,_#10b981_100%)] px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isMarkingCompleted ? "Saving..." : "Mark Lesson as Completed"}
+                  </button>
 
-            {nextLesson ? (
-              <Link
-                href={`/lesson/${nextLesson.slug}`}
-                className="rounded-2xl bg-white p-5 text-right shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
-              >
-                <p className="text-sm font-medium text-slate-500">
-                  Next Lesson
-                </p>
-                <h3 className="mt-2 text-lg font-semibold text-slate-900">
-                  {nextLesson.title}
-                </h3>
-              </Link>
-            ) : (
-              <div className="rounded-2xl bg-slate-100 p-5 text-right text-slate-400 ring-1 ring-slate-200">
-                <p className="text-sm font-medium">Next Lesson</p>
-                <h3 className="mt-2 text-lg font-semibold">
-                  You reached the last lesson
-                </h3>
+                  {justCompleted && (
+                    <div className="rounded-[26px] bg-emerald-50 p-5 ring-1 ring-emerald-200">
+                      <p className="font-semibold text-emerald-700">
+                        Lesson completed successfully.
+                      </p>
+
+                      {nextLesson ? (
+                        <Link
+                          href={`/lesson/${nextLesson.slug}`}
+                          className="mt-4 inline-flex rounded-2xl bg-[linear-gradient(135deg,_#1d4ed8_0%,_#0ea5e9_100%)] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:brightness-105"
+                        >
+                          Go to Next Lesson
+                        </Link>
+                      ) : (
+                        <div className="mt-4 rounded-2xl bg-white px-4 py-3 text-sm font-medium text-slate-700 ring-1 ring-emerald-200">
+                          Course completed. You reached the final lesson.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <aside className="space-y-4">
+                  <div className="rounded-[26px] border border-white/70 bg-white p-5 shadow-sm ring-1 ring-slate-200">
+                    <p className="text-sm font-medium text-slate-500">Current lesson</p>
+                    <p className="mt-2 text-xl font-semibold tracking-tight text-slate-950">
+                      {currentLessonIndex + 1}
+                    </p>
+                  </div>
+                  <div className="rounded-[26px] border border-white/70 bg-white p-5 shadow-sm ring-1 ring-slate-200">
+                    <p className="text-sm font-medium text-slate-500">Completed</p>
+                    <p className="mt-2 text-xl font-semibold tracking-tight text-slate-950">
+                      {completedLessonsInCourse} lessons
+                    </p>
+                  </div>
+                  <div className="rounded-[26px] border border-white/70 bg-white p-5 shadow-sm ring-1 ring-slate-200">
+                    <p className="text-sm font-medium text-slate-500">Next step</p>
+                    <p className="mt-2 text-base font-semibold text-slate-950">
+                      {nextLesson ? nextLesson.title : "You are on the final step"}
+                    </p>
+                  </div>
+                </aside>
               </div>
-            )}
-          </div>
-        </section>
-      </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {previousLesson ? (
+                <Link
+                  href={`/lesson/${previousLesson.slug}`}
+                  className="rounded-[28px] border border-white/70 bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(15,23,42,0.12)]"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    Previous Lesson
+                  </p>
+                  <h3 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+                    {previousLesson.title}
+                  </h3>
+                </Link>
+              ) : (
+                <div className="rounded-[28px] border border-slate-200 bg-slate-100/80 p-6 text-slate-400">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em]">
+                    Previous Lesson
+                  </p>
+                  <h3 className="mt-3 text-2xl font-semibold">
+                    This is the first lesson
+                  </h3>
+                </div>
+              )}
+
+              {nextLesson ? (
+                <Link
+                  href={`/lesson/${nextLesson.slug}`}
+                  className="rounded-[28px] border border-white/70 bg-white/90 p-6 text-right shadow-[0_18px_45px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(15,23,42,0.12)]"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    Next Lesson
+                  </p>
+                  <h3 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+                    {nextLesson.title}
+                  </h3>
+                </Link>
+              ) : (
+                <div className="rounded-[28px] border border-slate-200 bg-slate-100/80 p-6 text-right text-slate-400">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em]">
+                    Next Lesson
+                  </p>
+                  <h3 className="mt-3 text-2xl font-semibold">
+                    You reached the last lesson
+                  </h3>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+      </section>
     </main>
   );
 }

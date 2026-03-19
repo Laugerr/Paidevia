@@ -276,6 +276,15 @@ export default function DashboardContent({
     "Recommended paths updated for you",
   ];
 
+  const sidebarItems = [
+    { label: "Dashboard", icon: GridIcon, href: "/dashboard", active: true },
+    { label: "My Courses", icon: BookIcon, href: "/courses", active: false },
+    { label: "Assignments", icon: CheckSquareIcon, href: "/dashboard", active: false },
+    { label: "Messages", icon: MessageIcon, href: "/profile", active: false },
+    { label: "Calendar", icon: CalendarIcon, href: "/dashboard", active: false },
+    { label: "Analytics", icon: ChartIcon, href: "/dashboard", active: false },
+  ];
+
   if (isLoading) {
     return (
       <main className="px-4 py-6 sm:px-6 lg:px-8">
@@ -301,29 +310,23 @@ export default function DashboardContent({
           </div>
 
           <div className="mt-8 space-y-2">
-            {[
-              { label: "Dashboard", icon: GridIcon, active: true },
-              { label: "My Courses", icon: BookIcon, active: false },
-              { label: "Assignments", icon: CheckSquareIcon, active: false },
-              { label: "Messages", icon: MessageIcon, active: false },
-              { label: "Calendar", icon: CalendarIcon, active: false },
-              { label: "Analytics", icon: ChartIcon, active: false },
-            ].map((item) => {
+            {sidebarItems.map((item) => {
               const Icon = item.icon;
 
               return (
-                <button
+                <Link
                   key={item.label}
+                  href={item.href}
                   className={cn(
-                    "flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition",
+                    "flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition duration-200",
                     item.active
                       ? "bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-lg shadow-cyan-500/20"
-                      : "text-slate-200 hover:bg-white/6 hover:text-white"
+                      : "text-slate-200 hover:-translate-y-0.5 hover:bg-white/6 hover:text-white"
                   )}
                 >
                   <Icon />
                   {item.label}
-                </button>
+                </Link>
               );
             })}
           </div>
@@ -358,13 +361,13 @@ export default function DashboardContent({
 
             <div className="flex items-center justify-between gap-3 sm:justify-end">
               <div className="flex items-center gap-2 text-slate-500">
-                <button className="relative rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200">
+                <button className="relative rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md">
                   <BellIcon />
                   <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-semibold text-white">
                     5
                   </span>
                 </button>
-                <button className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200">
+                <button className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md">
                   <MessageIcon />
                 </button>
               </div>
@@ -410,13 +413,13 @@ export default function DashboardContent({
                     <div className="mt-6 flex flex-wrap gap-3">
                       <Link
                         href={currentLesson ? `/lesson/${currentLesson}` : "/courses"}
-                        className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                        className="rounded-2xl bg-[linear-gradient(135deg,_#1d4ed8_0%,_#0ea5e9_100%)] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:brightness-105"
                       >
                         {currentLesson ? "Continue Learning" : "Explore Courses"}
                       </Link>
                       <Link
                         href="/courses"
-                        className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                        className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50"
                       >
                         View All Courses
                       </Link>
@@ -456,7 +459,7 @@ export default function DashboardContent({
                     <p className="mt-2 text-sm text-slate-500">Enroll in a course to unlock the full dashboard experience.</p>
                     <Link
                       href="/courses"
-                      className="mt-5 inline-flex rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+                      className="mt-5 inline-flex rounded-2xl bg-[linear-gradient(135deg,_#1d4ed8_0%,_#0ea5e9_100%)] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:brightness-105"
                     >
                       Explore Courses
                     </Link>
@@ -533,7 +536,7 @@ export default function DashboardContent({
                       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-600">Student Progress</p>
                       <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Learning momentum</h2>
                     </div>
-                    <button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-600">
+                    <button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-600 transition duration-200 hover:bg-white">
                       This Semester
                       <ChevronDownIcon />
                     </button>
@@ -597,7 +600,7 @@ export default function DashboardContent({
                       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Recent Activity</p>
                       <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">What changed</h2>
                     </div>
-                    <button className="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-medium text-slate-500">More</button>
+                    <button className="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-medium text-slate-500 transition duration-200 hover:bg-slate-200">More</button>
                   </div>
 
                   <div className="mt-6 space-y-4">
@@ -693,7 +696,7 @@ export default function DashboardContent({
               <section className="rounded-[30px] bg-white p-6 shadow-sm ring-1 ring-slate-200/70">
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Upcoming</h2>
-                  <button className="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-medium text-slate-500">...</button>
+                  <button className="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-medium text-slate-500 transition duration-200 hover:bg-slate-200">...</button>
                 </div>
 
                 <div className="mt-5 space-y-3">
