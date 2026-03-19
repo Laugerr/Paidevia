@@ -17,6 +17,7 @@ export default function UserMenu({
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const isAdmin = userRole === "admin";
+  const isInstructor = userRole === "instructor";
 
   if (!session?.user) {
     return (
@@ -94,10 +95,12 @@ export default function UserMenu({
             { href: "/profile", label: "Profile" },
             { href: "/dashboard", label: "Dashboard" },
             { href: "/courses", label: "Courses" },
+            ...(isInstructor ? [{ href: "/instructor", label: "Instructor" }] : []),
           ].map((item) => {
             const isActive =
               pathname === item.href ||
-              (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
+              (!["/dashboard", "/instructor"].includes(item.href) &&
+                pathname.startsWith(`${item.href}/`));
 
             return (
               <Link

@@ -9,12 +9,20 @@ const links = [
   { href: "/dashboard", label: "Dashboard" },
 ];
 
-export default function NavLinks() {
+type NavLinksProps = {
+  userRole?: string | null;
+};
+
+export default function NavLinks({ userRole }: NavLinksProps) {
   const pathname = usePathname();
+  const visibleLinks =
+    userRole === "instructor"
+      ? [...links, { href: "/instructor", label: "Instructor" }]
+      : links;
 
   return (
     <div className="hidden xl:flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-2 py-2 text-sm font-medium text-slate-500">
-      {links.map((link) => {
+      {visibleLinks.map((link) => {
         const isActive =
           pathname === link.href ||
           (link.href !== "/home" && pathname.startsWith(`${link.href}/`));

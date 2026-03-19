@@ -41,7 +41,7 @@ export default async function Navbar() {
             </div>
           </Link>
 
-          <NavLinks />
+          <NavLinks userRole={userRole} />
         </div>
 
         <div className="flex items-center gap-3">
