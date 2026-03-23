@@ -9,10 +9,5 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  return (
-    <DashboardContent
-      userName={session.user.name}
-      userImage={session.user.image}
-    />
-  );
+  return <DashboardContent userName={session.user.name} />;
 }

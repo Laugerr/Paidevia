@@ -21,7 +21,7 @@ export default function NavLinks({ userRole }: NavLinksProps) {
       : links;
 
   return (
-    <div className="hidden xl:flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-2 py-2 text-sm font-medium text-slate-500">
+    <div className="hidden xl:flex items-center gap-1 rounded-2xl border border-slate-200/70 bg-slate-50/80 p-1 text-sm font-medium text-slate-500 shadow-sm">
       {visibleLinks.map((link) => {
         const isActive =
           pathname === link.href ||
@@ -33,7 +33,7 @@ export default function NavLinks({ userRole }: NavLinksProps) {
             href={link.href}
             className={`rounded-xl px-4 py-2 transition duration-200 ${
               isActive
-                ? "bg-white text-slate-950 shadow-sm ring-1 ring-slate-200"
+                ? "bg-white text-blue-700 shadow-sm ring-1 ring-blue-100"
                 : "hover:-translate-y-0.5 hover:bg-white hover:text-slate-900"
             }`}
           >

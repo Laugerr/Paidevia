@@ -44,22 +44,22 @@ export default function UserMenu({
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-2 py-2 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md"
+        className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/88 px-2 py-1.5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-md"
       >
         {image ? (
           <img
             src={image}
             alt="avatar"
-            className="h-10 w-10 rounded-2xl object-cover"
+            className="h-9 w-9 rounded-2xl object-cover"
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-pink-500 text-sm font-bold text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-pink-500 text-sm font-bold text-white">
             {fallback}
           </div>
         )}
 
-        <div className="hidden text-left sm:block">
+        <div className="hidden text-left md:block">
           <p className="max-w-[12rem] truncate text-sm font-semibold text-slate-900">
             {name}
           </p>
@@ -70,7 +70,7 @@ export default function UserMenu({
 
         <svg
           viewBox="0 0 24 24"
-          className="hidden h-4 w-4 text-slate-400 sm:block"
+          className="hidden h-4 w-4 text-slate-400 md:block"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"

@@ -1,165 +1,46 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { courses } from "@/lib/courses";
 
 type DashboardContentProps = {
   userName?: string | null;
-  userImage?: string | null;
-};
-
-type Tone = "blue" | "green" | "amber" | "rose";
-
-const courseArtwork = [
-  "from-sky-950 via-blue-900 to-cyan-500",
-  "from-slate-950 via-slate-700 to-emerald-400",
-  "from-amber-900 via-orange-500 to-yellow-300",
-  "from-indigo-950 via-sky-700 to-cyan-300",
-];
-
-const chartMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-const progressSeries = {
-  completed: [38, 54, 58, 64, 71, 83],
-  inProgress: [18, 33, 49, 41, 46, 57],
-  notStarted: [44, 33, 24, 19, 14, 10],
 };
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-function buildPolyline(values: number[]) {
-  return values
-    .map((value, index) => {
-      const x = 24 + index * 56;
-      const y = 154 - value * 1.2;
-      return `${x},${y}`;
-    })
-    .join(" ");
-}
-
-function formatTitle(slug: string) {
-  return slug
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
-function SearchIcon() {
+function Icon({
+  children,
+  className = "h-5 w-5",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.5-3.5" />
-    </svg>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M15 17h5l-1.4-1.4a2 2 0 0 1-.6-1.4V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" />
-      <path d="M9 17a3 3 0 0 0 6 0" />
-    </svg>
-  );
-}
-
-function GridIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="3" y="3" width="7" height="7" rx="1.5" />
-      <rect x="14" y="3" width="7" height="7" rx="1.5" />
-      <rect x="3" y="14" width="7" height="7" rx="1.5" />
-      <rect x="14" y="14" width="7" height="7" rx="1.5" />
-    </svg>
-  );
-}
-
-function BookIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5a2.5 2.5 0 0 0-2.5-2.5H4z" />
-      <path d="M6.5 3A2.5 2.5 0 0 0 4 5.5V21" />
-    </svg>
-  );
-}
-
-function UsersIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
-
-function MessageIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M21 15a3 3 0 0 1-3 3H8l-5 3V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3Z" />
-    </svg>
-  );
-}
-
-function CheckSquareIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="3" y="5" width="18" height="16" rx="2" />
-      <path d="M16 3v4M8 3v4M3 11h18" />
-    </svg>
-  );
-}
-
-function ChartIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M4 19V5" />
-      <path d="M10 19v-8" />
-      <path d="M16 19v-4" />
-      <path d="M22 19V9" />
-    </svg>
-  );
-}
-
-function ChevronDownIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
-}
-
-function ActionIcon({ tone }: { tone: Tone }) {
-  return (
-    <span
-      className={cn(
-        "rounded-2xl p-3",
-        tone === "blue" && "bg-blue-100 text-blue-600",
-        tone === "green" && "bg-emerald-100 text-emerald-600",
-        tone === "amber" && "bg-amber-100 text-amber-600",
-        tone === "rose" && "bg-rose-100 text-rose-600"
-      )}
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     >
-      {tone === "blue" ? <BookIcon /> : tone === "green" ? <CheckSquareIcon /> : tone === "amber" ? <ChartIcon /> : <UsersIcon />}
-    </span>
+      {children}
+    </svg>
   );
 }
 
-export default function DashboardContent({
-  userName,
-  userImage,
-}: DashboardContentProps) {
+const art = [
+  "from-rose-400 via-orange-300 to-amber-100",
+  "from-blue-600 via-sky-400 to-cyan-100",
+  "from-emerald-500 via-teal-300 to-lime-100",
+];
+
+export default function DashboardContent({ userName }: DashboardContentProps) {
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
   const [currentLesson, setCurrentLesson] = useState<string | null>(null);
@@ -179,9 +60,10 @@ export default function DashboardContent({
 
         const enrollmentData = await enrollmentResponse.json();
         const progressData = await progressResponse.json();
-
-        const enrolledCourseSlugs: string[] = enrollmentData.enrolledCourses ?? [];
-        const completedLessonSlugs: string[] = progressData.completedLessons ?? [];
+        const enrolledCourseSlugs: string[] =
+          enrollmentData.enrolledCourses ?? [];
+        const completedLessonSlugs: string[] =
+          progressData.completedLessons ?? [];
 
         setEnrolledCourses(enrolledCourseSlugs);
         setCompletedLessons(completedLessonSlugs);
@@ -193,7 +75,8 @@ export default function DashboardContent({
         const firstIncompleteLesson =
           enrolledCourseObjects
             .flatMap((course) => course.lessonList)
-            .find((lesson) => !completedLessonSlugs.includes(lesson.slug)) ?? null;
+            .find((lesson) => !completedLessonSlugs.includes(lesson.slug)) ??
+          null;
 
         setCurrentLesson(firstIncompleteLesson?.slug ?? null);
       } catch (error) {
@@ -206,536 +89,538 @@ export default function DashboardContent({
     loadDashboardState();
   }, []);
 
-  const enrolledCourseObjects = useMemo(() => {
-    return courses.filter((course) => enrolledCourses.includes(course.slug));
-  }, [enrolledCourses]);
+  const enrolledCourseObjects = useMemo(
+    () => courses.filter((course) => enrolledCourses.includes(course.slug)),
+    [enrolledCourses]
+  );
 
-  const totalLessonsInEnrolledCourses = useMemo(() => {
-    return enrolledCourseObjects.reduce((total, course) => total + course.lessonList.length, 0);
-  }, [enrolledCourseObjects]);
+  const totalLessons = useMemo(
+    () =>
+      enrolledCourseObjects.reduce(
+        (total, course) => total + course.lessonList.length,
+        0
+      ),
+    [enrolledCourseObjects]
+  );
 
-  const completedLessonsInEnrolledCourses = useMemo(() => {
+  const completedCount = useMemo(() => {
     const enrolledLessonSlugs = enrolledCourseObjects.flatMap((course) =>
       course.lessonList.map((lesson) => lesson.slug)
     );
 
-    return completedLessons.filter((lessonSlug) => enrolledLessonSlugs.includes(lessonSlug)).length;
+    return completedLessons.filter((lessonSlug) =>
+      enrolledLessonSlugs.includes(lessonSlug)
+    ).length;
   }, [completedLessons, enrolledCourseObjects]);
 
-  const completedCourses = useMemo(() => {
-    return enrolledCourseObjects.filter((course) =>
-      course.lessonList.every((lesson) => completedLessons.includes(lesson.slug))
-    );
-  }, [enrolledCourseObjects, completedLessons]);
-
   const progressPercentage =
-    totalLessonsInEnrolledCourses > 0
-      ? Math.round((completedLessonsInEnrolledCourses / totalLessonsInEnrolledCourses) * 100)
-      : 0;
+    totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 
   const welcomeName = userName?.split(" ")[0] ?? "Scholar";
-  const initials =
-    userName
-      ?.split(" ")
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() ?? "PL";
+  const streakDays = Math.max(3, Math.min(7, completedCount || 1));
+
+  const continueCourses = (
+    enrolledCourseObjects.length ? enrolledCourseObjects : courses
+  )
+    .slice(0, 2)
+    .map((course) => {
+      const done = course.lessonList.filter((lesson) =>
+        completedLessons.includes(lesson.slug)
+      ).length;
+      const nextLesson =
+        course.lessonList.find(
+          (lesson) => !completedLessons.includes(lesson.slug)
+        ) ?? course.lessonList[course.lessonList.length - 1];
+      const progress = Math.round((done / course.lessonList.length) * 100);
+
+      return { course, done, nextLesson, progress };
+    });
+
+  const gridCourses = (
+    enrolledCourseObjects.length ? enrolledCourseObjects : courses
+  ).slice(0, 3);
+
+  const achievements = [
+    {
+      title: completedCount > 0 ? "Lesson Completed" : "Ready to Begin",
+      desc:
+        completedCount > 0
+          ? `Finished ${completedCount} lesson${completedCount === 1 ? "" : "s"} so far`
+          : "Start your first lesson to unlock milestones",
+      tone: "bg-emerald-100 text-emerald-600",
+      icon: (
+        <Icon>
+          <circle cx="12" cy="12" r="9" />
+          <path d="m9 12 2 2 4-4" />
+        </Icon>
+      ),
+    },
+    {
+      title: "Course Enrolled",
+      desc:
+        enrolledCourseObjects[0]?.title ?? "Choose a course to start learning",
+      tone: "bg-violet-100 text-violet-600",
+      icon: (
+        <Icon>
+          <path d="M8 21h8" />
+          <path d="M12 17v4" />
+          <path d="M7 4h10v4a5 5 0 0 1-10 0z" />
+          <path d="M17 5h2a2 2 0 0 1 2 2c0 2.5-2 4-4 4" />
+          <path d="M7 5H5a2 2 0 0 0-2 2c0 2.5 2 4 4 4" />
+        </Icon>
+      ),
+    },
+    {
+      title: `${streakDays}-Day Streak`,
+      desc: "Maintained your learning rhythm this week",
+      tone: "bg-amber-100 text-amber-600",
+      icon: (
+        <Icon>
+          <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6Z" />
+        </Icon>
+      ),
+    },
+  ];
 
   const stats = [
-    { label: "Courses", value: enrolledCourseObjects.length, detail: `${completedCourses.length} completed`, tone: "blue" as const },
-    { label: "Lessons", value: completedLessonsInEnrolledCourses, detail: `${totalLessonsInEnrolledCourses} total`, tone: "green" as const },
-    { label: "Progress", value: `${progressPercentage}%`, detail: "Learning momentum", tone: "amber" as const },
-    { label: "Study Circle", value: enrolledCourseObjects.length * 24, detail: "Peers in active paths", tone: "rose" as const },
-  ];
-
-  const activities = [
     {
-      title: currentLesson ? `${formatTitle(currentLesson)} is ready` : "Explore a new lesson",
-      context: currentLesson ? "Continue where you left off" : "Your next step is waiting",
-      time: "Just now",
-      tone: "green" as const,
+      label: "Enrolled Courses",
+      value: enrolledCourseObjects.length,
+      detail: `${Math.max(enrolledCourseObjects.length - 1, 0)} in progress`,
+      tone: "bg-violet-100 text-violet-600",
+      icon: (
+        <Icon>
+          <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5a2.5 2.5 0 0 0-2.5-2.5H4z" />
+          <path d="M6.5 3A2.5 2.5 0 0 0 4 5.5V21" />
+        </Icon>
+      ),
     },
     {
-      title: `${completedLessonsInEnrolledCourses} lessons completed`,
-      context: "Updated from live course progress",
-      time: "Today",
-      tone: "blue" as const,
+      label: "Overall Progress",
+      value: `${progressPercentage}%`,
+      detail: "Across active courses",
+      tone: "bg-blue-100 text-blue-600",
+      icon: (
+        <Icon>
+          <circle cx="12" cy="12" r="8" />
+          <circle cx="12" cy="12" r="3" />
+        </Icon>
+      ),
     },
     {
-      title: `${completedCourses.length} full courses finished`,
-      context: "Strong consistency across your roadmap",
-      time: "This week",
-      tone: "amber" as const,
+      label: "Lessons Completed",
+      value: completedCount,
+      detail: `Of ${totalLessons} total`,
+      tone: "bg-emerald-100 text-emerald-600",
+      icon: (
+        <Icon>
+          <circle cx="12" cy="12" r="9" />
+          <path d="m9 12 2 2 4-4" />
+        </Icon>
+      ),
     },
-  ];
-
-  const announcements = [
-    "Weekly review is ready",
-    "Progress insights have been refreshed",
-    "Recommended paths updated for you",
-  ];
-
-  const sidebarItems = [
-    { label: "Dashboard", icon: GridIcon, href: "/dashboard", active: true },
-    { label: "My Courses", icon: BookIcon, href: "/courses", active: false },
-    { label: "Assignments", icon: CheckSquareIcon, href: "/dashboard", active: false },
-    { label: "Messages", icon: MessageIcon, href: "/profile", active: false },
-    { label: "Calendar", icon: CalendarIcon, href: "/dashboard", active: false },
-    { label: "Analytics", icon: ChartIcon, href: "/dashboard", active: false },
+    {
+      label: "Study Time",
+      value: `${Math.max(completedCount, 1) * 32}m`,
+      detail: "Focused learning time",
+      tone: "bg-amber-100 text-amber-600",
+      icon: (
+        <Icon>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </Icon>
+      ),
+    },
   ];
 
   if (isLoading) {
     return (
-      <main className="px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl rounded-[32px] border border-white/70 bg-white/70 p-8 shadow-[0_30px_80px_rgba(15,23,42,0.08)]">
-          <p className="text-sm font-medium text-slate-500">Loading dashboard...</p>
+      <main className="px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl rounded-[32px] border border-white/80 bg-white/80 p-8 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-10">
+          <p className="text-sm font-medium text-slate-500">
+            Loading dashboard...
+          </p>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto grid max-w-7xl gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
-        <aside className="overflow-hidden rounded-[32px] bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.28),_transparent_28%),linear-gradient(180deg,_#112344_0%,_#071221_100%)] p-6 text-white shadow-[0_30px_80px_rgba(15,23,42,0.28)]">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-xl font-semibold text-cyan-300 ring-1 ring-white/15">
-              P
-            </div>
-            <div>
-              <p className="text-2xl font-semibold tracking-tight">Paidevia</p>
-              <p className="text-sm text-sky-200">LMS Workspace</p>
-            </div>
-          </div>
-
-          <div className="mt-8 space-y-2">
-            {sidebarItems.map((item) => {
-              const Icon = item.icon;
-
-              return (
+    <main className="px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl space-y-6 lg:space-y-7">
+        <section className="relative overflow-hidden rounded-[34px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(191,219,254,0.7),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(224,231,255,0.78),_transparent_26%),linear-gradient(180deg,_rgba(255,255,255,0.96)_0%,_rgba(248,250,252,0.94)_100%)] p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
+          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.45fr)_320px] xl:items-center">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-600">
+                Student Dashboard
+              </p>
+              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
+                Welcome back, {welcomeName}
+              </h1>
+              <p className="mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+                Continue your learning journey and keep building momentum in a
+                cleaner, calmer workspace.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
-                  key={item.label}
-                  href={item.href}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition duration-200",
-                    item.active
-                      ? "bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-lg shadow-cyan-500/20"
-                      : "text-slate-200 hover:-translate-y-0.5 hover:bg-white/6 hover:text-white"
-                  )}
+                  href={currentLesson ? `/lesson/${currentLesson}` : "/courses"}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
                 >
-                  <Icon />
-                  {item.label}
+                  <Icon className="h-4 w-4">
+                    <path
+                      d="M8 6.5v11l9-5.5z"
+                      fill="currentColor"
+                      stroke="none"
+                    />
+                  </Icon>
+                  Continue Learning
                 </Link>
-              );
-            })}
-          </div>
-
-          <div className="mt-8 rounded-[28px] border border-emerald-400/20 bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.24),_transparent_35%),linear-gradient(180deg,_rgba(10,22,42,0.96),_rgba(5,14,28,0.92))] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-300">Premium</p>
-            <h2 className="mt-3 text-2xl font-semibold">Upgrade your study flow</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-300">
-              Unlock guided review sessions, richer analytics, and AI support widgets.
-            </p>
-            <button className="mt-6 w-full rounded-2xl bg-gradient-to-r from-amber-300 to-yellow-400 px-4 py-3 font-semibold text-slate-950 transition hover:brightness-105">
-              Upgrade Now
-            </button>
-          </div>
-        </aside>
-
-        <section className="rounded-[32px] border border-white/70 bg-white/70 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur sm:p-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-1 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-              <span className="text-slate-400">
-                <SearchIcon />
-              </span>
-              <input
-                type="text"
-                placeholder="Search courses, lessons, resources..."
-                className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
-              />
-              <button className="rounded-xl bg-slate-100 p-2 text-slate-600 transition hover:bg-slate-200">
-                <SearchIcon />
-              </button>
+                <Link
+                  href="/courses"
+                  className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white/92 px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white"
+                >
+                  Browse Courses
+                </Link>
+              </div>
             </div>
 
-            <div className="flex items-center justify-between gap-3 sm:justify-end">
-              <div className="flex items-center gap-2 text-slate-500">
-                <button className="relative rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md">
-                  <BellIcon />
-                  <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-semibold text-white">
-                    5
-                  </span>
-                </button>
-                <button className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md">
-                  <MessageIcon />
-                </button>
-              </div>
-
-              <div className="flex items-center gap-3 rounded-2xl bg-white px-3 py-2 shadow-sm ring-1 ring-slate-200">
-                {userImage ? (
-                  <img
-                    src={userImage}
-                    alt={userName ?? "User"}
-                    className="h-11 w-11 rounded-2xl object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-pink-500 text-sm font-semibold text-white">
-                    {initials}
-                  </div>
-                )}
-
-                <div className="hidden sm:block">
-                  <p className="text-sm text-slate-500">Hello</p>
-                  <p className="font-semibold text-slate-900">{userName ?? "Paidevia Learner"}</p>
+            <div className="rounded-[28px] border border-white/90 bg-white/82 p-5 shadow-[0_18px_48px_rgba(15,23,42,0.07)] sm:p-6">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">
+                    Learning Streak
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Complete a lesson today to maintain your rhythm.
+                  </p>
                 </div>
-                <span className="text-slate-400">
-                  <ChevronDownIcon />
+                <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                  Active
                 </span>
               </div>
+              <div className="mt-6 flex items-end gap-3">
+                <p className="text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
+                  {streakDays}
+                </p>
+                <p className="pb-1 text-sm text-slate-500">days</p>
+              </div>
+              <div className="mt-6 grid grid-cols-7 gap-2">
+                {["M", "T", "W", "T", "F", "S", "S"].map((day, index) => (
+                  <div key={`${day}-${index}`} className="text-center">
+                    <div
+                      className={cn(
+                        "mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold transition duration-200",
+                        index < streakDays
+                          ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
+                          : "bg-slate-100 text-slate-400 ring-1 ring-slate-200"
+                      )}
+                    >
+                      {day}
+                    </div>
+                    <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.14em] text-slate-400">
+                      {day}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
+        </section>
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_320px]">
-            <div className="space-y-6">
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
-                <section className="relative overflow-hidden rounded-[30px] border border-cyan-100 bg-[radial-gradient(circle_at_left,_rgba(125,211,252,0.35),_transparent_30%),linear-gradient(135deg,_#ecfeff_0%,_#ffffff_60%,_#eff6ff_100%)] p-6">
-                  <div className="absolute -left-3 top-6 h-20 w-20 rounded-full border-8 border-emerald-300/30" />
-                  <div className="relative">
-                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">Welcome Back</p>
-                    <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
-                      {welcomeName}, let&apos;s keep your momentum moving.
-                    </h1>
-                    <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
-                      A polished dashboard shell inspired by your mockup, powered by your real LMS progress.
-                    </p>
-                    <div className="mt-6 flex flex-wrap gap-3">
-                      <Link
-                        href={currentLesson ? `/lesson/${currentLesson}` : "/courses"}
-                        className="rounded-2xl bg-[linear-gradient(135deg,_#1d4ed8_0%,_#0ea5e9_100%)] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:brightness-105"
-                      >
-                        {currentLesson ? "Continue Learning" : "Explore Courses"}
-                      </Link>
-                      <Link
-                        href="/courses"
-                        className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50"
-                      >
-                        View All Courses
-                      </Link>
-                    </div>
-                  </div>
-                </section>
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {stats.map((stat) => (
+            <article
+              key={stat.label}
+              className="rounded-[28px] border border-white/80 bg-white/88 p-5 shadow-[0_14px_38px_rgba(15,23,42,0.05)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(15,23,42,0.08)] sm:p-6"
+            >
+              <span
+                className={cn(
+                  "inline-flex h-12 w-12 items-center justify-center rounded-2xl",
+                  stat.tone
+                )}
+              >
+                {stat.icon}
+              </span>
+              <p className="mt-5 text-sm font-medium text-slate-500">
+                {stat.label}
+              </p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+                {stat.value}
+              </p>
+              <p className="mt-2 text-sm text-slate-500">{stat.detail}</p>
+              {stat.label === "Overall Progress" ? (
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-blue-600 to-sky-400"
+                    style={{ width: `${progressPercentage}%` }}
+                  />
+                </div>
+              ) : null}
+            </article>
+          ))}
+        </section>
 
-                {stats.map((stat) => (
-                  <article key={stat.label} className="rounded-[28px] border border-white/60 bg-white p-5 shadow-sm">
-                    <div className="flex items-start justify-between">
-                      <ActionIcon tone={stat.tone} />
-                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                        Live
-                      </span>
+        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_320px]">
+          <div className="space-y-6">
+            <section className="rounded-[30px] border border-white/80 bg-white/90 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
+                    Continue Learning
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                    Pick up where you left off
+                  </h2>
+                </div>
+                <Link
+                  href="/courses"
+                  className="hidden text-sm font-semibold text-blue-600 transition hover:text-blue-700 sm:inline-flex"
+                >
+                  View All
+                </Link>
+              </div>
+
+              <div className="mt-6 space-y-4">
+                {continueCourses.map(({ course, done, nextLesson, progress }, index) => (
+                  <article
+                    key={course.slug}
+                    className="flex flex-col gap-5 rounded-[28px] border border-slate-200/80 bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md sm:flex-row sm:items-center sm:p-5"
+                  >
+                    <div
+                      className={cn(
+                        "relative h-24 w-full shrink-0 overflow-hidden rounded-[24px] bg-gradient-to-br sm:w-28",
+                        art[index % art.length]
+                      )}
+                    >
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.45),transparent_24%),radial-gradient(circle_at_80%_30%,rgba(255,255,255,0.34),transparent_18%)]" />
+                      <div className="absolute left-3 top-3 rounded-full bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                        {course.level}
+                      </div>
                     </div>
-                    <p className="mt-5 text-sm font-medium text-slate-500">{stat.label}</p>
-                    <p className="mt-2 text-4xl font-semibold tracking-tight text-slate-950">{stat.value}</p>
-                    <p className="mt-2 text-sm text-slate-500">{stat.detail}</p>
+
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-xl font-semibold tracking-tight text-slate-950 sm:text-2xl">
+                        {course.title}
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Lesson {Math.min(done + 1, course.lessonList.length)} of{" "}
+                        {course.lessonList.length} · {nextLesson.title}
+                      </p>
+                      <div className="mt-4 flex items-center gap-3">
+                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-blue-600 to-sky-400"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-semibold text-slate-500">
+                          {progress}%
+                        </span>
+                      </div>
+                    </div>
+
+                    <Link
+                      href={
+                        progress < 100
+                          ? `/lesson/${nextLesson.slug}`
+                          : `/courses/${course.slug}`
+                      }
+                      className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-800 transition duration-200 hover:-translate-y-0.5 hover:bg-white sm:w-auto"
+                    >
+                      Continue Lesson
+                    </Link>
                   </article>
                 ))}
               </div>
 
-              <section className="rounded-[30px] bg-white p-6 shadow-sm ring-1 ring-slate-200/70">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">My Courses</p>
-                    <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Current learning paths</h2>
-                  </div>
-                  <Link href="/courses" className="text-sm font-semibold text-blue-600 transition hover:text-blue-700">
-                    View All
-                  </Link>
+              <Link
+                href="/courses"
+                className="mt-5 inline-flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-white sm:hidden"
+              >
+                View All My Courses
+              </Link>
+            </section>
+
+            <section className="rounded-[30px] border border-white/80 bg-white/90 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
+                    Course Grid
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                    Recommended for your path
+                  </h2>
                 </div>
-
-                {enrolledCourseObjects.length === 0 ? (
-                  <div className="mt-6 rounded-[24px] border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-                    <p className="text-lg font-semibold text-slate-900">No enrolled courses yet</p>
-                    <p className="mt-2 text-sm text-slate-500">Enroll in a course to unlock the full dashboard experience.</p>
-                    <Link
-                      href="/courses"
-                      className="mt-5 inline-flex rounded-2xl bg-[linear-gradient(135deg,_#1d4ed8_0%,_#0ea5e9_100%)] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:brightness-105"
-                    >
-                      Explore Courses
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="mt-6 grid gap-4 md:grid-cols-2">
-                    {enrolledCourseObjects.map((course, index) => {
-                      const courseCompletedCount = course.lessonList.filter((lesson) =>
-                        completedLessons.includes(lesson.slug)
-                      ).length;
-                      const courseProgress = Math.round(
-                        (courseCompletedCount / course.lessonList.length) * 100
-                      );
-
-                      return (
-                        <article
-                          key={course.slug}
-                          className="overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
-                        >
-                          <div className={cn("relative h-32 bg-gradient-to-br", courseArtwork[index % courseArtwork.length])}>
-                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.24),_transparent_30%)]" />
-                            <div className="absolute inset-x-5 bottom-4 flex items-center justify-between text-white">
-                              <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur">
-                                {course.level}
-                              </span>
-                              <span className="rounded-full bg-emerald-400 px-2 py-1 text-[11px] font-semibold text-emerald-950">
-                                {course.lessons} lessons
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="p-5">
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <h3 className="text-xl font-semibold text-slate-950">{course.title}</h3>
-                                <p className="mt-2 text-sm leading-6 text-slate-500">{course.description}</p>
-                              </div>
-                              <span className="mt-1 h-3 w-3 rounded-full bg-emerald-500" />
-                            </div>
-
-                            <div className="mt-5 flex items-center justify-between text-sm text-slate-500">
-                              <span>{courseCompletedCount} completed</span>
-                              <span>{courseProgress}% progress</span>
-                            </div>
-
-                            <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
-                              <div
-                                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500"
-                                style={{ width: `${courseProgress}%` }}
-                              />
-                            </div>
-
-                            <div className="mt-5 flex items-center justify-between">
-                              <p className="text-sm font-medium text-slate-500">{course.lessonList.length * 6} learners in this path</p>
-                              <Link
-                                href={`/courses/${course.slug}`}
-                                className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
-                              >
-                                Open
-                              </Link>
-                            </div>
-                          </div>
-                        </article>
-                      );
-                    })}
-                  </div>
-                )}
-              </section>
-
-              <div className="grid gap-6 2xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-                <section className="rounded-[30px] bg-white p-6 shadow-sm ring-1 ring-slate-200/70">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-600">Student Progress</p>
-                      <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Learning momentum</h2>
-                    </div>
-                    <button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-600 transition duration-200 hover:bg-white">
-                      This Semester
-                      <ChevronDownIcon />
-                    </button>
-                  </div>
-
-                  <div className="mt-5 flex flex-wrap gap-5 text-sm text-slate-500">
-                    <span className="flex items-center gap-2">
-                      <span className="h-2.5 w-6 rounded-full bg-emerald-500" />
-                      Completed
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <span className="h-2.5 w-6 rounded-full bg-blue-500" />
-                      In Progress
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <span className="h-2.5 w-6 rounded-full bg-rose-500" />
-                      Not Started
-                    </span>
-                  </div>
-
-                  <div className="mt-6 overflow-x-auto">
-                    <div className="min-w-[380px]">
-                      <svg viewBox="0 0 320 190" className="h-[240px] w-full">
-                        {[0, 1, 2, 3, 4].map((line) => (
-                          <line
-                            key={line}
-                            x1="20"
-                            y1={30 + line * 30}
-                            x2="300"
-                            y2={30 + line * 30}
-                            stroke="#e2e8f0"
-                            strokeDasharray="4 6"
-                          />
-                        ))}
-                        {chartMonths.map((_, index) => (
-                          <line
-                            key={index}
-                            x1={24 + index * 56}
-                            y1="20"
-                            x2={24 + index * 56}
-                            y2="160"
-                            stroke="#f1f5f9"
-                          />
-                        ))}
-                        <polyline points={buildPolyline(progressSeries.completed)} fill="none" stroke="#22c55e" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
-                        <polyline points={buildPolyline(progressSeries.inProgress)} fill="none" stroke="#3b82f6" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
-                        <polyline points={buildPolyline(progressSeries.notStarted)} fill="none" stroke="#f43f5e" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
-                        {chartMonths.map((month, index) => (
-                          <text key={month} x={24 + index * 56} y="182" textAnchor="middle" fontSize="11" fill="#64748b">
-                            {month}
-                          </text>
-                        ))}
-                      </svg>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="rounded-[30px] bg-white p-6 shadow-sm ring-1 ring-slate-200/70">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Recent Activity</p>
-                      <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">What changed</h2>
-                    </div>
-                    <button className="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-medium text-slate-500 transition duration-200 hover:bg-slate-200">More</button>
-                  </div>
-
-                  <div className="mt-6 space-y-4">
-                    {activities.map((activity) => (
-                      <article key={activity.title} className="flex items-start gap-4 rounded-2xl border border-slate-200 p-4 transition hover:bg-slate-50">
-                        <ActionIcon tone={activity.tone} />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                              <h3 className="font-semibold text-slate-900">{activity.title}</h3>
-                              <p className="mt-1 text-sm text-slate-500">{activity.context}</p>
-                            </div>
-                            <span className="text-sm text-slate-400">{activity.time}</span>
-                          </div>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                </section>
+                <Link
+                  href="/courses"
+                  className="text-sm font-semibold text-blue-600 transition hover:text-blue-700"
+                >
+                  Browse All
+                </Link>
               </div>
-            </div>
 
-            <aside className="space-y-6">
-              <section className="overflow-hidden rounded-[30px] border border-cyan-100 bg-[radial-gradient(circle_at_top_left,_rgba(191,219,254,0.9),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(253,224,71,0.35),_transparent_24%),linear-gradient(135deg,_#ffffff_0%,_#f8fbff_100%)] p-6 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-3xl font-semibold tracking-tight text-slate-950">Quick Actions</h2>
-                  <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                    Daily
-                  </span>
-                </div>
+              <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                {gridCourses.map((course, index) => {
+                  const done = course.lessonList.filter((lesson) =>
+                    completedLessons.includes(lesson.slug)
+                  ).length;
+                  const progress = Math.round(
+                    (done / course.lessonList.length) * 100
+                  );
+                  const enrolled = enrolledCourses.includes(course.slug);
 
-                <div className="mt-5 space-y-3">
-                  {[
-                    { label: currentLesson ? "Resume Lesson" : "Browse Courses", href: currentLesson ? `/lesson/${currentLesson}` : "/courses", primary: true, icon: BookIcon },
-                    { label: "My Courses", href: "/courses", primary: false, icon: GridIcon },
-                    { label: "Assignments", href: "/dashboard", primary: false, icon: CheckSquareIcon },
-                    { label: "Learning Resources", href: "/courses", primary: false, icon: MessageIcon },
-                  ].map((action) => {
-                    const Icon = action.icon;
-
-                    return (
-                      <Link
-                        key={action.label}
-                        href={action.href}
+                  return (
+                    <article
+                      key={course.slug}
+                      className="overflow-hidden rounded-[30px] border border-slate-200/80 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md"
+                    >
+                      <div
                         className={cn(
-                          "flex items-center justify-between rounded-2xl px-4 py-4 text-sm font-semibold transition",
-                          action.primary
-                            ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-500/20"
-                            : "bg-white text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50"
+                          "relative h-32 bg-gradient-to-br",
+                          art[index % art.length]
                         )}
                       >
-                        <span className="flex items-center gap-3">
-                          <span className={cn("rounded-2xl p-2", action.primary ? "bg-white/15" : "bg-slate-100")}>
-                            <Icon />
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(255,255,255,0.48),transparent_22%),radial-gradient(circle_at_80%_78%,rgba(255,255,255,0.24),transparent_22%)]" />
+                        <div className="absolute left-4 top-4 rounded-full bg-white/88 px-3 py-1 text-xs font-semibold text-slate-700">
+                          {course.level}
+                        </div>
+                      </div>
+
+                      <div className="p-5">
+                        <h3 className="min-h-[3.5rem] text-2xl font-semibold tracking-tight text-slate-950">
+                          {course.title}
+                        </h3>
+                        <p className="mt-3 min-h-[4.5rem] text-sm leading-6 text-slate-500">
+                          {course.description}
+                        </p>
+                        <div className="mt-5 flex items-center justify-between text-sm text-slate-500">
+                          <span>Progress</span>
+                          <span className="font-semibold text-slate-700">
+                            {progress}%
                           </span>
-                          {action.label}
-                        </span>
-                        <span className="text-lg">+</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </section>
-
-              <section className="rounded-[30px] bg-white p-6 shadow-sm ring-1 ring-slate-200/70">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Announcements</h2>
-                  <button className="text-sm font-semibold text-blue-600 transition hover:text-blue-700">View All</button>
-                </div>
-
-                <div className="mt-5 space-y-3">
-                  {announcements.map((announcement, index) => (
-                    <article key={announcement} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                      <div className="flex items-start gap-3">
-                        <span
+                        </div>
+                        <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-blue-600 to-sky-400"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                        <Link
+                          href={`/courses/${course.slug}`}
                           className={cn(
-                            "mt-1 h-10 w-1 rounded-full",
-                            index === 0 && "bg-amber-400",
-                            index === 1 && "bg-rose-400",
-                            index === 2 && "bg-blue-400"
+                            "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition duration-200",
+                            enrolled
+                              ? "bg-blue-600 text-white hover:-translate-y-0.5 hover:bg-blue-700"
+                              : "border border-slate-300 bg-white text-slate-700 hover:-translate-y-0.5 hover:bg-slate-50"
                           )}
-                        />
-                        <div>
-                          <h3 className="font-semibold text-slate-900">{announcement}</h3>
-                          <p className="mt-1 text-sm text-slate-500">Fresh updates tailored to your learning workflow.</p>
-                        </div>
+                        >
+                          {enrolled ? "Continue Learning" : "Start Course"}
+                        </Link>
                       </div>
                     </article>
-                  ))}
-                </div>
-              </section>
-
-              <section className="rounded-[30px] bg-white p-6 shadow-sm ring-1 ring-slate-200/70">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Upcoming</h2>
-                  <button className="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-medium text-slate-500 transition duration-200 hover:bg-slate-200">...</button>
-                </div>
-
-                <div className="mt-5 space-y-3">
-                  {[
-                    {
-                      title: "Deep Work Session",
-                      subtitle: currentLesson ? `Continue ${formatTitle(currentLesson)}` : "Review your next course",
-                      cta: currentLesson ? "Join" : "Open",
-                    },
-                    { title: "Course Review", subtitle: `${progressPercentage}% overall progress` },
-                    { title: "Study Planning", subtitle: `${enrolledCourseObjects.length} active courses to manage` },
-                  ].map((event) => (
-                    <article key={event.title} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3">
-                          <span className="rounded-2xl bg-orange-100 p-3 text-orange-600">
-                            <CalendarIcon />
-                          </span>
-                          <div>
-                            <h3 className="font-semibold text-slate-900">{event.title}</h3>
-                            <p className="mt-1 text-sm text-slate-500">{event.subtitle}</p>
-                          </div>
-                        </div>
-
-                        {event.cta ? (
-                          <Link
-                            href={currentLesson ? `/lesson/${currentLesson}` : "/courses"}
-                            className="rounded-2xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-                          >
-                            {event.cta}
-                          </Link>
-                        ) : null}
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            </aside>
+                  );
+                })}
+              </div>
+            </section>
           </div>
+
+          <aside className="space-y-6">
+            <section className="rounded-[30px] border border-white/80 bg-white/90 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
+                Achievements
+              </p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                Recent milestones
+              </h2>
+              <div className="mt-6 space-y-5">
+                {achievements.map((achievement) => (
+                  <article
+                    key={achievement.title}
+                    className="flex gap-4 rounded-[24px] border border-slate-200/80 bg-slate-50/70 p-4 transition duration-200 hover:bg-white"
+                  >
+                    <span
+                      className={cn(
+                        "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl",
+                        achievement.tone
+                      )}
+                    >
+                      {achievement.icon}
+                    </span>
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-semibold tracking-tight text-slate-950 sm:text-xl">
+                        {achievement.title}
+                      </h3>
+                      <p className="mt-1 text-sm leading-6 text-slate-500">
+                        {achievement.desc}
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+              <Link
+                href="/profile"
+                className="mt-6 inline-flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-white"
+              >
+                View All Achievements
+              </Link>
+            </section>
+
+            <section className="rounded-[30px] border border-white/80 bg-white/90 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
+                Quick Actions
+              </p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                Jump back in
+              </h2>
+              <div className="mt-6 space-y-3">
+                {[
+                  {
+                    label: currentLesson
+                      ? "Continue Lesson"
+                      : "Browse All Courses",
+                    href: currentLesson ? `/lesson/${currentLesson}` : "/courses",
+                    note: "Resume from where you paused",
+                    primary: true,
+                  },
+                  {
+                    label: "View Certificates",
+                    href: "/profile",
+                    note: "Track your milestones",
+                    primary: false,
+                  },
+                  {
+                    label: "Open Profile",
+                    href: "/profile",
+                    note: "Manage your learning identity",
+                    primary: false,
+                  },
+                ].map((action) => (
+                  <Link
+                    key={action.label}
+                    href={action.href}
+                    className={cn(
+                      "block rounded-2xl px-4 py-4 transition duration-200",
+                      action.primary
+                        ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 hover:bg-blue-700"
+                        : "border border-slate-200 bg-white text-slate-800 hover:-translate-y-0.5 hover:bg-slate-50"
+                    )}
+                  >
+                    <span className="block text-sm font-semibold">
+                      {action.label}
+                    </span>
+                    <span
+                      className={cn(
+                        "mt-1 block text-xs",
+                        action.primary ? "text-blue-100" : "text-slate-500"
+                      )}
+                    >
+                      {action.note}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          </aside>
         </section>
       </div>
     </main>
