@@ -5,6 +5,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  // Persist users and database-backed sessions in PostgreSQL through Prisma.
   adapter: PrismaAdapter(prisma),
   providers: [
     GitHub({
@@ -20,6 +21,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/login",
   },
   session: {
+    // The LMS uses server-side role checks, so sessions stay in the database.
     strategy: "database",
   },
 });

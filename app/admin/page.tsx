@@ -1,15 +1,17 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import Link from "next/link";
 
 function StatCard({
   label,
   value,
+  detail,
   tone,
 }: {
   label: string;
   value: number;
+  detail: string;
   tone: "red" | "blue" | "amber" | "green";
 }) {
   const toneClassName =
@@ -21,15 +23,32 @@ function StatCard({
       ? "bg-amber-100 text-amber-600"
       : "bg-emerald-100 text-emerald-600";
 
+  const progressToneClassName =
+    tone === "red"
+      ? "from-red-500 to-rose-400"
+      : tone === "blue"
+      ? "from-blue-600 to-sky-400"
+      : tone === "amber"
+      ? "from-amber-500 to-orange-400"
+      : "from-emerald-500 to-teal-400";
+
   return (
-    <article className="rounded-[28px] border border-white/70 bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)] backdrop-blur">
-      <div className={`inline-flex rounded-2xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] ${toneClassName}`}>
+    <article className="rounded-[28px] border border-white/80 bg-white/88 p-5 shadow-[0_14px_38px_rgba(15,23,42,0.05)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(15,23,42,0.08)] sm:p-6">
+      <span
+        className={`inline-flex rounded-2xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] ${toneClassName}`}
+      >
         Live
-      </div>
+      </span>
       <p className="mt-5 text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-4xl font-semibold tracking-tight text-slate-950">
+      <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
         {value}
       </p>
+      <p className="mt-2 text-sm text-slate-500">{detail}</p>
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+        <div
+          className={`h-full w-2/3 rounded-full bg-gradient-to-r ${progressToneClassName}`}
+        />
+      </div>
     </article>
   );
 }
@@ -51,6 +70,7 @@ export default async function AdminPage() {
     redirect("/login");
   }
 
+  // Keep the admin area protected at the page boundary before loading stats.
   if (user.role !== "admin") {
     redirect("/dashboard");
   }
@@ -65,143 +85,176 @@ export default async function AdminPage() {
   });
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <section className="overflow-hidden rounded-[36px] border border-white/70 bg-white/72 p-6 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8">
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_340px]">
-          <div className="space-y-6">
-            <div className="relative overflow-hidden rounded-[32px] border border-red-100 bg-[radial-gradient(circle_at_left,_rgba(252,165,165,0.24),_transparent_26%),linear-gradient(135deg,_#fff7f7_0%,_#ffffff_60%,_#eff6ff_100%)] p-8">
-              <div className="absolute -left-4 top-7 h-24 w-24 rounded-full border-[10px] border-red-200/40" />
-              <div className="relative">
-                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-red-600">
-                  Admin Area
-                </p>
-                <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
-                  Platform command center
-                </h1>
-                <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-                  Monitor the health of Paidevia, manage people and courses,
-                  and keep the LMS running with a cleaner dashboard experience
-                  that matches the new shared shell.
-                </p>
+    <main className="px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl space-y-6 lg:space-y-7">
+        <section className="relative overflow-hidden rounded-[36px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(252,165,165,0.2),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(224,231,255,0.72),_transparent_24%),linear-gradient(180deg,_rgba(255,255,255,0.96)_0%,_rgba(248,250,252,0.94)_100%)] p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
+          <div className="absolute -left-10 top-0 h-40 w-40 rounded-full bg-red-200/30 blur-3xl" />
+          <div className="absolute bottom-0 right-0 h-48 w-48 rounded-full bg-blue-200/25 blur-3xl" />
 
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link
-                    href="/admin/users"
-                    className="rounded-2xl bg-[linear-gradient(135deg,_#1d4ed8_0%,_#0ea5e9_100%)] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:brightness-105"
-                  >
-                    Manage Users
-                  </Link>
-                  <Link
-                    href="/admin/courses"
-                    className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50"
-                  >
-                    Manage Courses
-                  </Link>
-                </div>
+          <div className="relative grid gap-8 xl:grid-cols-[minmax(0,1.35fr)_340px] xl:items-center">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-red-600">
+                Admin Area
+              </p>
+              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
+                Platform command center
+              </h1>
+              <p className="mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+                Monitor the health of Paidevia, review learning activity, and
+                manage users and courses from a cleaner, more structured admin
+                workspace.
+              </p>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/admin/users"
+                  className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
+                >
+                  Manage Users
+                </Link>
+                <Link
+                  href="/admin/courses"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white/92 px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white"
+                >
+                  Manage Courses
+                </Link>
               </div>
             </div>
 
-            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <StatCard label="Users" value={totalUsers} tone="red" />
-              <StatCard label="Courses" value={totalCourses} tone="blue" />
-              <StatCard label="Enrollments" value={totalEnrollments} tone="amber" />
-              <StatCard
-                label="Completed Lessons"
-                value={totalCompletedLessons}
-                tone="green"
-              />
-            </section>
-
-            <section className="grid gap-6 lg:grid-cols-2">
-              <Link
-                href="/admin/users"
-                className="group rounded-[30px] border border-white/70 bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(15,23,42,0.12)]"
-              >
-                <div className="inline-flex rounded-2xl bg-red-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-red-600">
-                  Access
-                </div>
-                <h2 className="mt-5 text-2xl font-semibold tracking-tight text-slate-950">
-                  Manage Users
-                </h2>
-                <p className="mt-3 text-sm leading-6 text-slate-600">
-                  Review registered users, update roles, and control who has
-                  elevated access across the platform.
-                </p>
-                <p className="mt-6 text-sm font-semibold text-red-600 transition group-hover:translate-x-1">
-                  Open user management
-                </p>
-              </Link>
-
-              <Link
-                href="/admin/courses"
-                className="group rounded-[30px] border border-white/70 bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(15,23,42,0.12)]"
-              >
-                <div className="inline-flex rounded-2xl bg-blue-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
-                  Control
-                </div>
-                <h2 className="mt-5 text-2xl font-semibold tracking-tight text-slate-950">
-                  Manage Courses
-                </h2>
-                <p className="mt-3 text-sm leading-6 text-slate-600">
-                  Review course visibility, track enrollment activity, and
-                  moderate which learning paths are live.
-                </p>
-                <p className="mt-6 text-sm font-semibold text-blue-600 transition group-hover:translate-x-1">
-                  Open course management
-                </p>
-              </Link>
-            </section>
-          </div>
-
-          <aside className="space-y-6">
-            <section className="rounded-[30px] border border-red-100 bg-[radial-gradient(circle_at_top_right,_rgba(252,165,165,0.3),_transparent_30%),linear-gradient(135deg,_#ffffff_0%,_#fff7f7_100%)] p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-red-600">
-                Admin Notes
+            <aside className="rounded-[30px] border border-white/90 bg-white/82 p-5 shadow-[0_18px_48px_rgba(15,23,42,0.07)] sm:p-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+                Admin Snapshot
               </p>
-              <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
-                Keep operations steady
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                The admin area is now visually aligned with the new platform
-                shell. Next we can keep extending this same system into the rest
-                of the LMS surfaces.
-              </p>
-            </section>
-
-            <section className="rounded-[30px] border border-white/70 bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
-                  Snapshot
-                </h2>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  Today
-                </span>
-              </div>
-
               <div className="mt-5 space-y-4">
-                <div className="rounded-2xl bg-slate-50 px-4 py-4">
+                <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
                   <p className="text-sm font-medium text-slate-500">User growth</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-950">
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
                     {totalUsers} accounts tracked
                   </p>
                 </div>
-                <div className="rounded-2xl bg-slate-50 px-4 py-4">
-                  <p className="text-sm font-medium text-slate-500">Course inventory</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-950">
-                    {totalCourses} courses visible to admins
+                <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
+                  <p className="text-sm font-medium text-slate-500">
+                    Course inventory
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                    {totalCourses} courses visible
                   </p>
                 </div>
-                <div className="rounded-2xl bg-slate-50 px-4 py-4">
-                  <p className="text-sm font-medium text-slate-500">Learning activity</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-950">
+                <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
+                  <p className="text-sm font-medium text-slate-500">
+                    Learning activity
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
                     {totalCompletedLessons} lessons completed
                   </p>
                 </div>
               </div>
-            </section>
+            </aside>
+          </div>
+        </section>
+
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <StatCard
+            label="Users"
+            value={totalUsers}
+            detail="Active accounts in the platform"
+            tone="red"
+          />
+          <StatCard
+            label="Courses"
+            value={totalCourses}
+            detail="Courses currently available to admins"
+            tone="blue"
+          />
+          <StatCard
+            label="Enrollments"
+            value={totalEnrollments}
+            detail="Total course enrollments recorded"
+            tone="amber"
+          />
+          <StatCard
+            label="Completed Lessons"
+            value={totalCompletedLessons}
+            detail="Finished lesson records in the LMS"
+            tone="green"
+          />
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+          <section className="grid gap-6 md:grid-cols-2">
+            <Link
+              href="/admin/users"
+              className="group rounded-[30px] border border-white/80 bg-white/92 p-6 shadow-[0_18px_52px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(15,23,42,0.1)]"
+            >
+              <div className="inline-flex rounded-2xl bg-red-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-red-600">
+                Access
+              </div>
+              <h2 className="mt-5 text-2xl font-semibold tracking-tight text-slate-950">
+                Manage Users
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                Review registered users, update roles, and control who has
+                elevated access across the platform.
+              </p>
+              <p className="mt-6 text-sm font-semibold text-red-600 transition group-hover:translate-x-1">
+                Open user management
+              </p>
+            </Link>
+
+            <Link
+              href="/admin/courses"
+              className="group rounded-[30px] border border-white/80 bg-white/92 p-6 shadow-[0_18px_52px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(15,23,42,0.1)]"
+            >
+              <div className="inline-flex rounded-2xl bg-blue-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
+                Control
+              </div>
+              <h2 className="mt-5 text-2xl font-semibold tracking-tight text-slate-950">
+                Manage Courses
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                Review course visibility, moderate learning paths, and track how
+                the course inventory is evolving.
+              </p>
+              <p className="mt-6 text-sm font-semibold text-blue-600 transition group-hover:translate-x-1">
+                Open course management
+              </p>
+            </Link>
+          </section>
+
+          <aside className="rounded-[32px] border border-white/80 bg-white/92 p-6 shadow-[0_18px_52px_rgba(15,23,42,0.06)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-red-600">
+              Operations
+            </p>
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+              Keep the platform steady
+            </h2>
+            <p className="mt-4 text-sm leading-7 text-slate-600">
+              This admin workspace is designed to give you a clean overview of
+              user growth, course inventory, and learning momentum before you
+              move into deeper management tasks.
+            </p>
+
+            <div className="mt-6 space-y-4">
+              <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
+                <p className="text-sm font-medium text-slate-500">
+                  Role control
+                </p>
+                <p className="mt-2 text-lg font-semibold tracking-tight text-slate-950">
+                  Protect access with server-side admin checks
+                </p>
+              </div>
+              <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
+                <p className="text-sm font-medium text-slate-500">
+                  Course moderation
+                </p>
+                <p className="mt-2 text-lg font-semibold tracking-tight text-slate-950">
+                  Manage published, draft, and archived states
+                </p>
+              </div>
+            </div>
           </aside>
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
   );
 }

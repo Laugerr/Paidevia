@@ -327,37 +327,54 @@ export default function DashboardContent({ userName }: DashboardContentProps) {
           </div>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {stats.map((stat) => (
-            <article
-              key={stat.label}
-              className="rounded-[28px] border border-white/80 bg-white/88 p-5 shadow-[0_14px_38px_rgba(15,23,42,0.05)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(15,23,42,0.08)] sm:p-6"
-            >
-              <span
-                className={cn(
-                  "inline-flex h-12 w-12 items-center justify-center rounded-2xl",
-                  stat.tone
-                )}
+        <section className="rounded-[30px] border border-white/80 bg-white/90 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
+                Learning Overview
+              </p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                Your current learning snapshot
+              </h2>
+            </div>
+            <p className="max-w-xl text-sm leading-6 text-slate-500">
+              A single place for your core learning metrics today, with room for
+              richer activity signals in future updates.
+            </p>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {stats.map((stat) => (
+              <article
+                key={stat.label}
+                className="rounded-[28px] border border-white/80 bg-white/88 p-5 shadow-[0_14px_38px_rgba(15,23,42,0.05)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(15,23,42,0.08)] sm:p-6"
               >
-                {stat.icon}
-              </span>
-              <p className="mt-5 text-sm font-medium text-slate-500">
-                {stat.label}
-              </p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-                {stat.value}
-              </p>
-              <p className="mt-2 text-sm text-slate-500">{stat.detail}</p>
-              {stat.label === "Overall Progress" ? (
-                <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-blue-600 to-sky-400"
-                    style={{ width: `${progressPercentage}%` }}
-                  />
-                </div>
-              ) : null}
-            </article>
-          ))}
+                <span
+                  className={cn(
+                    "inline-flex h-12 w-12 items-center justify-center rounded-2xl",
+                    stat.tone
+                  )}
+                >
+                  {stat.icon}
+                </span>
+                <p className="mt-5 text-sm font-medium text-slate-500">
+                  {stat.label}
+                </p>
+                <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+                  {stat.value}
+                </p>
+                <p className="mt-2 text-sm text-slate-500">{stat.detail}</p>
+                {stat.label === "Overall Progress" ? (
+                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-blue-600 to-sky-400"
+                      style={{ width: `${progressPercentage}%` }}
+                    />
+                  </div>
+                ) : null}
+              </article>
+            ))}
+          </div>
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_320px]">

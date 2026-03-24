@@ -20,6 +20,7 @@ export async function GET() {
     return NextResponse.json({ completedLessons: [] });
   }
 
+  // This powers the dashboard, course pages, and lesson player progress UI.
   const completedLessons = await getUserCompletedLessonSlugs(user.id);
 
   return NextResponse.json({ completedLessons });
@@ -56,6 +57,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Course not found" }, { status: 404 });
   }
 
+  // Progress is stored per user and lesson so resume flows stay consistent.
   await markLessonCompleted(user.id, course.id, lessonSlug);
 
   return NextResponse.json({ success: true });

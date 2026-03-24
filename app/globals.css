@@ -67,3 +67,100 @@ select {
   background: #bfdbfe;
   color: #0f172a;
 }
+
+@keyframes heroIconLift {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.78);
+  }
+  14% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(-110px) scale(1.03);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-190px) scale(0.92);
+  }
+}
+
+.hero-icon-lift {
+  animation: heroIconLift 6.8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes heroIconLiftLeft {
+  0% {
+    opacity: 0;
+    transform: translate(0, 16px) scale(0.78);
+  }
+  14% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  62% {
+    opacity: 1;
+    transform: translate(-72px, -110px) scale(1.03);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-116px, -194px) scale(0.92);
+  }
+}
+
+.hero-icon-lift-left {
+  animation: heroIconLiftLeft 6.8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes heroIconLiftRight {
+  0% {
+    opacity: 0;
+    transform: translate(0, 16px) scale(0.78);
+  }
+  14% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  62% {
+    opacity: 1;
+    transform: translate(72px, -110px) scale(1.03);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(116px, -194px) scale(0.92);
+  }
+}
+
+.hero-icon-lift-right {
+  animation: heroIconLiftRight 6.8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes heroWaveDrift {
+  0% {
+    transform: translate3d(-4%, 0, 0) scaleX(1);
+    opacity: 0.34;
+  }
+  50% {
+    transform: translate3d(4%, -10px, 0) scaleX(1.04);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate3d(-4%, 0, 0) scaleX(1);
+    opacity: 0.34;
+  }
+}
+
+.hero-wave {
+  animation: heroWaveDrift 8.5s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.hero-wave-delayed {
+  animation: heroWaveDrift 11s ease-in-out infinite reverse;
+  will-change: transform, opacity;
+}
