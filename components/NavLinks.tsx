@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { canAccessInstructorArea } from "@/lib/roles";
 
 const links = [
   { href: "/home", label: "Home" },
@@ -16,7 +17,7 @@ type NavLinksProps = {
 export default function NavLinks({ userRole }: NavLinksProps) {
   const pathname = usePathname();
   const visibleLinks =
-    userRole === "instructor"
+    canAccessInstructorArea(userRole)
       ? [...links, { href: "/instructor", label: "Instructor" }]
       : links;
 

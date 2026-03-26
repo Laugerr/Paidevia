@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { USER_ROLES, type UserRole } from "@/lib/roles";
+import {
+  USER_ROLES,
+  USER_ROLE_LABELS,
+  isAdminRole,
+  type UserRole,
+} from "@/lib/roles";
 
 type AdminUser = {
   id: string;
@@ -64,9 +69,11 @@ export default function AdminUsersTable({
 }: Props) {
   const [users, setUsers] = useState(initialUsers);
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleRoleChange = async (userId: string, role: UserRole) => {
     try {
+      setErrorMessage(null);
       setLoadingUserId(userId);
 
       const response = await fetch("/api/admin/users/role", {
@@ -91,7 +98,9 @@ export default function AdminUsersTable({
       );
     } catch (error) {
       console.error("Failed to update role:", error);
-      alert("Failed to update role");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Failed to update role"
+      );
     } finally {
       setLoadingUserId(null);
     }
@@ -204,6 +213,11 @@ export default function AdminUsersTable({
                   {users.length} total accounts
                 </span>
               </div>
+              {errorMessage ? (
+                <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                  {errorMessage}
+                </div>
+              ) : null}
             </div>
 
             <div className="overflow-x-auto">
@@ -238,10 +252,10 @@ export default function AdminUsersTable({
 
                     const isCurrentUser = user.id === currentUserId;
                     const isLoading = loadingUserId === user.id;
-                    const canChangeRole = !(isCurrentUser && user.role === "admin");
+                    const canChangeRole = !(isCurrentUser && isAdminRole(user.role));
 
                     const roleBadgeClassName =
-                      user.role === "admin"
+                      isAdminRole(user.role)
                         ? "bg-red-100 text-red-700"
                         : user.role === "instructor"
                         ? "bg-amber-100 text-amber-700"
@@ -293,7 +307,7 @@ export default function AdminUsersTable({
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${roleBadgeClassName}`}
                         >
-                          {user.role}
+                          {USER_ROLE_LABELS[user.role]}
                         </span>
                       </td>
 
@@ -316,12 +330,11 @@ export default function AdminUsersTable({
                           >
                             {USER_ROLES.map((roleOption) => (
                               <option key={roleOption} value={roleOption}>
-                                {roleOption[0].toUpperCase()}
-                                {roleOption.slice(1)}
+                                {USER_ROLE_LABELS[roleOption]}
                               </option>
                             ))}
                           </select>
-                          {isCurrentUser && user.role === "admin" ? (
+                          {isCurrentUser && isAdminRole(user.role) ? (
                             <p className="text-xs text-slate-400">
                               Your admin role is protected.
                             </p>

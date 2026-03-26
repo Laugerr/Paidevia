@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { isAdminRole } from "@/lib/roles";
 
 function StatCard({
   label,
@@ -71,7 +72,7 @@ export default async function AdminPage() {
   }
 
   // Keep the admin area protected at the page boundary before loading stats.
-  if (user.role !== "admin") {
+  if (!isAdminRole(user.role)) {
     redirect("/dashboard");
   }
 

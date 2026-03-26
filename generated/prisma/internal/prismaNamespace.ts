@@ -1026,6 +1026,7 @@ export const CourseScalarFieldEnum = {
   level: 'level',
   lessons: 'lessons',
   status: 'status',
+  instructorId: 'instructorId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

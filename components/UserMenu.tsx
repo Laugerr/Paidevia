@@ -4,6 +4,12 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import {
+  USER_ROLE_LABELS,
+  canAccessInstructorArea,
+  isAdminRole,
+  isUserRole,
+} from "@/lib/roles";
 
 type UserMenuProps = {
   session: any;
@@ -16,8 +22,8 @@ export default function UserMenu({
 }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const isAdmin = userRole === "admin";
-  const isInstructor = userRole === "instructor";
+  const isAdmin = isAdminRole(userRole);
+  const canAccessInstructor = canAccessInstructorArea(userRole);
 
   if (!session?.user) {
     return (
@@ -33,12 +39,9 @@ export default function UserMenu({
   const name = session.user.name ?? "User";
   const image = session.user.image;
   const fallback = name[0]?.toUpperCase() ?? "U";
-  const roleLabel =
-    userRole === "admin"
-      ? "Admin"
-      : userRole === "instructor"
-      ? "Instructor"
-      : "Student";
+  const roleLabel = isUserRole(userRole ?? "")
+    ? USER_ROLE_LABELS[userRole]
+    : USER_ROLE_LABELS.student;
 
   return (
     <div className="relative">
@@ -95,7 +98,9 @@ export default function UserMenu({
             { href: "/profile", label: "Profile" },
             { href: "/dashboard", label: "Dashboard" },
             { href: "/courses", label: "Courses" },
-            ...(isInstructor ? [{ href: "/instructor", label: "Instructor" }] : []),
+            ...(canAccessInstructor
+              ? [{ href: "/instructor", label: "Instructor" }]
+              : []),
           ].map((item) => {
             const isActive =
               pathname === item.href ||

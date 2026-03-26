@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { isUserRole } from "@/lib/roles";
+import { isAdminRole, isUserRole } from "@/lib/roles";
 
 export async function PATCH(request: Request) {
   const session = await auth();
@@ -20,7 +20,7 @@ export async function PATCH(request: Request) {
     },
   });
 
-  if (!currentUser || currentUser.role !== "admin") {
+  if (!currentUser || !isAdminRole(currentUser.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -38,7 +38,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }
 
-  if (currentUser.id === userId && role !== "admin") {
+  if (currentUser.id === userId && !isAdminRole(role)) {
     return NextResponse.json(
       { error: "You cannot remove your own admin role" },
       { status: 400 }

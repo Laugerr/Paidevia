@@ -1,26 +1,27 @@
-# Paidevia - Modern LMS Platform
+# 🎓 Paidevia - Modern LMS Platform
 
-Paidevia is a modern Learning Management System built with Next.js, TypeScript, TailwindCSS, Prisma, PostgreSQL, and NextAuth. It provides a clean learning experience for students, an admin surface for platform management, and a strong foundation for future instructor workflows.
+Paidevia is a modern Learning Management System built with Next.js, TypeScript, TailwindCSS, Prisma, PostgreSQL, and NextAuth. It is designed to deliver a clean student learning experience, a structured admin workflow, and a strong foundation for future platform growth.
 
-## Overview
+## ✨ Overview
 
-Paidevia helps students browse courses, complete lessons, track progress, and continue learning from a dedicated dashboard. It also includes an admin area for managing users, roles, and course status.
+Paidevia helps learners browse courses, follow lessons, track progress, and continue learning from a dedicated dashboard. It also includes a protected admin area for managing users and course status.
 
-## Features
+## 🚀 Core Features
 
-- Authentication with Google and GitHub
-- Persistent user records stored in PostgreSQL
-- Course listing and course detail pages
-- Lesson player experience
-- Progress tracking backed by the database
-- Student dashboard
-- Profile page
-- Admin dashboard
-- User management with role updates
-- Course management with status control
-- Role system for `student`, `admin`, and instructor groundwork
+- 🔐 Google and GitHub authentication
+- 🗄️ Persistent users stored in PostgreSQL
+- 📚 Course listing page
+- 📖 Course details page
+- 🎬 Lesson player
+- 📈 Progress tracking backed by the database
+- 🧭 Student dashboard
+- 👤 Profile page
+- 🛡️ Protected admin dashboard
+- 👥 User management
+- 🧩 Course management
+- 🏷️ Role system foundation
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 - Next.js (App Router)
 - TypeScript
@@ -29,9 +30,9 @@ Paidevia helps students browse courses, complete lessons, track progress, and co
 - PostgreSQL
 - NextAuth / Auth.js
 
-## Installation
+## ⚙️ Installation
 
-### 1. Clone the project
+### 1. Clone the repository
 
 ```bash
 git clone <your-repository-url>
@@ -46,7 +47,7 @@ npm install
 
 ### 3. Configure environment variables
 
-Create a local environment file from the example:
+Create your local environment file:
 
 ```bash
 cp .env.example .env.local
@@ -64,8 +65,8 @@ Required variables:
 
 Notes:
 
-- The project currently reads Auth.js provider credentials from `AUTH_*` variables in `auth.ts`.
-- `NEXTAUTH_URL` and `NEXTAUTH_SECRET` are included in `.env.example` as compatibility placeholders for developers who still use the older naming style.
+- The current codebase uses `AUTH_*` environment variables in [`auth.ts`](./auth.ts).
+- `NEXTAUTH_*` and provider compatibility placeholders are also included in `.env.example` for convenience.
 
 ### 4. Generate Prisma client
 
@@ -85,52 +86,13 @@ npx prisma migrate dev
 npm run dev
 ```
 
-## Project Surface
+If you prefer a custom port:
 
-### Authentication
+```bash
+npm run dev -- -p 3006
+```
 
-- Google login
-- GitHub login
-- Database-backed sessions
-
-### Core LMS
-
-- Course browsing
-- Lesson pages
-- Database progress tracking
-- Continue learning flow
-- Student dashboard
-
-### Admin
-
-- Protected admin dashboard
-- User role management
-- Course status management
-
-## Known Limitations
-
-- Public course pages still read from `lib/courses.ts`
-- Admin course management already uses database data
-- Instructor system is not implemented yet
-- UI is still under refinement
-
-## Roadmap
-
-### v1.1
-
-- UI improvements and consistency polish
-
-### v1.2
-
-- Instructor system
-- Instructor dashboard
-- Course creation workflow
-
-### v2.0
-
-- Full course and lesson migration to database-backed public pages
-
-## Scripts
+## 📜 Available Scripts
 
 ```bash
 npm run dev
@@ -139,8 +101,40 @@ npm run start
 npm run lint
 ```
 
-## Release Status
+## 🧱 Project Surface
 
-This repository is being prepared for:
+### 🔐 Authentication
+
+- Google login
+- GitHub login
+- Database-backed sessions
+
+### 🎓 LMS Core
+
+- Course browsing
+- Course details
+- Lesson pages
+- Continue learning flow
+- Student dashboard
+- Progress persistence
+
+### 🛡️ Admin
+
+- Protected admin dashboard
+- User role management
+- Course status management
+
+## ⚠️ Known Limitations
+
+- Public course pages still read from `lib/courses.ts`
+- Admin course management already uses database-backed data
+- Instructor system is not implemented yet
+- Some UI refinement is still ongoing
+
+## 🚀 Release
+
+Current release target:
 
 **v1.0.0 - Core LMS System**
+
+This release focuses on the student learning flow, authentication, progress tracking, and the admin management foundation.

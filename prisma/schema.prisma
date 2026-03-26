@@ -24,6 +24,7 @@ model User {
   sessions      Session[]
   enrollments   Enrollment[]
   lessonProgress LessonProgress[]
+  createdCourses Course[] @relation("InstructorCourses")
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -73,9 +74,11 @@ model Course {
   level       String
   lessons     Int
   status      String    @default("published")
+  instructorId String?
 
   enrollments Enrollment[]
   progress    LessonProgress[]
+  instructor  User?     @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: SetNull)
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
