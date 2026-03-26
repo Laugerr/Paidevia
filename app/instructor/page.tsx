@@ -130,8 +130,14 @@ export default async function InstructorPage() {
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
-                  href="/courses"
+                  href="/instructor/courses/new"
                   className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
+                >
+                  Create New Course
+                </Link>
+                <Link
+                  href="/courses"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white/92 px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white"
                 >
                   View Course Catalog
                 </Link>
@@ -291,9 +297,12 @@ export default async function InstructorPage() {
                             >
                               View Course
                             </Link>
-                            <span className="inline-flex items-center justify-center rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-500">
-                              Manage Soon
-                            </span>
+                            <Link
+                              href={`/instructor/courses/${course.id}`}
+                              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
+                            >
+                              Manage Course
+                            </Link>
                           </div>
                         </div>
                       </article>
@@ -313,6 +322,12 @@ export default async function InstructorPage() {
                     own any courses yet. The next step is connecting real course
                     creation and management flows to this area.
                   </p>
+                  <Link
+                    href="/instructor/courses/new"
+                    className="mt-6 inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
+                  >
+                    Create Your First Course
+                  </Link>
                 </div>
               )}
             </section>
@@ -330,7 +345,8 @@ export default async function InstructorPage() {
                 {[
                   {
                     label: "Create New Course",
-                    note: "Next major feature in this workspace",
+                    note: "Start a new draft in the database",
+                    href: "/instructor/courses/new",
                     primary: true,
                   },
                   {
@@ -338,6 +354,7 @@ export default async function InstructorPage() {
                     note: `${draftCourses.length} draft course${
                       draftCourses.length === 1 ? "" : "s"
                     } currently linked`,
+                    href: "/instructor",
                     primary: false,
                   },
                   {
@@ -345,15 +362,17 @@ export default async function InstructorPage() {
                     note: `${publishedCourses.length} published course${
                       publishedCourses.length === 1 ? "" : "s"
                     } live`,
+                    href: "/instructor",
                     primary: false,
                   },
                 ].map((action) => (
-                  <div
+                  <Link
                     key={action.label}
+                    href={action.href}
                     className={
                       action.primary
-                        ? "rounded-2xl bg-blue-600 px-4 py-4 text-white shadow-lg shadow-blue-500/20"
-                        : "rounded-2xl border border-slate-200 bg-white px-4 py-4 text-slate-800"
+                        ? "block rounded-2xl bg-blue-600 px-4 py-4 text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
+                        : "block rounded-2xl border border-slate-200 bg-white px-4 py-4 text-slate-800 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50"
                     }
                   >
                     <span className="block text-sm font-semibold">
@@ -366,7 +385,7 @@ export default async function InstructorPage() {
                     >
                       {action.note}
                     </span>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </section>
