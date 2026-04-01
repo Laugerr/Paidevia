@@ -78,10 +78,26 @@ model Course {
 
   enrollments Enrollment[]
   progress    LessonProgress[]
+  courseLessons Lesson[]
   instructor  User?     @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: SetNull)
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  courseId    String
+  title       String
+  slug        String
+  summary     String?
+  position    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, slug])
 }
 
 model Enrollment {

@@ -15,6 +15,11 @@ type ManageInstructorCoursePageProps = {
     description?: string;
     level?: string;
     status?: string;
+    lessonError?: string;
+    lessonTitle?: string;
+    lessonSlug?: string;
+    lessonSummary?: string;
+    editingLessonId?: string;
   }>;
 };
 
@@ -30,15 +35,7 @@ function normalizeSlug(value: string) {
     .replace(/-+/g, "-");
 }
 
-export default async function ManageInstructorCoursePage({
-  params,
-  searchParams,
-}: ManageInstructorCoursePageProps) {
-  const [{ courseId }, resolvedSearchParams] = await Promise.all([
-    params,
-    searchParams ?? Promise.resolve({}),
-  ]);
-
+async function getAuthorizedInstructorActor() {
   const session = await auth();
 
   if (!session?.user?.email) {
@@ -64,6 +61,10 @@ export default async function ManageInstructorCoursePage({
     redirect("/dashboard");
   }
 
+  return user;
+}
+
+async function getManageableCourse(courseId: string, userId: string, role: string) {
   const course = await prisma.course.findUnique({
     where: {
       id: courseId,
@@ -74,6 +75,11 @@ export default async function ManageInstructorCoursePage({
           id: true,
         },
       },
+      courseLessons: {
+        orderBy: {
+          position: "asc",
+        },
+      },
     },
   });
 
@@ -81,56 +87,32 @@ export default async function ManageInstructorCoursePage({
     notFound();
   }
 
-  const canManageCourse =
-    isAdminRole(user.role) || course.instructorId === user.id;
+  const canManageCourse = isAdminRole(role) || course.instructorId === userId;
 
   if (!canManageCourse) {
     redirect("/instructor");
   }
 
+  return course;
+}
+
+export default async function ManageInstructorCoursePage({
+  params,
+  searchParams,
+}: ManageInstructorCoursePageProps) {
+  const [{ courseId }, resolvedSearchParams] = await Promise.all([
+    params,
+    searchParams ?? Promise.resolve({}),
+  ]);
+
+  const user = await getAuthorizedInstructorActor();
+  const course = await getManageableCourse(courseId, user.id, user.role);
+
   async function updateCourse(formData: FormData) {
     "use server";
 
-    const session = await auth();
-
-    if (!session?.user?.email) {
-      redirect("/login");
-    }
-
-    const currentUser = await prisma.user.findUnique({
-      where: {
-        email: session.user.email,
-      },
-      select: {
-        id: true,
-        role: true,
-      },
-    });
-
-    if (!currentUser || !canAccessInstructorArea(currentUser.role)) {
-      redirect("/dashboard");
-    }
-
-    const currentCourse = await prisma.course.findUnique({
-      where: {
-        id: courseId,
-      },
-      select: {
-        id: true,
-        instructorId: true,
-      },
-    });
-
-    if (!currentCourse) {
-      notFound();
-    }
-
-    const canManageCurrentCourse =
-      isAdminRole(currentUser.role) || currentCourse.instructorId === currentUser.id;
-
-    if (!canManageCurrentCourse) {
-      redirect("/instructor");
-    }
+    const currentUser = await getAuthorizedInstructorActor();
+    await getManageableCourse(courseId, currentUser.id, currentUser.role);
 
     const title = String(formData.get("title") ?? "").trim();
     const slug = normalizeSlug(String(formData.get("slug") ?? ""));
@@ -188,7 +170,293 @@ export default async function ManageInstructorCoursePage({
       },
     });
 
-    redirect("/instructor");
+    redirect(`/instructor/courses/${courseId}`);
+  }
+
+  async function addLesson(formData: FormData) {
+    "use server";
+
+    const currentUser = await getAuthorizedInstructorActor();
+    const currentCourse = await getManageableCourse(
+      courseId,
+      currentUser.id,
+      currentUser.role
+    );
+
+    const title = String(formData.get("lessonTitle") ?? "").trim();
+    const slugInput = String(formData.get("lessonSlug") ?? "").trim();
+    const slug = normalizeSlug(slugInput || title);
+    const summary = String(formData.get("lessonSummary") ?? "").trim();
+
+    const params = new URLSearchParams({
+      lessonTitle: title,
+      lessonSlug: slugInput,
+      lessonSummary: summary,
+    });
+
+    if (!title || !slug) {
+      params.set("lessonError", "Please provide a title and slug for the lesson.");
+      redirect(
+        `/instructor/courses/${courseId}?${params.toString()}#lesson-management`
+      );
+    }
+
+    const existingLesson = await prisma.lesson.findUnique({
+      where: {
+        courseId_slug: {
+          courseId,
+          slug,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (existingLesson) {
+      params.set("lessonError", "That lesson slug is already in use for this course.");
+      redirect(
+        `/instructor/courses/${courseId}?${params.toString()}#lesson-management`
+      );
+    }
+
+    const nextPosition = currentCourse.courseLessons.length + 1;
+
+    await prisma.$transaction([
+      prisma.lesson.create({
+        data: {
+          courseId,
+          title,
+          slug,
+          summary: summary || null,
+          position: nextPosition,
+        },
+      }),
+      prisma.course.update({
+        where: {
+          id: courseId,
+        },
+        data: {
+          lessons: nextPosition,
+        },
+      }),
+    ]);
+
+    redirect(`/instructor/courses/${courseId}#lesson-management`);
+  }
+
+  async function updateLesson(formData: FormData) {
+    "use server";
+
+    const currentUser = await getAuthorizedInstructorActor();
+    await getManageableCourse(courseId, currentUser.id, currentUser.role);
+
+    const lessonId = String(formData.get("lessonId") ?? "");
+    const title = String(formData.get("title") ?? "").trim();
+    const slugInput = String(formData.get("slug") ?? "").trim();
+    const slug = normalizeSlug(slugInput || title);
+    const summary = String(formData.get("summary") ?? "").trim();
+
+    const params = new URLSearchParams({
+      editingLessonId: lessonId,
+      lessonTitle: title,
+      lessonSlug: slugInput,
+      lessonSummary: summary,
+    });
+
+    if (!lessonId || !title || !slug) {
+      params.set("lessonError", "Please complete the lesson title and slug.");
+      redirect(
+        `/instructor/courses/${courseId}?${params.toString()}#lesson-management`
+      );
+    }
+
+    const lesson = await prisma.lesson.findUnique({
+      where: {
+        id: lessonId,
+      },
+      select: {
+        id: true,
+        courseId: true,
+      },
+    });
+
+    if (!lesson || lesson.courseId !== courseId) {
+      notFound();
+    }
+
+    const existingLesson = await prisma.lesson.findUnique({
+      where: {
+        courseId_slug: {
+          courseId,
+          slug,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (existingLesson && existingLesson.id !== lessonId) {
+      params.set("lessonError", "That lesson slug is already in use for this course.");
+      redirect(
+        `/instructor/courses/${courseId}?${params.toString()}#lesson-management`
+      );
+    }
+
+    await prisma.lesson.update({
+      where: {
+        id: lessonId,
+      },
+      data: {
+        title,
+        slug,
+        summary: summary || null,
+      },
+    });
+
+    redirect(`/instructor/courses/${courseId}#lesson-management`);
+  }
+
+  async function deleteLesson(formData: FormData) {
+    "use server";
+
+    const currentUser = await getAuthorizedInstructorActor();
+    await getManageableCourse(courseId, currentUser.id, currentUser.role);
+
+    const lessonId = String(formData.get("lessonId") ?? "");
+
+    if (!lessonId) {
+      redirect(`/instructor/courses/${courseId}#lesson-management`);
+    }
+
+    const lesson = await prisma.lesson.findUnique({
+      where: {
+        id: lessonId,
+      },
+      select: {
+        id: true,
+        courseId: true,
+      },
+    });
+
+    if (!lesson || lesson.courseId !== courseId) {
+      notFound();
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.lesson.delete({
+        where: {
+          id: lessonId,
+        },
+      });
+
+      const remainingLessons = await tx.lesson.findMany({
+        where: {
+          courseId,
+        },
+        orderBy: {
+          position: "asc",
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      for (const [index, remainingLesson] of remainingLessons.entries()) {
+        await tx.lesson.update({
+          where: {
+            id: remainingLesson.id,
+          },
+          data: {
+            position: index + 1,
+          },
+        });
+      }
+
+      await tx.course.update({
+        where: {
+          id: courseId,
+        },
+        data: {
+          lessons: remainingLessons.length,
+        },
+      });
+    });
+
+    redirect(`/instructor/courses/${courseId}#lesson-management`);
+  }
+
+  async function moveLesson(formData: FormData) {
+    "use server";
+
+    const currentUser = await getAuthorizedInstructorActor();
+    await getManageableCourse(courseId, currentUser.id, currentUser.role);
+
+    const lessonId = String(formData.get("lessonId") ?? "");
+    const direction = String(formData.get("direction") ?? "");
+
+    if (!lessonId || !["up", "down"].includes(direction)) {
+      redirect(`/instructor/courses/${courseId}#lesson-management`);
+    }
+
+    const lesson = await prisma.lesson.findUnique({
+      where: {
+        id: lessonId,
+      },
+      select: {
+        id: true,
+        courseId: true,
+        position: true,
+      },
+    });
+
+    if (!lesson || lesson.courseId !== courseId) {
+      notFound();
+    }
+
+    const targetPosition =
+      direction === "up" ? lesson.position - 1 : lesson.position + 1;
+
+    if (targetPosition < 1) {
+      redirect(`/instructor/courses/${courseId}#lesson-management`);
+    }
+
+    const adjacentLesson = await prisma.lesson.findFirst({
+      where: {
+        courseId,
+        position: targetPosition,
+      },
+      select: {
+        id: true,
+        position: true,
+      },
+    });
+
+    if (!adjacentLesson) {
+      redirect(`/instructor/courses/${courseId}#lesson-management`);
+    }
+
+    await prisma.$transaction([
+      prisma.lesson.update({
+        where: {
+          id: lesson.id,
+        },
+        data: {
+          position: adjacentLesson.position,
+        },
+      }),
+      prisma.lesson.update({
+        where: {
+          id: adjacentLesson.id,
+        },
+        data: {
+          position: lesson.position,
+        },
+      }),
+    ]);
+
+    redirect(`/instructor/courses/${courseId}#lesson-management`);
   }
 
   const titleValue = resolvedSearchParams.title ?? course.title;
@@ -198,6 +466,11 @@ export default async function ManageInstructorCoursePage({
   const levelValue = resolvedSearchParams.level ?? course.level;
   const statusValue = resolvedSearchParams.status ?? course.status;
   const errorMessage = resolvedSearchParams.error;
+  const lessonErrorMessage = resolvedSearchParams.lessonError;
+  const lessonTitleValue = resolvedSearchParams.lessonTitle ?? "";
+  const lessonSlugValue = resolvedSearchParams.lessonSlug ?? "";
+  const lessonSummaryValue = resolvedSearchParams.lessonSummary ?? "";
+  const editingLessonId = resolvedSearchParams.editingLessonId;
   const firstName = user.name?.split(" ")[0] ?? "Instructor";
 
   return (
@@ -216,8 +489,9 @@ export default async function ManageInstructorCoursePage({
                 Manage course
               </h1>
               <p className="mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-                Update the core identity of your course and keep its draft,
-                published, or archived state organized from one clean editor.
+                Update the core identity of your course, build out its lesson
+                roadmap, and keep the draft, published, or archived state
+                organized from one clean editor.
               </p>
               <p className="mt-3 text-sm font-medium text-amber-700">
                 Editing as {firstName}
@@ -252,9 +526,9 @@ export default async function ManageInstructorCoursePage({
                   </p>
                 </div>
                 <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
-                  <p className="text-sm font-medium text-slate-500">Lessons</p>
+                  <p className="text-sm font-medium text-slate-500">Lesson entries</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                    {course.lessons}
+                    {course.courseLessons.length}
                   </p>
                 </div>
                 <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
@@ -381,6 +655,245 @@ export default async function ManageInstructorCoursePage({
               </Link>
             </div>
           </form>
+        </section>
+
+        <section
+          id="lesson-management"
+          className="rounded-[30px] border border-white/80 bg-white/92 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:p-8"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-600">
+                Lesson Management
+              </p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                Build your lesson roadmap
+              </h2>
+            </div>
+            <p className="max-w-xl text-sm leading-6 text-slate-500">
+              Add lessons, keep the order clean, and update lesson titles and
+              summaries before the public course flow moves to the database.
+            </p>
+          </div>
+
+          <div className="mt-6 grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
+            <aside className="rounded-[28px] border border-emerald-100 bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.15),_transparent_26%),linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(240,253,244,0.92)_100%)] p-5 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-600">
+                Add Lesson
+              </p>
+              <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                Create a lesson entry
+              </h3>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                Start with the lesson title, give it a clean slug, and add a
+                short summary that helps you identify the lesson later.
+              </p>
+
+              {lessonErrorMessage ? (
+                <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                  {lessonErrorMessage}
+                </div>
+              ) : null}
+
+              <form action={addLesson} className="mt-5 space-y-4">
+                <label className="block">
+                  <span className="text-sm font-semibold text-slate-700">
+                    Lesson Title
+                  </span>
+                  <input
+                    name="lessonTitle"
+                    type="text"
+                    defaultValue={lessonTitleValue}
+                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-emerald-400"
+                    required
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-sm font-semibold text-slate-700">
+                    Lesson Slug
+                  </span>
+                  <input
+                    name="lessonSlug"
+                    type="text"
+                    defaultValue={lessonSlugValue}
+                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-emerald-400"
+                    placeholder="auto-generated from title if left blank"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-sm font-semibold text-slate-700">
+                    Summary
+                  </span>
+                  <textarea
+                    name="lessonSummary"
+                    rows={4}
+                    defaultValue={lessonSummaryValue}
+                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-emerald-400"
+                    placeholder="Short note for your internal lesson planning"
+                  />
+                </label>
+
+                <button
+                  type="submit"
+                  className="inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-700"
+                >
+                  Add Lesson
+                </button>
+              </form>
+            </aside>
+
+            <div className="space-y-4">
+              {course.courseLessons.length > 0 ? (
+                course.courseLessons.map((lesson, index) => {
+                  const isEditing = editingLessonId === lesson.id;
+
+                  return (
+                    <article
+                      key={lesson.id}
+                      className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:shadow-md"
+                    >
+                      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                              Lesson {lesson.position}
+                            </span>
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
+                              {lesson.slug}
+                            </span>
+                          </div>
+                          <h3 className="mt-4 text-2xl font-semibold tracking-tight text-slate-950">
+                            {lesson.title}
+                          </h3>
+                          <p className="mt-3 text-sm leading-6 text-slate-500">
+                            {lesson.summary?.trim()
+                              ? lesson.summary
+                              : "No summary added yet. Add one when you want a clearer planning note for this lesson."}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 xl:w-[220px] xl:justify-end">
+                          <form action={moveLesson}>
+                            <input type="hidden" name="lessonId" value={lesson.id} />
+                            <input type="hidden" name="direction" value="up" />
+                            <button
+                              type="submit"
+                              disabled={index === 0}
+                              className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              Move Up
+                            </button>
+                          </form>
+
+                          <form action={moveLesson}>
+                            <input type="hidden" name="lessonId" value={lesson.id} />
+                            <input type="hidden" name="direction" value="down" />
+                            <button
+                              type="submit"
+                              disabled={index === course.courseLessons.length - 1}
+                              className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              Move Down
+                            </button>
+                          </form>
+
+                          <form action={deleteLesson}>
+                            <input type="hidden" name="lessonId" value={lesson.id} />
+                            <button
+                              type="submit"
+                              className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition duration-200 hover:-translate-y-0.5 hover:bg-red-100"
+                            >
+                              Delete
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+
+                      <details
+                        open={isEditing}
+                        className="mt-5 rounded-[24px] border border-slate-200 bg-slate-50/60 p-4"
+                      >
+                        <summary className="cursor-pointer list-none text-sm font-semibold text-slate-700">
+                          Edit lesson details
+                        </summary>
+
+                        <form action={updateLesson} className="mt-4 space-y-4">
+                          <input type="hidden" name="lessonId" value={lesson.id} />
+
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <label className="block">
+                              <span className="text-sm font-semibold text-slate-700">
+                                Title
+                              </span>
+                              <input
+                                name="title"
+                                type="text"
+                                defaultValue={isEditing ? lessonTitleValue || lesson.title : lesson.title}
+                                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-blue-400"
+                                required
+                              />
+                            </label>
+
+                            <label className="block">
+                              <span className="text-sm font-semibold text-slate-700">
+                                Slug
+                              </span>
+                              <input
+                                name="slug"
+                                type="text"
+                                defaultValue={isEditing ? lessonSlugValue || lesson.slug : lesson.slug}
+                                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-blue-400"
+                                required
+                              />
+                            </label>
+                          </div>
+
+                          <label className="block">
+                            <span className="text-sm font-semibold text-slate-700">
+                              Summary
+                            </span>
+                            <textarea
+                              name="summary"
+                              rows={3}
+                              defaultValue={
+                                isEditing
+                                  ? lessonSummaryValue || lesson.summary || ""
+                                  : lesson.summary || ""
+                              }
+                              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-blue-400"
+                            />
+                          </label>
+
+                          <button
+                            type="submit"
+                            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
+                          >
+                            Save Lesson
+                          </button>
+                        </form>
+                      </details>
+                    </article>
+                  );
+                })
+              ) : (
+                <div className="rounded-[28px] border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center">
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                    Lesson Roadmap
+                  </p>
+                  <h3 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+                    No lessons added yet
+                  </h3>
+                  <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-600">
+                    Start by adding your first lesson from the panel on the left.
+                    You can rename, reorder, and remove lessons here as your
+                    course structure evolves.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
         </section>
       </div>
     </main>
