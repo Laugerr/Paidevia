@@ -669,6 +669,18 @@ export default async function ManageInstructorCoursePage({
                     {course.enrollments.length}
                   </p>
                 </div>
+                <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
+                  <p className="text-sm font-medium text-slate-500">
+                    Last updated
+                  </p>
+                  <p className="mt-2 text-base font-semibold tracking-tight text-slate-950">
+                    {new Intl.DateTimeFormat("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    }).format(course.updatedAt)}
+                  </p>
+                </div>
               </div>
             </aside>
           </div>
@@ -772,9 +784,30 @@ export default async function ManageInstructorCoursePage({
               </label>
             </div>
 
+            <div className="rounded-[28px] border border-slate-200 bg-slate-50/70 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                Editing Guidance
+              </p>
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
+                {[
+                  "Keep the slug stable once learners start using the course.",
+                  "Use the description to clarify the learning outcome.",
+                  "Set the final status from the publishing controls below.",
+                ].map((tip) => (
+                  <div
+                    key={tip}
+                    className="rounded-2xl bg-white px-4 py-4 ring-1 ring-slate-200"
+                  >
+                    <p className="text-sm leading-6 text-slate-600">{tip}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 type="submit"
+                style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
                 className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
               >
                 Save Course Changes
@@ -869,6 +902,7 @@ export default async function ManageInstructorCoursePage({
 
                 <button
                   type="submit"
+                  style={{ backgroundColor: "#059669", color: "#ffffff" }}
                   className="inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-700"
                 >
                   Add Lesson
@@ -1024,6 +1058,19 @@ export default async function ManageInstructorCoursePage({
                   </p>
                 </div>
               )}
+
+              {course.courseLessons.length > 0 ? (
+                <div className="rounded-[28px] border border-slate-200 bg-slate-50/70 p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                    Lesson planning note
+                  </p>
+                  <p className="mt-3 text-sm leading-7 text-slate-600">
+                    This roadmap is currently instructor-side only. Public lesson
+                    pages still use the static course source until the database
+                    migration phase lands.
+                  </p>
+                </div>
+              ) : null}
             </div>
           </div>
         </section>
@@ -1151,6 +1198,11 @@ export default async function ManageInstructorCoursePage({
                   <span className="ml-2 font-semibold text-slate-950">
                     {course.status}
                   </span>
+                </p>
+                <p className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm leading-6 text-slate-600">
+                  {publishReadiness.isReady
+                    ? "This course meets the current publishing rules."
+                    : "Complete the checklist items on the left before publishing."}
                 </p>
               </div>
             </aside>

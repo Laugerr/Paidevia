@@ -125,6 +125,7 @@ export default async function NewInstructorCoursePage({
   const descriptionValue = searchParams?.description ?? "";
   const levelValue = searchParams?.level ?? "Beginner";
   const errorMessage = searchParams?.error;
+  const firstName = user.name?.split(" ")[0] ?? "Instructor";
 
   return (
     <main className="px-4 py-8 sm:px-6 lg:px-8">
@@ -143,6 +144,9 @@ export default async function NewInstructorCoursePage({
             <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
               Start with the core course identity first. This draft will be
               saved to the database and linked to your instructor account.
+            </p>
+            <p className="mt-3 text-sm font-medium text-blue-700">
+              Creating as {firstName}.
             </p>
             {isAdminRole(user.role) ? (
               <p className="mt-3 text-sm font-medium text-amber-700">
@@ -260,6 +264,29 @@ export default async function NewInstructorCoursePage({
                     Owner linked
                   </span>
                 </div>
+              </div>
+            </div>
+
+            <div className="rounded-[28px] border border-blue-100 bg-[radial-gradient(circle_at_top_right,_rgba(96,165,250,0.14),_transparent_34%),linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(239,246,255,0.88)_100%)] p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
+                What happens next
+              </p>
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
+                {[
+                  "Your draft appears immediately in the instructor workspace.",
+                  "You can add lessons and adjust the course structure next.",
+                  "Publishing stays blocked until the course is ready.",
+                ].map((item, index) => (
+                  <div
+                    key={item}
+                    className="rounded-2xl bg-white/85 px-4 py-4 ring-1 ring-blue-100"
+                  >
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+                      {index + 1}
+                    </span>
+                    <p className="mt-3 text-sm leading-6 text-slate-600">{item}</p>
+                  </div>
+                ))}
               </div>
             </div>
 

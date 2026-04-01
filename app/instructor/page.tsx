@@ -26,10 +26,15 @@ function StatCard({
 
   return (
     <article className="rounded-[28px] border border-white/80 bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
-      <div
-        className={`inline-flex rounded-2xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] ${toneClassName}`}
-      >
-        Live
+      <div className="flex items-start justify-between gap-3">
+        <div
+          className={`inline-flex rounded-2xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] ${toneClassName}`}
+        >
+          Live
+        </div>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+          Overview
+        </span>
       </div>
       <p className="mt-5 text-sm font-medium text-slate-500">{label}</p>
       <p className="mt-2 text-4xl font-semibold tracking-tight text-slate-950">
@@ -98,6 +103,9 @@ export default async function InstructorPage() {
     (sum, course) => sum + course.enrollments.length,
     0
   );
+  const readyToGrowCourses = ownedCourses.filter(
+    (course) => course.status !== "archived" && course.lessons > 0
+  ).length;
 
   const firstName = user.name?.split(" ")[0] ?? "Instructor";
   const hasCourses = ownedCourseCount > 0;
@@ -173,6 +181,14 @@ export default async function InstructorPage() {
                   <p className="text-sm font-medium text-slate-500">Draft queue</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight text-amber-600">
                     {draftCourses.length} drafts
+                  </p>
+                </div>
+                <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
+                  <p className="text-sm font-medium text-slate-500">
+                    Active build pipeline
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-blue-700">
+                    {readyToGrowCourses} ready
                   </p>
                 </div>
               </div>
@@ -386,6 +402,32 @@ export default async function InstructorPage() {
                       {action.note}
                     </span>
                   </Link>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-[30px] border border-blue-100 bg-[radial-gradient(circle_at_top_right,_rgba(96,165,250,0.16),_transparent_32%),linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(239,246,255,0.9)_100%)] p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
+                Workflow Guidance
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                Recommended instructor flow
+              </h2>
+              <div className="mt-5 space-y-3">
+                {[
+                  "Create a draft course and define its core identity.",
+                  "Add and organize lessons in the course editor.",
+                  "Use the publishing checklist before going live.",
+                ].map((step, index) => (
+                  <div
+                    key={step}
+                    className="flex gap-3 rounded-2xl bg-white/85 px-4 py-4 ring-1 ring-blue-100"
+                  >
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+                      {index + 1}
+                    </span>
+                    <p className="text-sm leading-6 text-slate-600">{step}</p>
+                  </div>
                 ))}
               </div>
             </section>
