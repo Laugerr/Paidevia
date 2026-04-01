@@ -67,6 +67,11 @@ export type VerificationToken = Prisma.VerificationTokenModel
  */
 export type Course = Prisma.CourseModel
 /**
+ * Model Lesson
+ * 
+ */
+export type Lesson = Prisma.LessonModel
+/**
  * Model Enrollment
  * 
  */

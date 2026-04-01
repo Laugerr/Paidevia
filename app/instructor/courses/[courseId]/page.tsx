@@ -10,6 +10,8 @@ type ManageInstructorCoursePageProps = {
   }>;
   searchParams?: Promise<{
     error?: string;
+    publishError?: string;
+    publishSuccess?: string;
     title?: string;
     slug?: string;
     description?: string;
@@ -33,6 +35,47 @@ function normalizeSlug(value: string) {
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
+}
+
+function getPublishReadiness(input: {
+  title: string;
+  slug: string;
+  description: string;
+  level: string;
+  lessonCount: number;
+}) {
+  const checks = [
+    {
+      id: "title",
+      label: "Course title is set",
+      ready: Boolean(input.title.trim()),
+    },
+    {
+      id: "slug",
+      label: "Course slug is set",
+      ready: Boolean(input.slug.trim()),
+    },
+    {
+      id: "description",
+      label: "Course description is set",
+      ready: Boolean(input.description.trim()),
+    },
+    {
+      id: "level",
+      label: "Course level is selected",
+      ready: COURSE_LEVELS.includes(input.level as (typeof COURSE_LEVELS)[number]),
+    },
+    {
+      id: "lessons",
+      label: "At least one lesson exists",
+      ready: input.lessonCount > 0,
+    },
+  ];
+
+  return {
+    checks,
+    isReady: checks.every((check) => check.ready),
+  };
 }
 
 async function getAuthorizedInstructorActor() {
@@ -143,6 +186,22 @@ export default async function ManageInstructorCoursePage({
       redirect(`/instructor/courses/${courseId}?${params.toString()}`);
     }
 
+    const publishReadiness = getPublishReadiness({
+      title,
+      slug,
+      description,
+      level,
+      lessonCount: course.courseLessons.length,
+    });
+
+    if (status === "published" && !publishReadiness.isReady) {
+      params.set(
+        "error",
+        "This course is not ready to publish yet. Complete the publishing checklist first."
+      );
+      redirect(`/instructor/courses/${courseId}?${params.toString()}#publishing-workflow`);
+    }
+
     const existingCourse = await prisma.course.findUnique({
       where: {
         slug,
@@ -171,6 +230,70 @@ export default async function ManageInstructorCoursePage({
     });
 
     redirect(`/instructor/courses/${courseId}`);
+  }
+
+  async function publishCourse() {
+    "use server";
+
+    const currentUser = await getAuthorizedInstructorActor();
+    const currentCourse = await getManageableCourse(
+      courseId,
+      currentUser.id,
+      currentUser.role
+    );
+
+    const readiness = getPublishReadiness({
+      title: currentCourse.title,
+      slug: currentCourse.slug,
+      description: currentCourse.description,
+      level: currentCourse.level,
+      lessonCount: currentCourse.courseLessons.length,
+    });
+
+    if (!readiness.isReady) {
+      redirect(
+        `/instructor/courses/${courseId}?publishError=${encodeURIComponent(
+          "This course is not ready to publish yet. Finish every checklist item first."
+        )}#publishing-workflow`
+      );
+    }
+
+    await prisma.course.update({
+      where: {
+        id: courseId,
+      },
+      data: {
+        status: "published",
+      },
+    });
+
+    redirect(
+      `/instructor/courses/${courseId}?publishSuccess=${encodeURIComponent(
+        "Course published successfully."
+      )}#publishing-workflow`
+    );
+  }
+
+  async function moveCourseToDraft() {
+    "use server";
+
+    const currentUser = await getAuthorizedInstructorActor();
+    await getManageableCourse(courseId, currentUser.id, currentUser.role);
+
+    await prisma.course.update({
+      where: {
+        id: courseId,
+      },
+      data: {
+        status: "draft",
+      },
+    });
+
+    redirect(
+      `/instructor/courses/${courseId}?publishSuccess=${encodeURIComponent(
+        "Course moved back to draft."
+      )}#publishing-workflow`
+    );
   }
 
   async function addLesson(formData: FormData) {
@@ -466,12 +589,21 @@ export default async function ManageInstructorCoursePage({
   const levelValue = resolvedSearchParams.level ?? course.level;
   const statusValue = resolvedSearchParams.status ?? course.status;
   const errorMessage = resolvedSearchParams.error;
+  const publishErrorMessage = resolvedSearchParams.publishError;
+  const publishSuccessMessage = resolvedSearchParams.publishSuccess;
   const lessonErrorMessage = resolvedSearchParams.lessonError;
   const lessonTitleValue = resolvedSearchParams.lessonTitle ?? "";
   const lessonSlugValue = resolvedSearchParams.lessonSlug ?? "";
   const lessonSummaryValue = resolvedSearchParams.lessonSummary ?? "";
   const editingLessonId = resolvedSearchParams.editingLessonId;
   const firstName = user.name?.split(" ")[0] ?? "Instructor";
+  const publishReadiness = getPublishReadiness({
+    title: titleValue,
+    slug: slugValue,
+    description: descriptionValue,
+    level: levelValue,
+    lessonCount: course.courseLessons.length,
+  });
 
   return (
     <main className="px-4 py-8 sm:px-6 lg:px-8">
@@ -893,6 +1025,135 @@ export default async function ManageInstructorCoursePage({
                 </div>
               )}
             </div>
+          </div>
+        </section>
+
+        <section
+          id="publishing-workflow"
+          className="rounded-[30px] border border-white/80 bg-white/92 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:p-8"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
+                Publishing Workflow
+              </p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                Course readiness
+              </h2>
+            </div>
+            <p className="max-w-xl text-sm leading-6 text-slate-500">
+              Publishing is now rule-based. A course can only go live when its
+              core identity is complete and it has at least one lesson.
+            </p>
+          </div>
+
+          {publishErrorMessage ? (
+            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+              {publishErrorMessage}
+            </div>
+          ) : null}
+
+          {publishSuccessMessage ? (
+            <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+              {publishSuccessMessage}
+            </div>
+          ) : null}
+
+          <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_320px]">
+            <div className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-950">
+                    Publish checklist
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Every item below must be complete before the course can be published.
+                  </p>
+                </div>
+                <span
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] ${
+                    publishReadiness.isReady
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-amber-100 text-amber-700"
+                  }`}
+                >
+                  {publishReadiness.isReady ? "Ready to publish" : "Needs attention"}
+                </span>
+              </div>
+
+              <div className="mt-5 space-y-3">
+                {publishReadiness.checks.map((check) => (
+                  <div
+                    key={check.id}
+                    className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
+                          check.ready
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
+                        {check.ready ? "✓" : "!"}
+                      </span>
+                      <span className="text-sm font-medium text-slate-700">
+                        {check.label}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-xs font-semibold uppercase tracking-[0.14em] ${
+                        check.ready ? "text-emerald-700" : "text-amber-700"
+                      }`}
+                    >
+                      {check.ready ? "Complete" : "Pending"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <aside className="rounded-[28px] border border-blue-100 bg-[radial-gradient(circle_at_top_right,_rgba(59,130,246,0.16),_transparent_28%),linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(239,246,255,0.92)_100%)] p-5 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
+                Publish Controls
+              </p>
+              <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                Status actions
+              </h3>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                Use these controls once you are happy with the course structure.
+              </p>
+
+              <div className="mt-6 space-y-3">
+                {course.status !== "published" ? (
+                  <form action={publishCourse}>
+                    <button
+                      type="submit"
+                      disabled={!publishReadiness.isReady}
+                      className="inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-200 disabled:text-emerald-50 disabled:shadow-none"
+                    >
+                      Publish Course
+                    </button>
+                  </form>
+                ) : (
+                  <form action={moveCourseToDraft}>
+                    <button
+                      type="submit"
+                      className="inline-flex w-full items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-5 py-3.5 text-sm font-semibold text-amber-800 transition duration-200 hover:-translate-y-0.5 hover:bg-amber-100"
+                    >
+                      Move Back to Draft
+                    </button>
+                  </form>
+                )}
+
+                <p className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm leading-6 text-slate-600">
+                  Current status:
+                  <span className="ml-2 font-semibold text-slate-950">
+                    {course.status}
+                  </span>
+                </p>
+              </div>
+            </aside>
           </div>
         </section>
       </div>
