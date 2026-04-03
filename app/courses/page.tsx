@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { courses } from "@/lib/courses";
+import { prisma } from "@/lib/prisma";
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -40,7 +40,16 @@ const courseDecor = [
   "bg-[radial-gradient(circle_at_16%_26%,rgba(255,255,255,0.42),transparent_22%),radial-gradient(circle_at_80%_70%,rgba(255,255,255,0.24),transparent_24%)]",
 ];
 
-export default function CoursesPage() {
+export default async function CoursesPage() {
+  const courses = await prisma.course.findMany({
+    where: {
+      status: "published",
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
+
   const totalLessons = courses.reduce((sum, course) => sum + course.lessons, 0);
   const allLevels = Array.from(new Set(courses.map((course) => course.level)));
 
