@@ -1,11 +1,26 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { courses } from "@/lib/courses";
+import type { ReactNode } from "react";
+
+type DashboardLesson = {
+  title: string;
+  slug: string;
+};
+
+type DashboardCourse = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  level: string;
+  lessonList: DashboardLesson[];
+};
 
 type DashboardContentProps = {
   userName?: string | null;
+  enrolledCourses: DashboardCourse[];
+  recommendedCourses: DashboardCourse[];
+  completedLessons: string[];
+  currentLesson: string | null;
 };
 
 function cn(...classes: Array<string | false | null | undefined>) {
@@ -40,105 +55,50 @@ const art = [
   "from-emerald-500 via-teal-300 to-lime-100",
 ];
 
-export default function DashboardContent({ userName }: DashboardContentProps) {
-  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
-  const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
-  const [currentLesson, setCurrentLesson] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadDashboardState() {
-      try {
-        const [enrollmentResponse, progressResponse] = await Promise.all([
-          fetch("/api/enrollments", { cache: "no-store" }),
-          fetch("/api/progress", { cache: "no-store" }),
-        ]);
-
-        if (!enrollmentResponse.ok || !progressResponse.ok) {
-          throw new Error("Failed to load dashboard data");
-        }
-
-        const enrollmentData = await enrollmentResponse.json();
-        const progressData = await progressResponse.json();
-        const enrolledCourseSlugs: string[] =
-          enrollmentData.enrolledCourses ?? [];
-        const completedLessonSlugs: string[] =
-          progressData.completedLessons ?? [];
-
-        setEnrolledCourses(enrolledCourseSlugs);
-        setCompletedLessons(completedLessonSlugs);
-
-        const enrolledCourseObjects = courses.filter((course) =>
-          enrolledCourseSlugs.includes(course.slug)
-        );
-
-        const firstIncompleteLesson =
-          enrolledCourseObjects
-            .flatMap((course) => course.lessonList)
-            .find((lesson) => !completedLessonSlugs.includes(lesson.slug)) ??
-          null;
-
-        setCurrentLesson(firstIncompleteLesson?.slug ?? null);
-      } catch (error) {
-        console.error("Failed to load dashboard state:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadDashboardState();
-  }, []);
-
-  const enrolledCourseObjects = useMemo(
-    () => courses.filter((course) => enrolledCourses.includes(course.slug)),
-    [enrolledCourses]
+export default function DashboardContent({
+  userName,
+  enrolledCourses,
+  recommendedCourses,
+  completedLessons,
+  currentLesson,
+}: DashboardContentProps) {
+  const enrolledCourseSlugs = enrolledCourses.map((course) => course.slug);
+  const totalLessons = enrolledCourses.reduce(
+    (total, course) => total + course.lessonList.length,
+    0
   );
-
-  const totalLessons = useMemo(
-    () =>
-      enrolledCourseObjects.reduce(
-        (total, course) => total + course.lessonList.length,
-        0
-      ),
-    [enrolledCourseObjects]
-  );
-
-  const completedCount = useMemo(() => {
-    const enrolledLessonSlugs = enrolledCourseObjects.flatMap((course) =>
-      course.lessonList.map((lesson) => lesson.slug)
-    );
-
-    return completedLessons.filter((lessonSlug) =>
-      enrolledLessonSlugs.includes(lessonSlug)
-    ).length;
-  }, [completedLessons, enrolledCourseObjects]);
-
+  const completedCount = completedLessons.filter((lessonSlug) =>
+    enrolledCourses.some((course) =>
+      course.lessonList.some((lesson) => lesson.slug === lessonSlug)
+    )
+  ).length;
   const progressPercentage =
     totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 
   const welcomeName = userName?.split(" ")[0] ?? "Scholar";
   const streakDays = Math.max(3, Math.min(7, completedCount || 1));
 
-  const continueCourses = (
-    enrolledCourseObjects.length ? enrolledCourseObjects : courses
-  )
-    .slice(0, 2)
-    .map((course) => {
-      const done = course.lessonList.filter((lesson) =>
-        completedLessons.includes(lesson.slug)
-      ).length;
-      const nextLesson =
-        course.lessonList.find(
-          (lesson) => !completedLessons.includes(lesson.slug)
-        ) ?? course.lessonList[course.lessonList.length - 1];
-      const progress = Math.round((done / course.lessonList.length) * 100);
+  const baseCourses = (enrolledCourses.length ? enrolledCourses : recommendedCourses).filter(
+    (course) => course.lessonList.length > 0
+  );
 
-      return { course, done, nextLesson, progress };
-    });
+  const continueCourses = baseCourses.slice(0, 2).map((course) => {
+    const done = course.lessonList.filter((lesson) =>
+      completedLessons.includes(lesson.slug)
+    ).length;
+    const nextLesson =
+      course.lessonList.find(
+        (lesson) => !completedLessons.includes(lesson.slug)
+      ) ?? course.lessonList[course.lessonList.length - 1];
+    const progress =
+      course.lessonList.length > 0
+        ? Math.round((done / course.lessonList.length) * 100)
+        : 0;
 
-  const gridCourses = (
-    enrolledCourseObjects.length ? enrolledCourseObjects : courses
-  ).slice(0, 3);
+    return { course, done, nextLesson, progress };
+  });
+
+  const gridCourses = baseCourses.slice(0, 3);
 
   const achievements = [
     {
@@ -157,8 +117,7 @@ export default function DashboardContent({ userName }: DashboardContentProps) {
     },
     {
       title: "Course Enrolled",
-      desc:
-        enrolledCourseObjects[0]?.title ?? "Choose a course to start learning",
+      desc: enrolledCourses[0]?.title ?? "Choose a course to start learning",
       tone: "bg-violet-100 text-violet-600",
       icon: (
         <Icon>
@@ -185,8 +144,8 @@ export default function DashboardContent({ userName }: DashboardContentProps) {
   const stats = [
     {
       label: "Enrolled Courses",
-      value: enrolledCourseObjects.length,
-      detail: `${Math.max(enrolledCourseObjects.length - 1, 0)} in progress`,
+      value: enrolledCourses.length,
+      detail: `${Math.max(enrolledCourses.length - 1, 0)} in progress`,
       tone: "bg-violet-100 text-violet-600",
       icon: (
         <Icon>
@@ -232,18 +191,6 @@ export default function DashboardContent({ userName }: DashboardContentProps) {
       ),
     },
   ];
-
-  if (isLoading) {
-    return (
-      <main className="px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl rounded-[32px] border border-white/80 bg-white/80 p-8 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-10">
-          <p className="text-sm font-medium text-slate-500">
-            Loading dashboard...
-          </p>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="px-4 py-8 sm:px-6 lg:px-8">
@@ -481,10 +428,11 @@ export default function DashboardContent({ userName }: DashboardContentProps) {
                   const done = course.lessonList.filter((lesson) =>
                     completedLessons.includes(lesson.slug)
                   ).length;
-                  const progress = Math.round(
-                    (done / course.lessonList.length) * 100
-                  );
-                  const enrolled = enrolledCourses.includes(course.slug);
+                  const progress =
+                    course.lessonList.length > 0
+                      ? Math.round((done / course.lessonList.length) * 100)
+                      : 0;
+                  const enrolled = enrolledCourseSlugs.includes(course.slug);
 
                   return (
                     <article
