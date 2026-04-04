@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { courses } from "@/lib/courses";
+import { prisma } from "@/lib/prisma";
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -96,8 +96,31 @@ const benefits = [
   "A calm, focused experience that feels modern",
 ];
 
-export default function HomePage() {
-  const featuredCourses = courses.slice(0, 3);
+export default async function HomePage() {
+  const featuredCourses = await prisma.course.findMany({
+    where: {
+      status: "published",
+      courseLessons: {
+        some: {},
+      },
+    },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      description: true,
+      level: true,
+      _count: {
+        select: {
+          courseLessons: true,
+        },
+      },
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+    take: 3,
+  });
 
   return (
     <main className="px-4 py-10 sm:px-6 lg:px-8">
@@ -269,54 +292,66 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {featuredCourses.map((course, index) => (
-              <article
-                key={course.slug}
-                className="overflow-hidden rounded-[30px] border border-white/80 bg-white/92 shadow-[0_18px_52px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_22px_58px_rgba(15,23,42,0.1)]"
-              >
-                <div
-                  className={cn(
-                    "relative h-32 bg-gradient-to-br",
-                    courseArt[index % courseArt.length]
-                  )}
+          {featuredCourses.length > 0 ? (
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {featuredCourses.map((course, index) => (
+                <article
+                  key={course.slug}
+                  className="overflow-hidden rounded-[30px] border border-white/80 bg-white/92 shadow-[0_18px_52px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_22px_58px_rgba(15,23,42,0.1)]"
                 >
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(255,255,255,0.48),transparent_22%),radial-gradient(circle_at_82%_78%,rgba(255,255,255,0.22),transparent_22%)]" />
-                  <div className="absolute left-4 top-4 rounded-full bg-white/88 px-3 py-1 text-xs font-semibold text-slate-700">
-                    {course.level}
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <h3 className="min-h-[3.5rem] text-2xl font-semibold tracking-tight text-slate-950">
-                    {course.title}
-                  </h3>
-                  <p className="mt-3 min-h-[4.5rem] text-sm leading-6 text-slate-500">
-                    {course.description}
-                  </p>
-
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                      {course.lessons} lessons
-                    </span>
-                    <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                      Self-paced
-                    </span>
-                    <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                      Beginner friendly
-                    </span>
-                  </div>
-
-                  <Link
-                    href={`/courses/${course.slug}`}
-                    className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
+                  <div
+                    className={cn(
+                      "relative h-32 bg-gradient-to-br",
+                      courseArt[index % courseArt.length]
+                    )}
                   >
-                    Start Course
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(255,255,255,0.48),transparent_22%),radial-gradient(circle_at_82%_78%,rgba(255,255,255,0.22),transparent_22%)]" />
+                    <div className="absolute left-4 top-4 rounded-full bg-white/88 px-3 py-1 text-xs font-semibold text-slate-700">
+                      {course.level}
+                    </div>
+                  </div>
+
+                  <div className="p-6">
+                    <h3 className="min-h-[3.5rem] text-2xl font-semibold tracking-tight text-slate-950">
+                      {course.title}
+                    </h3>
+                    <p className="mt-3 min-h-[4.5rem] text-sm leading-6 text-slate-500">
+                      {course.description}
+                    </p>
+
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
+                        {course._count.courseLessons} lessons
+                      </span>
+                      <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
+                        Self-paced
+                      </span>
+                      <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
+                        Beginner friendly
+                      </span>
+                    </div>
+
+                    <Link
+                      href={`/courses/${course.slug}`}
+                      className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
+                    >
+                      Start Course
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-[30px] border border-white/80 bg-white/92 p-8 text-center shadow-[0_18px_52px_rgba(15,23,42,0.06)]">
+              <p className="text-lg font-semibold text-slate-950">
+                Published courses will appear here soon
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                We&apos;re preparing the next set of learning paths for the
+                public catalog.
+              </p>
+            </div>
+          )}
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)]">
