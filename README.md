@@ -126,15 +126,14 @@ npm run lint
 
 ## ⚠️ Known Limitations
 
-- Public course pages still read from `lib/courses.ts`
-- Admin course management already uses database-backed data
-- Instructor system is not implemented yet
 - Some UI refinement is still ongoing
+- Public learning flows now use database-backed content, so local development requires seeded or manually created published courses and lessons
+- Some older project artifacts may still remain in the repository while the migration cleanup is completed
 
 ## 🚀 Release
 
 Current release target:
 
-**v1.0.0 - Core LMS System**
+**v1.2.0 - Full Course Data Migration**
 
-This release focuses on the student learning flow, authentication, progress tracking, and the admin management foundation.
+This release focuses on making the public LMS experience fully database-backed, so instructor-created published courses and lessons can power the student-facing platform end to end.
