@@ -343,6 +343,25 @@ export default async function ManageInstructorCoursePage({
       );
     }
 
+    const duplicatePublicLessonSlug = await prisma.lesson.findFirst({
+      where: {
+        slug,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (duplicatePublicLessonSlug) {
+      params.set(
+        "lessonError",
+        "That lesson slug is already used elsewhere. Public lesson slugs must stay unique."
+      );
+      redirect(
+        `/instructor/courses/${courseId}?${params.toString()}#lesson-management`
+      );
+    }
+
     const nextPosition = currentCourse.courseLessons.length + 1;
 
     await prisma.$transaction([
@@ -422,6 +441,28 @@ export default async function ManageInstructorCoursePage({
 
     if (existingLesson && existingLesson.id !== lessonId) {
       params.set("lessonError", "That lesson slug is already in use for this course.");
+      redirect(
+        `/instructor/courses/${courseId}?${params.toString()}#lesson-management`
+      );
+    }
+
+    const duplicatePublicLessonSlug = await prisma.lesson.findFirst({
+      where: {
+        slug,
+        NOT: {
+          id: lessonId,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (duplicatePublicLessonSlug) {
+      params.set(
+        "lessonError",
+        "That lesson slug is already used elsewhere. Public lesson slugs must stay unique."
+      );
       redirect(
         `/instructor/courses/${courseId}?${params.toString()}#lesson-management`
       );
@@ -1065,9 +1106,9 @@ export default async function ManageInstructorCoursePage({
                     Lesson planning note
                   </p>
                   <p className="mt-3 text-sm leading-7 text-slate-600">
-                    This roadmap is currently instructor-side only. Public lesson
-                    pages still use the static course source until the database
-                    migration phase lands.
+                    Public lesson pages are now database-backed, so keeping this
+                    roadmap ordered and the lesson slugs unique directly affects
+                    the learner-facing experience.
                   </p>
                 </div>
               ) : null}

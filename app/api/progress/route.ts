@@ -51,10 +51,57 @@ export async function POST(request: Request) {
 
   const course = await prisma.course.findUnique({
     where: { slug: courseSlug },
+    select: {
+      id: true,
+      status: true,
+    },
   });
 
   if (!course) {
     return NextResponse.json({ error: "Course not found" }, { status: 404 });
+  }
+
+  if (course.status !== "published") {
+    return NextResponse.json(
+      { error: "This course is not available for progress updates" },
+      { status: 403 }
+    );
+  }
+
+  const [enrollment, lesson] = await Promise.all([
+    prisma.enrollment.findUnique({
+      where: {
+        userId_courseId: {
+          userId: user.id,
+          courseId: course.id,
+        },
+      },
+      select: {
+        id: true,
+      },
+    }),
+    prisma.lesson.findUnique({
+      where: {
+        courseId_slug: {
+          courseId: course.id,
+          slug: lessonSlug,
+        },
+      },
+      select: {
+        id: true,
+      },
+    }),
+  ]);
+
+  if (!enrollment) {
+    return NextResponse.json(
+      { error: "You must enroll before tracking lesson progress" },
+      { status: 403 }
+    );
+  }
+
+  if (!lesson) {
+    return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
   }
 
   // Progress is stored per user and lesson so resume flows stay consistent.

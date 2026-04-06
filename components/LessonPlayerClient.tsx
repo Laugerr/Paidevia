@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -62,9 +63,11 @@ export default function LessonPlayerClient({
   course: foundCourse,
   lesson: foundLesson,
 }: LessonPlayerClientProps) {
+  const router = useRouter();
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [justCompleted, setJustCompleted] = useState(false);
   const [isMarkingCompleted, setIsMarkingCompleted] = useState(false);
+  const [progressError, setProgressError] = useState<string | null>(null);
 
   useEffect(() => {
     setJustCompleted(false);
@@ -72,6 +75,11 @@ export default function LessonPlayerClient({
     async function loadProgress() {
       try {
         const response = await fetch("/api/progress");
+
+        if (!response.ok) {
+          throw new Error("Failed to load progress");
+        }
+
         const data = await response.json();
         setCompletedLessons(data.completedLessons ?? []);
       } catch (error) {
@@ -108,6 +116,7 @@ export default function LessonPlayerClient({
   const handleMarkCompleted = async () => {
     try {
       setIsMarkingCompleted(true);
+      setProgressError(null);
 
       const response = await fetch("/api/progress", {
         method: "POST",
@@ -120,11 +129,23 @@ export default function LessonPlayerClient({
         }),
       });
 
+      if (response.status === 401) {
+        router.push("/login");
+        return;
+      }
+
       if (!response.ok) {
-        throw new Error("Failed to mark lesson completed");
+        const data = await response.json().catch(() => null);
+        setProgressError(data?.error ?? "Failed to mark lesson completed");
+        return;
       }
 
       const progressResponse = await fetch("/api/progress");
+
+      if (!progressResponse.ok) {
+        throw new Error("Failed to refresh lesson progress");
+      }
+
       const progressData = await progressResponse.json();
 
       setCompletedLessons(progressData.completedLessons ?? []);
@@ -366,6 +387,12 @@ export default function LessonPlayerClient({
                           Course completed. You reached the final lesson.
                         </div>
                       )}
+                    </div>
+                  ) : null}
+
+                  {progressError ? (
+                    <div className="rounded-[26px] border border-red-200 bg-red-50 p-5 text-sm font-medium text-red-700">
+                      {progressError}
                     </div>
                   ) : null}
                 </div>

@@ -8,7 +8,12 @@ export async function getUserByEmail(email: string) {
 
 export async function getUserEnrolledCourseSlugs(userId: string) {
   const enrollments = await prisma.enrollment.findMany({
-    where: { userId },
+    where: {
+      userId,
+      course: {
+        status: "published",
+      },
+    },
     include: {
       course: true,
     },
@@ -22,6 +27,9 @@ export async function getUserCompletedLessonSlugs(userId: string) {
     where: {
       userId,
       completed: true,
+      course: {
+        status: "published",
+      },
     },
   });
 

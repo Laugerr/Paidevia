@@ -11,7 +11,7 @@ type LessonPageProps = {
 export default async function LessonPage({ params }: LessonPageProps) {
   const { slug } = await params;
 
-  const lesson = await prisma.lesson.findFirst({
+  const lessons = await prisma.lesson.findMany({
     where: {
       slug,
       course: {
@@ -33,14 +33,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
         },
       },
     },
-    orderBy: {
-      updatedAt: "desc",
-    },
+    take: 2,
   });
 
-  if (!lesson) {
+  if (lessons.length !== 1) {
     notFound();
   }
+
+  const [lesson] = lessons;
 
   return (
     <LessonPlayerClient

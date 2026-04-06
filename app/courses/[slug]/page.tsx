@@ -41,7 +41,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
         title: foundCourse.title,
         description: foundCourse.description,
         level: foundCourse.level,
-        lessons: foundCourse.lessons,
+        lessons: foundCourse.courseLessons.length,
         lessonList: foundCourse.courseLessons,
       }}
     />

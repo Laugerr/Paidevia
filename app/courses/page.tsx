@@ -44,13 +44,31 @@ export default async function CoursesPage() {
   const courses = await prisma.course.findMany({
     where: {
       status: "published",
+      courseLessons: {
+        some: {},
+      },
+    },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      description: true,
+      level: true,
+      _count: {
+        select: {
+          courseLessons: true,
+        },
+      },
     },
     orderBy: {
       updatedAt: "desc",
     },
   });
 
-  const totalLessons = courses.reduce((sum, course) => sum + course.lessons, 0);
+  const totalLessons = courses.reduce(
+    (sum, course) => sum + course._count.courseLessons,
+    0
+  );
   const allLevels = Array.from(new Set(courses.map((course) => course.level)));
 
   return (
@@ -180,7 +198,7 @@ export default async function CoursesPage() {
 
                   <div className="mt-5 flex flex-wrap gap-2">
                     <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                      {course.lessons} lessons
+                      {course._count.courseLessons} lessons
                     </span>
                     <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
                       Self-paced

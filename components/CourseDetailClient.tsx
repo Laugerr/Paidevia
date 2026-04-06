@@ -66,6 +66,7 @@ export default function CourseDetailClient({
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [isLoadingEnrollment, setIsLoadingEnrollment] = useState(true);
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [enrollmentError, setEnrollmentError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadCourseState() {
@@ -121,10 +122,12 @@ export default function CourseDetailClient({
     totalLessons > 0
       ? Math.round((completedLessonsInCourse / totalLessons) * 100)
       : 0;
+  const hasLessons = totalLessons > 0;
 
   const handleEnroll = async () => {
     try {
       setIsEnrolling(true);
+      setEnrollmentError(null);
 
       const response = await fetch("/api/enroll", {
         method: "POST",
@@ -142,7 +145,9 @@ export default function CourseDetailClient({
       }
 
       if (!response.ok) {
-        throw new Error("Failed to enroll");
+        const data = await response.json().catch(() => null);
+        setEnrollmentError(data?.error ?? "Failed to enroll");
+        return;
       }
 
       setIsEnrolled(true);
@@ -238,6 +243,11 @@ export default function CourseDetailClient({
                 <div className="mt-6 rounded-2xl bg-slate-100 px-5 py-4 text-center text-sm font-medium text-slate-500 ring-1 ring-slate-200">
                   Checking enrollment...
                 </div>
+              ) : !hasLessons ? (
+                <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-800">
+                  This published course is not open for enrollment yet because
+                  it does not have any lesson entries.
+                </div>
               ) : !isEnrolled ? (
                 <button
                   onClick={handleEnroll}
@@ -269,6 +279,12 @@ export default function CourseDetailClient({
                   ) : null}
                 </>
               )}
+
+              {enrollmentError ? (
+                <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
+                  {enrollmentError}
+                </div>
+              ) : null}
 
               <Link
                 href="/dashboard"
@@ -423,6 +439,13 @@ export default function CourseDetailClient({
                     </li>
                   );
                 })}
+                {foundCourse.lessonList.length === 0 ? (
+                  <li className="rounded-[26px] border border-dashed border-slate-300 bg-slate-50/70 px-5 py-6 text-sm leading-7 text-slate-600">
+                    This course is published, but its lesson roadmap is still
+                    being prepared. Please check back once lesson entries are
+                    available.
+                  </li>
+                ) : null}
               </ul>
             </section>
           </div>
