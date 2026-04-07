@@ -67,6 +67,7 @@ export default function CourseDetailClient({
   const [isLoadingEnrollment, setIsLoadingEnrollment] = useState(true);
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [enrollmentError, setEnrollmentError] = useState<string | null>(null);
+  const [enrollmentSuccess, setEnrollmentSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadCourseState() {
@@ -128,6 +129,7 @@ export default function CourseDetailClient({
     try {
       setIsEnrolling(true);
       setEnrollmentError(null);
+      setEnrollmentSuccess(null);
 
       const response = await fetch("/api/enroll", {
         method: "POST",
@@ -151,6 +153,9 @@ export default function CourseDetailClient({
       }
 
       setIsEnrolled(true);
+      setEnrollmentSuccess(
+        "You’re enrolled. Your course access is ready and you can jump straight into the lesson flow."
+      );
     } catch (error) {
       console.error("Enrollment failed:", error);
     } finally {
@@ -267,8 +272,8 @@ export default function CourseDetailClient({
                 <>
                   <div className="mt-6 rounded-[24px] bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700 ring-1 ring-emerald-200">
                     {currentLesson
-                      ? "Enrolled. You now have access to this learning path."
-                      : "Enrolled. You completed every available lesson in this course."}
+                      ? "You’re enrolled and ready to keep moving through this learning path."
+                      : "You’re enrolled and already completed every available lesson in this course."}
                   </div>
 
                   {currentLesson ? (
@@ -290,6 +295,12 @@ export default function CourseDetailClient({
               {enrollmentError ? (
                 <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
                   {enrollmentError}
+                </div>
+              ) : null}
+
+              {enrollmentSuccess ? (
+                <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
+                  {enrollmentSuccess}
                 </div>
               ) : null}
 

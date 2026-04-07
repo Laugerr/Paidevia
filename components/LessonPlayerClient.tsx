@@ -112,6 +112,8 @@ export default function LessonPlayerClient({
     currentLessonIndex < foundCourse.lessonList.length - 1
       ? foundCourse.lessonList[currentLessonIndex + 1]
       : null;
+  const courseIsCompleted =
+    totalLessons > 0 && completedLessonsInCourse >= totalLessons;
 
   const handleMarkCompleted = async () => {
     try {
@@ -349,7 +351,7 @@ export default function LessonPlayerClient({
                           <Icon className="h-4 w-4">
                             <path d="M20 6 9 17l-5-5" />
                           </Icon>
-                          Lesson Completed
+                          Lesson Complete
                         </div>
                       ) : (
                         <button
@@ -372,7 +374,12 @@ export default function LessonPlayerClient({
                   {justCompleted ? (
                     <div className="rounded-[26px] bg-emerald-50 p-5 ring-1 ring-emerald-200">
                       <p className="font-semibold text-emerald-700">
-                        Lesson completed successfully.
+                        Great work. This lesson has been added to your completed progress.
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-emerald-700/80">
+                        {nextLesson
+                          ? "Your roadmap has been updated and the next lesson is now ready."
+                          : "You’ve completed the final lesson in this course."}
                       </p>
 
                       {nextLesson ? (
@@ -380,11 +387,11 @@ export default function LessonPlayerClient({
                           href={`/lesson/${nextLesson.slug}`}
                           className="mt-4 inline-flex rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
                         >
-                          Go to Next Lesson
+                          Continue to Next Lesson
                         </Link>
                       ) : (
                         <div className="mt-4 rounded-2xl bg-white px-4 py-3 text-sm font-medium text-slate-700 ring-1 ring-emerald-200">
-                          Course completed. You reached the final lesson.
+                          Course complete. You reached the end of this learning path.
                         </div>
                       )}
                     </div>
@@ -417,7 +424,11 @@ export default function LessonPlayerClient({
                   <div className="rounded-[26px] bg-slate-50/80 p-5 ring-1 ring-slate-200/70">
                     <p className="text-sm font-medium text-slate-500">Next step</p>
                     <p className="mt-2 text-base font-semibold text-slate-950">
-                      {nextLesson ? nextLesson.title : "You are on the final step"}
+                      {nextLesson
+                        ? nextLesson.title
+                        : courseIsCompleted
+                        ? "Course completed"
+                        : "You are on the final step"}
                     </p>
                   </div>
                 </aside>
@@ -520,7 +531,9 @@ export default function LessonPlayerClient({
                     Next Lesson
                   </p>
                   <h3 className="mt-3 text-2xl font-semibold">
-                    You reached the last lesson
+                    {courseIsCompleted
+                      ? "You completed this course"
+                      : "You reached the last lesson"}
                   </h3>
                 </div>
               )}

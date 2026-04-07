@@ -101,6 +101,11 @@ export default function DashboardContent({
   });
 
   const gridCourses = baseCourses.slice(0, 3);
+  const allEnrolledCoursesCompleted =
+    hasEnrolledCourses &&
+    enrolledCourses.every((course) =>
+      course.lessonList.every((lesson) => completedLessons.includes(lesson.slug))
+    );
 
   const achievements = [
     {
@@ -208,7 +213,9 @@ export default function DashboardContent({
               </h1>
               <p className="mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
                 {hasEnrolledCourses
-                  ? "Continue your learning journey and keep building momentum in a cleaner, calmer workspace."
+                  ? allEnrolledCoursesCompleted
+                    ? "You’ve completed all active lessons for now. Explore more published courses whenever you’re ready for the next learning path."
+                    : "Continue your learning journey and keep building momentum in a cleaner, calmer workspace."
                   : "Your learning workspace is ready. Browse published courses to start building momentum and track progress here."}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -580,7 +587,11 @@ export default function DashboardContent({
                       ? "Continue Lesson"
                       : "Browse All Courses",
                     href: currentLesson ? `/lesson/${currentLesson}` : "/courses",
-                    note: "Resume from where you paused",
+                    note: currentLesson
+                      ? "Resume from where you paused"
+                      : allEnrolledCoursesCompleted
+                      ? "You completed your active path"
+                      : "Find your next place to start",
                     primary: true,
                   },
                   {
