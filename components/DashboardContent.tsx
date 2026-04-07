@@ -62,6 +62,8 @@ export default function DashboardContent({
   completedLessons,
   currentLesson,
 }: DashboardContentProps) {
+  const hasEnrolledCourses = enrolledCourses.length > 0;
+  const hasRecommendedCourses = recommendedCourses.length > 0;
   const enrolledCourseSlugs = enrolledCourses.map((course) => course.slug);
   const totalLessons = enrolledCourses.reduce(
     (total, course) => total + course.lessonList.length,
@@ -205,8 +207,9 @@ export default function DashboardContent({
                 Welcome back, {welcomeName}
               </h1>
               <p className="mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-                Continue your learning journey and keep building momentum in a
-                cleaner, calmer workspace.
+                {hasEnrolledCourses
+                  ? "Continue your learning journey and keep building momentum in a cleaner, calmer workspace."
+                  : "Your learning workspace is ready. Browse published courses to start building momentum and track progress here."}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
@@ -345,56 +348,74 @@ export default function DashboardContent({
               </div>
 
               <div className="mt-6 space-y-4">
-                {continueCourses.map(({ course, done, nextLesson, progress }, index) => (
-                  <article
-                    key={course.slug}
-                    className="flex flex-col gap-5 rounded-[28px] border border-slate-200/80 bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md sm:flex-row sm:items-center sm:p-5"
-                  >
-                    <div
-                      className={cn(
-                        "relative h-24 w-full shrink-0 overflow-hidden rounded-[24px] bg-gradient-to-br sm:w-28",
-                        art[index % art.length]
-                      )}
+                {continueCourses.length > 0 ? (
+                  continueCourses.map(({ course, done, nextLesson, progress }, index) => (
+                    <article
+                      key={course.slug}
+                      className="flex flex-col gap-5 rounded-[28px] border border-slate-200/80 bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md sm:flex-row sm:items-center sm:p-5"
                     >
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.45),transparent_24%),radial-gradient(circle_at_80%_30%,rgba(255,255,255,0.34),transparent_18%)]" />
-                      <div className="absolute left-3 top-3 rounded-full bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
-                        {course.level}
-                      </div>
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <h3 className="text-xl font-semibold tracking-tight text-slate-950 sm:text-2xl">
-                        {course.title}
-                      </h3>
-                      <p className="mt-1 text-sm text-slate-500">
-                        Lesson {Math.min(done + 1, course.lessonList.length)} of{" "}
-                        {course.lessonList.length} · {nextLesson.title}
-                      </p>
-                      <div className="mt-4 flex items-center gap-3">
-                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-blue-600 to-sky-400"
-                            style={{ width: `${progress}%` }}
-                          />
+                      <div
+                        className={cn(
+                          "relative h-24 w-full shrink-0 overflow-hidden rounded-[24px] bg-gradient-to-br sm:w-28",
+                          art[index % art.length]
+                        )}
+                      >
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.45),transparent_24%),radial-gradient(circle_at_80%_30%,rgba(255,255,255,0.34),transparent_18%)]" />
+                        <div className="absolute left-3 top-3 rounded-full bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                          {course.level}
                         </div>
-                        <span className="text-sm font-semibold text-slate-500">
-                          {progress}%
-                        </span>
                       </div>
-                    </div>
 
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-xl font-semibold tracking-tight text-slate-950 sm:text-2xl">
+                          {course.title}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-500">
+                          Lesson {Math.min(done + 1, course.lessonList.length)} of{" "}
+                          {course.lessonList.length} {" · "} {nextLesson.title}
+                        </p>
+                        <div className="mt-4 flex items-center gap-3">
+                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-blue-600 to-sky-400"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                          <span className="text-sm font-semibold text-slate-500">
+                            {progress}%
+                          </span>
+                        </div>
+                      </div>
+
+                      <Link
+                        href={
+                          progress < 100
+                            ? `/lesson/${nextLesson.slug}`
+                            : `/courses/${course.slug}`
+                        }
+                        className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-800 transition duration-200 hover:-translate-y-0.5 hover:bg-white sm:w-auto"
+                      >
+                        Continue Lesson
+                      </Link>
+                    </article>
+                  ))
+                ) : (
+                  <div className="rounded-[28px] border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center">
+                    <p className="text-lg font-semibold tracking-tight text-slate-950">
+                      No course activity yet
+                    </p>
+                    <p className="mx-auto mt-2 max-w-2xl text-sm leading-7 text-slate-600">
+                      Enroll in a published course to build your continue-learning
+                      queue and resume lessons from one focused place.
+                    </p>
                     <Link
-                      href={
-                        progress < 100
-                          ? `/lesson/${nextLesson.slug}`
-                          : `/courses/${course.slug}`
-                      }
-                      className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-800 transition duration-200 hover:-translate-y-0.5 hover:bg-white sm:w-auto"
+                      href="/courses"
+                      className="mt-5 inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
                     >
-                      Continue Lesson
+                      Browse Available Courses
                     </Link>
-                  </article>
-                ))}
+                  </div>
+                )}
               </div>
 
               <Link
@@ -424,67 +445,82 @@ export default function DashboardContent({
               </div>
 
               <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                {gridCourses.map((course, index) => {
-                  const done = course.lessonList.filter((lesson) =>
-                    completedLessons.includes(lesson.slug)
-                  ).length;
-                  const progress =
-                    course.lessonList.length > 0
-                      ? Math.round((done / course.lessonList.length) * 100)
-                      : 0;
-                  const enrolled = enrolledCourseSlugs.includes(course.slug);
+                {gridCourses.length > 0 ? (
+                  gridCourses.map((course, index) => {
+                    const done = course.lessonList.filter((lesson) =>
+                      completedLessons.includes(lesson.slug)
+                    ).length;
+                    const progress =
+                      course.lessonList.length > 0
+                        ? Math.round((done / course.lessonList.length) * 100)
+                        : 0;
+                    const enrolled = enrolledCourseSlugs.includes(course.slug);
 
-                  return (
-                    <article
-                      key={course.slug}
-                      className="overflow-hidden rounded-[30px] border border-slate-200/80 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md"
-                    >
-                      <div
-                        className={cn(
-                          "relative h-32 bg-gradient-to-br",
-                          art[index % art.length]
-                        )}
+                    return (
+                      <article
+                        key={course.slug}
+                        className="overflow-hidden rounded-[30px] border border-slate-200/80 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md"
                       >
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(255,255,255,0.48),transparent_22%),radial-gradient(circle_at_80%_78%,rgba(255,255,255,0.24),transparent_22%)]" />
-                        <div className="absolute left-4 top-4 rounded-full bg-white/88 px-3 py-1 text-xs font-semibold text-slate-700">
-                          {course.level}
-                        </div>
-                      </div>
-
-                      <div className="p-5">
-                        <h3 className="min-h-[3.5rem] text-2xl font-semibold tracking-tight text-slate-950">
-                          {course.title}
-                        </h3>
-                        <p className="mt-3 min-h-[4.5rem] text-sm leading-6 text-slate-500">
-                          {course.description}
-                        </p>
-                        <div className="mt-5 flex items-center justify-between text-sm text-slate-500">
-                          <span>Progress</span>
-                          <span className="font-semibold text-slate-700">
-                            {progress}%
-                          </span>
-                        </div>
-                        <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-blue-600 to-sky-400"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                        <Link
-                          href={`/courses/${course.slug}`}
+                        <div
                           className={cn(
-                            "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition duration-200",
-                            enrolled
-                              ? "bg-blue-600 text-white hover:-translate-y-0.5 hover:bg-blue-700"
-                              : "border border-slate-300 bg-white text-slate-700 hover:-translate-y-0.5 hover:bg-slate-50"
+                            "relative h-32 bg-gradient-to-br",
+                            art[index % art.length]
                           )}
                         >
-                          {enrolled ? "Continue Learning" : "Start Course"}
-                        </Link>
-                      </div>
-                    </article>
-                  );
-                })}
+                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(255,255,255,0.48),transparent_22%),radial-gradient(circle_at_80%_78%,rgba(255,255,255,0.24),transparent_22%)]" />
+                          <div className="absolute left-4 top-4 rounded-full bg-white/88 px-3 py-1 text-xs font-semibold text-slate-700">
+                            {course.level}
+                          </div>
+                        </div>
+
+                        <div className="p-5">
+                          <h3 className="min-h-[3.5rem] text-2xl font-semibold tracking-tight text-slate-950">
+                            {course.title}
+                          </h3>
+                          <p className="mt-3 min-h-[4.5rem] text-sm leading-6 text-slate-500">
+                            {course.description}
+                          </p>
+                          <div className="mt-5 flex items-center justify-between text-sm text-slate-500">
+                            <span>Progress</span>
+                            <span className="font-semibold text-slate-700">
+                              {progress}%
+                            </span>
+                          </div>
+                          <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-blue-600 to-sky-400"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                          <Link
+                            href={`/courses/${course.slug}`}
+                            className={cn(
+                              "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition duration-200",
+                              enrolled
+                                ? "bg-blue-600 text-white hover:-translate-y-0.5 hover:bg-blue-700"
+                                : "border border-slate-300 bg-white text-slate-700 hover:-translate-y-0.5 hover:bg-slate-50"
+                            )}
+                          >
+                            {enrolled ? "Continue Learning" : "Start Course"}
+                          </Link>
+                        </div>
+                      </article>
+                    );
+                  })
+                ) : (
+                  <div className="xl:col-span-3 rounded-[28px] border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center">
+                    <p className="text-lg font-semibold tracking-tight text-slate-950">
+                      {hasRecommendedCourses
+                        ? "Recommended courses are coming together"
+                        : "No published courses available yet"}
+                    </p>
+                    <p className="mx-auto mt-2 max-w-2xl text-sm leading-7 text-slate-600">
+                      {hasRecommendedCourses
+                        ? "We’re preparing more structured learning paths for your dashboard recommendations."
+                        : "Once published courses are available, they’ll appear here for students to explore."}
+                    </p>
+                  </div>
+                )}
               </div>
             </section>
           </div>

@@ -161,66 +161,95 @@ export default async function CoursesPage() {
           </div>
         </section>
 
-        <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {courses.map((course, index) => (
-            <Link key={course.id} href={`/courses/${course.slug}`} className="group">
-              <article className="overflow-hidden rounded-[30px] border border-white/80 bg-white/92 shadow-[0_18px_52px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_22px_58px_rgba(15,23,42,0.1)]">
-                <div
-                  className={cn(
-                    "relative h-32 bg-gradient-to-br",
-                    courseArt[index % courseArt.length]
-                  )}
-                >
+        {courses.length > 0 ? (
+          <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {courses.map((course, index) => (
+              <Link key={course.id} href={`/courses/${course.slug}`} className="group">
+                <article className="overflow-hidden rounded-[30px] border border-white/80 bg-white/92 shadow-[0_18px_52px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_22px_58px_rgba(15,23,42,0.1)]">
                   <div
                     className={cn(
-                      "absolute inset-0",
-                      courseDecor[index % courseDecor.length]
+                      "relative h-32 bg-gradient-to-br",
+                      courseArt[index % courseArt.length]
                     )}
-                  />
-                  <div className="absolute left-4 top-4 rounded-full bg-white/88 px-3 py-1 text-xs font-semibold text-slate-700">
-                    {course.level}
-                  </div>
-                  <div className="absolute bottom-4 left-4 rounded-2xl bg-white/20 p-3 text-white backdrop-blur">
-                    <Icon>
-                      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5a2.5 2.5 0 0 0-2.5-2.5H4z" />
-                      <path d="M6.5 3A2.5 2.5 0 0 0 4 5.5V21" />
-                    </Icon>
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <h2 className="min-h-[3.5rem] text-2xl font-semibold tracking-tight text-slate-950">
-                    {course.title}
-                  </h2>
-                  <p className="mt-3 min-h-[4.5rem] text-sm leading-6 text-slate-500">
-                    {course.description}
-                  </p>
-
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                      {course._count.courseLessons} lessons
-                    </span>
-                    <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                      Self-paced
-                    </span>
-                    <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                      Guided path
-                    </span>
+                  >
+                    <div
+                      className={cn(
+                        "absolute inset-0",
+                        courseDecor[index % courseDecor.length]
+                      )}
+                    />
+                    <div className="absolute left-4 top-4 rounded-full bg-white/88 px-3 py-1 text-xs font-semibold text-slate-700">
+                      {course.level}
+                    </div>
+                    <div className="absolute bottom-4 left-4 rounded-2xl bg-white/20 p-3 text-white backdrop-blur">
+                      <Icon>
+                        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5a2.5 2.5 0 0 0-2.5-2.5H4z" />
+                        <path d="M6.5 3A2.5 2.5 0 0 0 4 5.5V21" />
+                      </Icon>
+                    </div>
                   </div>
 
-                  <div className="mt-5 flex items-center justify-between">
-                    <p className="text-sm font-semibold text-slate-500">
-                      Structured self-paced learning
+                  <div className="p-6">
+                    <h2 className="min-h-[3.5rem] text-2xl font-semibold tracking-tight text-slate-950">
+                      {course.title}
+                    </h2>
+                    <p className="mt-3 min-h-[4.5rem] text-sm leading-6 text-slate-500">
+                      {course.description}
                     </p>
-                    <span className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition duration-200 group-hover:bg-slate-50">
-                      View Course
-                    </span>
+
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
+                        {course._count.courseLessons} lessons
+                      </span>
+                      <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
+                        Self-paced
+                      </span>
+                      <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
+                        Guided path
+                      </span>
+                    </div>
+
+                    <div className="mt-5 flex items-center justify-between">
+                      <p className="text-sm font-semibold text-slate-500">
+                        Structured self-paced learning
+                      </p>
+                      <span className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition duration-200 group-hover:bg-slate-50">
+                        View Course
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </article>
-            </Link>
-          ))}
-        </section>
+                </article>
+              </Link>
+            ))}
+          </section>
+        ) : (
+          <section className="rounded-[30px] border border-dashed border-slate-300 bg-white/88 p-10 text-center shadow-[0_18px_52px_rgba(15,23,42,0.05)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
+              Course Library
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
+              No published courses are available yet
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-600">
+              We&apos;re preparing the public catalog. Once instructors publish
+              courses with lessons, they&apos;ll appear here for learners to explore.
+            </p>
+            <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                href="/home"
+                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition duration-200 hover:bg-blue-700"
+              >
+                Return Home
+              </Link>
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-slate-50"
+              >
+                Open Dashboard
+              </Link>
+            </div>
+          </section>
+        )}
       </div>
     </main>
   );

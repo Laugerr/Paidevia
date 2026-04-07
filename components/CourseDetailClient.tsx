@@ -266,7 +266,9 @@ export default function CourseDetailClient({
               ) : (
                 <>
                   <div className="mt-6 rounded-[24px] bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700 ring-1 ring-emerald-200">
-                    Enrolled. You now have access to this learning path.
+                    {currentLesson
+                      ? "Enrolled. You now have access to this learning path."
+                      : "Enrolled. You completed every available lesson in this course."}
                   </div>
 
                   {currentLesson ? (
@@ -276,6 +278,11 @@ export default function CourseDetailClient({
                     >
                       Continue Learning
                     </Link>
+                  ) : (
+                    <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-center text-sm font-medium text-slate-700">
+                      You&apos;ve reached the end of this course for now. Revisit the
+                      roadmap below anytime for review.
+                    </div>
                   ) : null}
                 </>
               )}
