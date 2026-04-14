@@ -1,53 +1,76 @@
-# 🎓 Paidevia - Modern LMS Platform
+# 🎓 Paidevia — Modern LMS Platform
 
-Paidevia is a modern Learning Management System built with Next.js, TypeScript, TailwindCSS, Prisma, PostgreSQL, and NextAuth. It is designed to deliver a clean student learning experience, a structured admin workflow, and a strong foundation for future platform growth.
+Paidevia is a full-stack Learning Management System built on **Next.js 16 (App Router)**, **TypeScript**, **TailwindCSS**, **Prisma**, **PostgreSQL**, and **NextAuth 5**. It supports three distinct roles — student, instructor, and admin — and delivers a structured, self-paced learning experience from course discovery through lesson completion.
 
-## ✨ Overview
+---
 
-Paidevia helps learners browse courses, follow lessons, track progress, and continue learning from a dedicated dashboard. It also includes a protected admin area for managing users and course status.
+## 🚀 Current Version: v1.2.0 — Full Course Data Migration
 
-## 🚀 Core Features
+> See [RELEASE_PLAN.md](./RELEASE_PLAN.md) for the full roadmap.
 
-- 🔐 Google and GitHub authentication
-- 🗄️ Persistent users stored in PostgreSQL
-- 📚 Course listing page
-- 📖 Course details page
-- 🎬 Lesson player
-- 📈 Progress tracking backed by the database
-- 🧭 Student dashboard
-- 👤 Profile page
-- 🛡️ Protected admin dashboard
-- 👥 User management
-- 🧩 Course management
-- 🏷️ Role system foundation
+---
+
+## ✨ Features
+
+### 🎒 Student Experience
+- 🔍 Browse a public catalog of published courses
+- 📖 View course details — description, lessons, level
+- ➕ One-click enrollment
+- 🎬 Lesson player with per-lesson completion tracking
+- ⏩ "Continue learning" resume from last visited lesson
+- 📊 Dashboard with enrolled courses, completion percentage, study time stats
+- 🏆 Achievement and streak display
+- 👤 Profile page (name, username, email, account ID, role)
+
+### 🧑‍🏫 Instructor Workspace
+- 🛠️ Create and manage courses (title, slug, description, level)
+- 📝 Add, order, and describe lessons within courses
+- 🔄 Publishing workflow: `draft → published → archived`
+- ✅ Publishing readiness checklist
+- 📈 Instructor dashboard with course stats and enrollment metrics
+
+### 🛡️ Admin Panel
+- 📊 Platform-wide stats (users, courses, enrollments, completions)
+- 👥 User management — view all users, change roles, self-protection guard
+- 🗂️ Course moderation — view all courses, change status, control visibility
+
+### 🔐 Authentication & Access
+- 🔑 Google and GitHub OAuth login
+- 💾 Database-persistent sessions via NextAuth 5 + Prisma adapter
+- 🎭 Role-based access control: `student`, `instructor`, `admin`
+- 🔒 Protected routes per role with server-side enforcement
+
+---
 
 ## 🛠️ Tech Stack
 
-- Next.js (App Router)
-- TypeScript
-- TailwindCSS
-- Prisma
-- PostgreSQL
-- NextAuth / Auth.js
+| Layer | Technology |
+|-------|------------|
+| 🖥️ Framework | Next.js 16 (App Router) |
+| 🔷 Language | TypeScript |
+| 🎨 Styling | TailwindCSS |
+| 🗄️ ORM | Prisma |
+| 🐘 Database | PostgreSQL |
+| 🔐 Auth | NextAuth 5 / Auth.js |
+
+---
 
 ## ⚙️ Installation
 
-### 1. Clone the repository
+### 1. 📥 Clone the repository
 
 ```bash
 git clone <your-repository-url>
 cd paidevia
 ```
 
-### 2. Install dependencies
+### 2. 📦 Install dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Configure environment variables
-
-Create your local environment file:
+### 3. 🔧 Configure environment variables
 
 ```bash
 cp .env.example .env.local
@@ -55,85 +78,76 @@ cp .env.example .env.local
 
 Required variables:
 
-- `DATABASE_URL`
-- `AUTH_URL`
-- `AUTH_SECRET`
-- `AUTH_GOOGLE_ID`
-- `AUTH_GOOGLE_SECRET`
-- `AUTH_GITHUB_ID`
-- `AUTH_GITHUB_SECRET`
+```env
+DATABASE_URL=
+AUTH_URL=
+AUTH_SECRET=
+AUTH_GOOGLE_ID=
+AUTH_GOOGLE_SECRET=
+AUTH_GITHUB_ID=
+AUTH_GITHUB_SECRET=
+```
 
-Notes:
+> The codebase uses `AUTH_*` variables via [`auth.ts`](./auth.ts). `NEXTAUTH_*` placeholders are included in `.env.example` for convenience.
 
-- The current codebase uses `AUTH_*` environment variables in [`auth.ts`](./auth.ts).
-- `NEXTAUTH_*` and provider compatibility placeholders are also included in `.env.example` for convenience.
-
-### 4. Generate Prisma client
+### 4. ⚡ Generate Prisma client
 
 ```bash
 npx prisma generate
 ```
 
-### 5. Run database migrations
+### 5. 🗃️ Run database migrations
 
 ```bash
 npx prisma migrate dev
 ```
 
-### 6. Start the development server
+### 6. 🌱 Seed the database *(optional but recommended)*
+
+Ensure at least one published course and lesson exist — the public learning flow is fully database-backed.
+
+### 7. ▶️ Start the development server
 
 ```bash
 npm run dev
 ```
 
-If you prefer a custom port:
+Custom port:
 
 ```bash
 npm run dev -- -p 3006
 ```
 
-## 📜 Available Scripts
+---
+
+## 📜 Scripts
 
 ```bash
-npm run dev
-npm run build
-npm run start
-npm run lint
+npm run dev      # Start development server
+npm run build    # Production build
+npm run start    # Start production server
+npm run lint     # Run ESLint
 ```
 
-## 🧱 Project Surface
+---
 
-### 🔐 Authentication
+## 🗺️ Roadmap
 
-- Google login
-- GitHub login
-- Database-backed sessions
+| Release | Focus | Status |
+|---------|-------|--------|
+| 🚀 v1.0.0 | Core LMS System | ✅ Shipped |
+| 🧑‍🏫 v1.1.0 | Instructor Foundation | ✅ Shipped |
+| 🗃️ v1.2.0 | Full Course Data Migration | ✅ Shipped |
+| 🎬 v2.0 | Content Delivery (video, rich text) | 🔜 Next |
+| 🔍 v3.0 | Discovery & Trust (search, reviews) | 📅 Planned |
+| 🔥 v4.0 | Engagement & Achievement | 📅 Planned |
+| 💰 v5.0 | Monetization | 📅 Planned |
+| 🏢 v6.0 | Scale & Enterprise | 📅 Planned |
 
-### 🎓 LMS Core
-
-- Course browsing
-- Course details
-- Lesson pages
-- Continue learning flow
-- Student dashboard
-- Progress persistence
-
-### 🛡️ Admin
-
-- Protected admin dashboard
-- User role management
-- Course status management
+---
 
 ## ⚠️ Known Limitations
 
-- Some UI refinement is still ongoing
-- Public learning flows now use database-backed content, so local development requires seeded or manually created published courses and lessons
-- Some older project artifacts may still remain in the repository while the migration cleanup is completed
-
-## 🚀 Release
-
-Current release target:
-
-**v1.2.0 - Full Course Data Migration**
-
-This release focuses on making the public LMS experience fully database-backed, so instructor-created published courses and lessons can power the student-facing platform end to end.
+- 🎬 Lessons do not yet support video or rich text body content — coming in v2.0
+- 🌱 Local development requires seeded or manually created published courses and lessons
+- 🏗️ Platform is not yet publicly launchable — v2.0 is the target for public launch readiness
