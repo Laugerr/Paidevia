@@ -1,5 +1,6 @@
 import { signIn } from "@/auth";
 import Link from "next/link";
+import AuthForms from "@/components/AuthForms";
 
 function GoogleIcon() {
   return (
@@ -20,6 +21,9 @@ function GitHubIcon() {
   );
 }
 
+const hasGoogle = !!(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET);
+const hasGitHub = !!(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET);
+
 export default function LoginPage() {
   return (
     <div style={{
@@ -35,20 +39,17 @@ export default function LoginPage() {
       <div className="orb" style={{
         width: 500, height: 500,
         background: "radial-gradient(circle, rgba(109,92,247,0.12) 0%, transparent 70%)",
-        top: "5%", left: "10%",
-        animationDelay: "0s",
+        top: "5%", left: "10%", animationDelay: "0s",
       }} />
       <div className="orb" style={{
         width: 400, height: 400,
         background: "radial-gradient(circle, rgba(52,211,153,0.07) 0%, transparent 70%)",
-        bottom: "10%", right: "5%",
-        animationDelay: "4s",
+        bottom: "10%", right: "5%", animationDelay: "4s",
       }} />
 
-      <div style={{ width: "100%", maxWidth: 400, position: "relative", zIndex: 1 }}>
-        {/* Card */}
+      <div style={{ width: "100%", maxWidth: 420, position: "relative", zIndex: 1 }}>
         <div style={{
-          background: "rgba(15,15,23,0.8)",
+          background: "rgba(15,15,23,0.85)",
           border: "1px solid var(--border)",
           borderRadius: 20,
           padding: "40px 36px",
@@ -57,12 +58,12 @@ export default function LoginPage() {
           boxShadow: "0 8px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(109,92,247,0.05)",
         }}>
           {/* Logo */}
-          <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
             <div style={{
               width: 52, height: 52, borderRadius: 16,
               background: "linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 20px",
+              margin: "0 auto 18px",
               boxShadow: "0 4px 24px var(--accent-glow)",
             }}>
               <svg viewBox="0 0 24 24" width={24} height={24} fill="none" stroke="white" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
@@ -70,64 +71,72 @@ export default function LoginPage() {
               </svg>
             </div>
             <h1 className="font-heading" style={{
-              fontSize: 24, fontWeight: 800, color: "var(--text)",
-              letterSpacing: "-0.02em", marginBottom: 8,
+              fontSize: 22, fontWeight: 800, color: "var(--text)",
+              letterSpacing: "-0.02em", marginBottom: 6,
             }}>
-              Welcome back
+              Paidevia
             </h1>
-            <p style={{ fontSize: 14, color: "var(--muted)", lineHeight: 1.55 }}>
-              Sign in to access your courses and track progress.
+            <p style={{ fontSize: 13, color: "var(--muted)" }}>
+              Sign in or create a free account
             </p>
           </div>
 
-          {/* Divider line */}
-          <div style={{
-            height: 1, background: "var(--border-subtle)",
-            marginBottom: 24,
-          }} />
+          {/* Email / Password Forms (Login + Register tabs) */}
+          <AuthForms />
 
-          {/* OAuth buttons */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <form action={async () => {
-              "use server";
-              await signIn("google", { redirectTo: "/dashboard" });
-            }}>
-              <button type="submit" style={{
-                width: "100%",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
-                padding: "13px 16px",
-                background: "var(--card)",
-                border: "1px solid var(--border)",
-                borderRadius: 11,
-                fontSize: 14, fontWeight: 600, color: "var(--text)",
-                cursor: "pointer",
-                transition: "all 0.15s",
-              }}>
-                <GoogleIcon />
-                Continue with Google
-              </button>
-            </form>
+          {/* Divider */}
+          {(hasGoogle || hasGitHub) && (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "24px 0" }}>
+                <div style={{ flex: 1, height: 1, background: "var(--border-subtle)" }} />
+                <span style={{ fontSize: 12, color: "var(--subtle)", whiteSpace: "nowrap" }}>or continue with</span>
+                <div style={{ flex: 1, height: 1, background: "var(--border-subtle)" }} />
+              </div>
 
-            <form action={async () => {
-              "use server";
-              await signIn("github", { redirectTo: "/dashboard" });
-            }}>
-              <button type="submit" style={{
-                width: "100%",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
-                padding: "13px 16px",
-                background: "var(--card)",
-                border: "1px solid var(--border)",
-                borderRadius: 11,
-                fontSize: 14, fontWeight: 600, color: "var(--text)",
-                cursor: "pointer",
-                transition: "all 0.15s",
-              }}>
-                <GitHubIcon />
-                Continue with GitHub
-              </button>
-            </form>
-          </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {hasGoogle && (
+                  <form action={async () => {
+                    "use server";
+                    await signIn("google", { redirectTo: "/dashboard" });
+                  }}>
+                    <button type="submit" style={{
+                      width: "100%",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
+                      padding: "12px 16px",
+                      background: "var(--card)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 10,
+                      fontSize: 14, fontWeight: 600, color: "var(--text)",
+                      cursor: "pointer",
+                    }}>
+                      <GoogleIcon />
+                      Google
+                    </button>
+                  </form>
+                )}
+                {hasGitHub && (
+                  <form action={async () => {
+                    "use server";
+                    await signIn("github", { redirectTo: "/dashboard" });
+                  }}>
+                    <button type="submit" style={{
+                      width: "100%",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
+                      padding: "12px 16px",
+                      background: "var(--card)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 10,
+                      fontSize: 14, fontWeight: 600, color: "var(--text)",
+                      cursor: "pointer",
+                    }}>
+                      <GitHubIcon />
+                      GitHub
+                    </button>
+                  </form>
+                )}
+              </div>
+            </>
+          )}
 
           <p style={{
             textAlign: "center", fontSize: 12, color: "var(--subtle)",
@@ -140,7 +149,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Below card note */}
         <div style={{ textAlign: "center", marginTop: 20 }}>
           <p style={{ fontSize: 12, color: "var(--subtle)" }}>
             Free to join · No credit card required
