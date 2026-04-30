@@ -145,7 +145,7 @@ export default async function ManageInstructorCoursePage({
 }: ManageInstructorCoursePageProps) {
   const [{ courseId }, resolvedSearchParams] = await Promise.all([
     params,
-    searchParams ?? Promise.resolve({}),
+    searchParams ?? Promise.resolve({} as NonNullable<Awaited<typeof searchParams>>),
   ]);
 
   const user = await getAuthorizedInstructorActor();
