@@ -1,17 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  --background: #eff5ff;
-  --foreground: #0f172a;
-  --muted: #64748b;
-  --card: #ffffff;
-  --border: rgba(148, 163, 184, 0.22);
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --navy: #0b1730;
-  --navy-soft: #13284d;
-  --cyan-glow: rgba(56, 189, 248, 0.22);
-  --panel: rgba(255, 255, 255, 0.72);
+  --background: #0d1117;
+  --surface-1: #161b22;
+  --surface-2: #21262d;
+  --surface-3: #2d333b;
+  --border-1: #30363d;
+  --border-2: #3d444d;
+  --foreground: #e6edf3;
+  --muted: #8b949e;
+  --muted-dark: #6e7681;
+  --primary: #209cee;
+  --primary-dark: #1786c9;
+  --primary-subtle: rgba(32, 156, 238, 0.12);
+  --secondary: #92cc41;
+  --secondary-dark: #4aa52e;
+  --secondary-subtle: rgba(146, 204, 65, 0.12);
+  --accent: #f7d51d;
+  --accent-subtle: rgba(247, 213, 29, 0.12);
+  --danger: #e76e55;
+  --danger-subtle: rgba(231, 110, 85, 0.12);
+  --violet: #a78bfa;
+  --violet-subtle: rgba(167, 139, 250, 0.12);
+}
+
+/* Custom font utilities */
+.font-pixel {
+  font-family: var(--font-pixel), "Courier New", monospace;
+}
+
+.font-heading {
+  font-family: var(--font-heading), system-ui, sans-serif;
 }
 
 * {
@@ -25,12 +44,9 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 28%),
-    radial-gradient(circle at top right, rgba(125, 211, 252, 0.22), transparent 24%),
-    linear-gradient(180deg, #f6fbff 0%, #eef4ff 42%, #f8fbff 100%);
+  background: #0d1117;
   color: var(--foreground);
-  font-family: "Segoe UI", "Inter", "Helvetica Neue", "Arial Nova", sans-serif;
+  font-family: "Segoe UI", "Inter", "Helvetica Neue", sans-serif;
 }
 
 body::before {
@@ -39,9 +55,9 @@ body::before {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 15% 15%, rgba(14, 165, 233, 0.12), transparent 18%),
-    radial-gradient(circle at 85% 20%, rgba(59, 130, 246, 0.1), transparent 20%),
-    radial-gradient(circle at 80% 80%, rgba(250, 204, 21, 0.08), transparent 16%);
+    radial-gradient(circle at 10% 10%, rgba(32, 156, 238, 0.07), transparent 35%),
+    radial-gradient(circle at 90% 85%, rgba(146, 204, 65, 0.05), transparent 35%),
+    radial-gradient(circle at 55% 50%, rgba(247, 213, 29, 0.02), transparent 40%);
   z-index: -1;
 }
 
@@ -64,10 +80,27 @@ select {
 }
 
 ::selection {
-  background: #bfdbfe;
-  color: #0f172a;
+  background: rgba(32, 156, 238, 0.3);
+  color: #e6edf3;
 }
 
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #161b22;
+}
+::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3d444d;
+}
+
+/* Floating icon animations */
 @keyframes heroIconLift {
   0% {
     opacity: 0;
@@ -143,15 +176,15 @@ select {
 @keyframes heroWaveDrift {
   0% {
     transform: translate3d(-4%, 0, 0) scaleX(1);
-    opacity: 0.34;
+    opacity: 0.18;
   }
   50% {
-    transform: translate3d(4%, -10px, 0) scaleX(1.04);
-    opacity: 0.5;
+    transform: translate3d(4%, -8px, 0) scaleX(1.04);
+    opacity: 0.28;
   }
   100% {
     transform: translate3d(-4%, 0, 0) scaleX(1);
-    opacity: 0.34;
+    opacity: 0.18;
   }
 }
 
@@ -163,4 +196,14 @@ select {
 .hero-wave-delayed {
   animation: heroWaveDrift 11s ease-in-out infinite reverse;
   will-change: transform, opacity;
+}
+
+/* Pixel glow effect for primary elements */
+@keyframes pixelPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(32, 156, 238, 0.2); }
+  50% { box-shadow: 0 0 16px rgba(32, 156, 238, 0.35); }
+}
+
+.pixel-glow {
+  animation: pixelPulse 3s ease-in-out infinite;
 }

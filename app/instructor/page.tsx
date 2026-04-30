@@ -15,309 +15,202 @@ function StatCard({
   detail: string;
   tone: "blue" | "amber" | "green" | "slate";
 }) {
-  const toneClassName =
-    tone === "blue"
-      ? "bg-blue-100 text-blue-600"
-      : tone === "amber"
-      ? "bg-amber-100 text-amber-600"
-      : tone === "green"
-      ? "bg-emerald-100 text-emerald-600"
-      : "bg-slate-100 text-slate-600";
+  const toneClass =
+    tone === "blue" ? "bg-[rgba(32,156,238,0.12)] text-[#209cee]"
+    : tone === "amber" ? "bg-[rgba(247,213,29,0.12)] text-[#f7d51d]"
+    : tone === "green" ? "bg-[rgba(146,204,65,0.12)] text-[#92cc41]"
+    : "bg-[#2d333b] text-[#8b949e]";
 
   return (
-    <article className="rounded-[28px] border border-white/80 bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+    <article className="rounded-xl border border-[#30363d] bg-[#21262d] p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
-        <div
-          className={`inline-flex rounded-2xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] ${toneClassName}`}
-        >
-          Live
-        </div>
-        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-          Overview
-        </span>
+        <div className={`inline-flex rounded-lg px-3 py-1 font-pixel text-[8px] ${toneClass}`}>Live</div>
+        <span className="font-pixel text-[7px] text-[#6e7681]">Overview</span>
       </div>
-      <p className="mt-5 text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-4xl font-semibold tracking-tight text-slate-950">
-        {value}
-      </p>
-      <p className="mt-2 text-sm text-slate-500">{detail}</p>
+      <p className="mt-4 text-xs font-medium text-[#8b949e]">{label}</p>
+      <p className="mt-1.5 text-3xl font-bold text-[#e6edf3]">{value}</p>
+      <p className="mt-1 text-xs text-[#6e7681]">{detail}</p>
     </article>
   );
 }
 
 export default async function InstructorPage() {
   const session = await auth();
-
-  if (!session?.user?.email) {
-    redirect("/login");
-  }
+  if (!session?.user?.email) redirect("/login");
 
   const user = await prisma.user.findUnique({
-    where: {
-      email: session.user.email,
-    },
-    select: {
-      id: true,
-      name: true,
-      role: true,
-    },
+    where: { email: session.user.email },
+    select: { id: true, name: true, role: true },
   });
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  if (!canAccessInstructorArea(user.role)) {
-    redirect("/dashboard");
-  }
+  if (!user) redirect("/login");
+  if (!canAccessInstructorArea(user.role)) redirect("/dashboard");
 
   const ownedCourses = await prisma.course.findMany({
-    where: {
-      instructorId: user.id,
-    },
-    include: {
-      enrollments: {
-        select: {
-          id: true,
-        },
-      },
-    },
-    orderBy: {
-      updatedAt: "desc",
-    },
+    where: { instructorId: user.id },
+    include: { enrollments: { select: { id: true } } },
+    orderBy: { updatedAt: "desc" },
   });
 
   const ownedCourseCount = ownedCourses.length;
-  const draftCourses = ownedCourses.filter((course) => course.status === "draft");
-  const publishedCourses = ownedCourses.filter(
-    (course) => course.status === "published"
-  );
-  const archivedCourses = ownedCourses.filter(
-    (course) => course.status === "archived"
-  );
-  const totalLessons = ownedCourses.reduce(
-    (sum, course) => sum + course.lessons,
-    0
-  );
-  const totalEnrollments = ownedCourses.reduce(
-    (sum, course) => sum + course.enrollments.length,
-    0
-  );
-  const readyToGrowCourses = ownedCourses.filter(
-    (course) => course.status !== "archived" && course.lessons > 0
-  ).length;
-
+  const draftCourses = ownedCourses.filter((c) => c.status === "draft");
+  const publishedCourses = ownedCourses.filter((c) => c.status === "published");
+  const archivedCourses = ownedCourses.filter((c) => c.status === "archived");
+  const totalLessons = ownedCourses.reduce((sum, c) => sum + c.lessons, 0);
+  const totalEnrollments = ownedCourses.reduce((sum, c) => sum + c.enrollments.length, 0);
+  const readyToGrowCourses = ownedCourses.filter((c) => c.status !== "archived" && c.lessons > 0).length;
   const firstName = user.name?.split(" ")[0] ?? "Instructor";
-  const hasCourses = ownedCourseCount > 0;
 
   return (
-    <main className="px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl space-y-6 lg:space-y-7">
-        <section className="relative overflow-hidden rounded-[36px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(253,224,71,0.22),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(224,231,255,0.72),_transparent_24%),linear-gradient(180deg,_rgba(255,255,255,0.96)_0%,_rgba(248,250,252,0.94)_100%)] p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
-          <div className="absolute -left-10 top-0 h-40 w-40 rounded-full bg-amber-200/30 blur-3xl" />
-          <div className="absolute bottom-0 right-0 h-48 w-48 rounded-full bg-blue-200/25 blur-3xl" />
+    <main className="px-3 py-8 sm:px-5 lg:px-8">
+      <div className="mx-auto max-w-6xl space-y-5">
 
-          <div className="relative grid gap-8 xl:grid-cols-[minmax(0,1.35fr)_340px] xl:items-center">
+        {/* Hero */}
+        <section className="relative overflow-hidden rounded-2xl border border-[#30363d] bg-[#161b22] p-5 shadow-[0_16px_48px_rgba(0,0,0,0.5)] sm:p-8 lg:p-10">
+          <div className="absolute -left-8 -top-8 h-48 w-48 rounded-full bg-[#f7d51d]/6 blur-3xl" />
+          <div className="absolute -bottom-8 -right-8 h-40 w-40 rounded-full bg-[#209cee]/6 blur-3xl" />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#f7d51d]/40 to-transparent" />
+
+          <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_320px] xl:items-center">
             <div className="max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-600">
-                Instructor Workspace
-              </p>
-              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
-                Welcome, {firstName}
+              <p className="font-pixel text-[9px] text-[#f7d51d]">Instructor Workspace</p>
+              <h1 className="font-heading mt-4 text-2xl font-bold tracking-tight text-[#e6edf3] sm:text-3xl lg:text-4xl">
+                Welcome, <span className="text-[#f7d51d]">{firstName}</span>
               </h1>
-              <p className="mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+              <p className="mt-4 max-w-xl text-sm leading-7 text-[#8b949e] sm:text-base">
                 Manage your teaching area, review owned course status, and
-                prepare the foundation for course creation, editing, and lesson
-                publishing.
+                prepare the foundation for course creation and lesson publishing.
               </p>
-              {isAdminRole(user.role) ? (
-                <p className="mt-3 text-sm font-medium text-amber-700">
-                  Admin access is enabled here for oversight and testing.
+              {isAdminRole(user.role) && (
+                <p className="mt-3 text-sm font-medium text-[#f7d51d]">
+                  Admin access is enabled here for oversight.
                 </p>
-              ) : null}
+              )}
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
                   href="/instructor/courses/new"
-                  className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
+                  className="inline-flex items-center justify-center rounded-xl bg-[#209cee] px-5 py-3 text-sm font-semibold text-white shadow-[0_4px_16px_rgba(32,156,238,0.3)] transition duration-200 hover:bg-[#1786c9] hover:-translate-y-0.5"
                 >
                   Create New Course
                 </Link>
                 <Link
                   href="/courses"
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white/92 px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white"
+                  className="inline-flex items-center justify-center rounded-xl border border-[#30363d] bg-[#21262d] px-5 py-3 text-sm font-semibold text-[#e6edf3] transition duration-200 hover:bg-[#2d333b] hover:-translate-y-0.5"
                 >
-                  View Course Catalog
+                  View Catalog
                 </Link>
                 <Link
                   href="/dashboard"
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white/92 px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white"
+                  className="inline-flex items-center justify-center rounded-xl border border-[#30363d] bg-[#21262d] px-5 py-3 text-sm font-semibold text-[#e6edf3] transition duration-200 hover:bg-[#2d333b] hover:-translate-y-0.5"
                 >
                   Return to Dashboard
                 </Link>
               </div>
             </div>
 
-            <aside className="rounded-[30px] border border-white/90 bg-white/82 p-5 shadow-[0_18px_48px_rgba(15,23,42,0.07)] sm:p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
-                Workspace Status
-              </p>
-              <div className="mt-5 space-y-4">
-                <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
-                  <p className="text-sm font-medium text-slate-500">Owned courses</p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                    {ownedCourseCount}
-                  </p>
-                </div>
-                <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
-                  <p className="text-sm font-medium text-slate-500">
-                    Publish-ready focus
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-emerald-600">
-                    {publishedCourses.length} published
-                  </p>
-                </div>
-                <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
-                  <p className="text-sm font-medium text-slate-500">Draft queue</p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-amber-600">
-                    {draftCourses.length} drafts
-                  </p>
-                </div>
-                <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
-                  <p className="text-sm font-medium text-slate-500">
-                    Active build pipeline
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-blue-700">
-                    {readyToGrowCourses} ready
-                  </p>
-                </div>
+            <aside className="rounded-xl border border-[#30363d] bg-[#21262d] p-5">
+              <p className="font-pixel text-[8px] text-[#6e7681]">Workspace Status</p>
+              <div className="mt-4 space-y-3">
+                {[
+                  { label: "Owned courses", value: ownedCourseCount, color: "text-[#e6edf3]" },
+                  { label: "Published", value: publishedCourses.length, color: "text-[#92cc41]" },
+                  { label: "Drafts", value: draftCourses.length, color: "text-[#f7d51d]" },
+                  { label: "Ready to grow", value: readyToGrowCourses, color: "text-[#209cee]" },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-xl border border-[#30363d] bg-[#2d333b] px-4 py-3">
+                    <p className="text-xs font-medium text-[#8b949e]">{item.label}</p>
+                    <p className={`mt-1.5 text-xl font-bold ${item.color}`}>{item.value}</p>
+                  </div>
+                ))}
               </div>
             </aside>
           </div>
         </section>
 
-        <section className="rounded-[30px] border border-white/80 bg-white/90 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        {/* Stats */}
+        <section className="rounded-2xl border border-[#30363d] bg-[#161b22] p-5 sm:p-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
-                Instructor Overview
-              </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-                Your workspace snapshot
+              <p className="font-pixel text-[9px] text-[#209cee]">Instructor Overview</p>
+              <h2 className="font-heading mt-2 text-xl font-bold tracking-tight text-[#e6edf3] sm:text-2xl">
+                Workspace snapshot
               </h2>
             </div>
-            <p className="max-w-xl text-sm leading-6 text-slate-500">
-              These metrics now reflect courses assigned to your account, so the
-              instructor area can grow around real ownership data.
-            </p>
+            <p className="text-xs text-[#6e7681]">Courses assigned to your account</p>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-            <StatCard
-              label="Owned Courses"
-              value={ownedCourseCount}
-              detail="Courses linked to your account"
-              tone="blue"
-            />
-            <StatCard
-              label="Draft Courses"
-              value={draftCourses.length}
-              detail="Work still in progress"
-              tone="amber"
-            />
-            <StatCard
-              label="Published"
-              value={publishedCourses.length}
-              detail="Visible learning paths"
-              tone="green"
-            />
-            <StatCard
-              label="Total Lessons"
-              value={totalLessons}
-              detail="Across your owned courses"
-              tone="slate"
-            />
-            <StatCard
-              label="Enrollments"
-              value={totalEnrollments}
-              detail="Learners enrolled in your courses"
-              tone="blue"
-            />
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <StatCard label="Owned Courses" value={ownedCourseCount} detail="Linked to your account" tone="blue" />
+            <StatCard label="Draft Courses" value={draftCourses.length} detail="Work in progress" tone="amber" />
+            <StatCard label="Published" value={publishedCourses.length} detail="Visible learning paths" tone="green" />
+            <StatCard label="Total Lessons" value={totalLessons} detail="Across owned courses" tone="slate" />
+            <StatCard label="Enrollments" value={totalEnrollments} detail="Learners in your courses" tone="blue" />
           </div>
         </section>
 
-        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_340px]">
-          <div className="space-y-6">
-            <section className="rounded-[30px] border border-white/80 bg-white/90 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* Courses + Sidebar */}
+        <section className="grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_300px]">
+          <div className="space-y-5">
+            <section className="rounded-2xl border border-[#30363d] bg-[#161b22] p-5 sm:p-6">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
-                    My Courses
-                  </p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                  <p className="font-pixel text-[9px] text-[#209cee]">My Courses</p>
+                  <h2 className="font-heading mt-2 text-xl font-bold tracking-tight text-[#e6edf3] sm:text-2xl">
                     Owned course inventory
                   </h2>
                 </div>
-                <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  {ownedCourseCount} linked courses
+                <span className="inline-flex rounded-lg border border-[#30363d] bg-[#21262d] px-3 py-1 font-pixel text-[8px] text-[#6e7681]">
+                  {ownedCourseCount} courses
                 </span>
               </div>
 
-              {hasCourses ? (
-                <div className="mt-6 space-y-4">
+              {ownedCourses.length > 0 ? (
+                <div className="mt-5 space-y-3">
                   {ownedCourses.map((course) => {
-                    const statusClassName =
-                      course.status === "published"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : course.status === "draft"
-                        ? "bg-amber-100 text-amber-700"
-                        : "bg-slate-100 text-slate-700";
+                    const statusClass =
+                      course.status === "published" ? "bg-[rgba(146,204,65,0.12)] text-[#92cc41]"
+                      : course.status === "draft" ? "bg-[rgba(247,213,29,0.12)] text-[#f7d51d]"
+                      : "bg-[#2d333b] text-[#8b949e]";
 
                     return (
                       <article
                         key={course.id}
-                        className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                        className="rounded-xl border border-[#30363d] bg-[#21262d] p-4 transition duration-200 hover:border-[#3d444d] sm:p-5"
                       >
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
-                              <h3 className="text-2xl font-semibold tracking-tight text-slate-950">
-                                {course.title}
-                              </h3>
-                              <span
-                                className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${statusClassName}`}
-                              >
+                              <h3 className="font-heading text-lg font-semibold text-[#e6edf3]">{course.title}</h3>
+                              <span className={`rounded-lg px-2.5 py-1 font-pixel text-[8px] ${statusClass}`}>
                                 {course.status}
                               </span>
                             </div>
-                            <p className="mt-3 text-sm leading-6 text-slate-500">
-                              {course.description}
-                            </p>
-                            <div className="mt-4 flex flex-wrap gap-2">
-                              <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                                {course.lessons} lessons
-                              </span>
-                              <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                                {course.enrollments.length} enrollments
-                              </span>
-                              <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                                {course.level}
-                              </span>
+                            <p className="mt-2 text-sm leading-6 text-[#8b949e]">{course.description}</p>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {[
+                                `${course.lessons} lessons`,
+                                `${course.enrollments.length} enrollments`,
+                                course.level,
+                              ].map((tag) => (
+                                <span key={tag} className="rounded-lg bg-[#2d333b] px-2.5 py-1 font-pixel text-[8px] text-[#6e7681]">
+                                  {tag}
+                                </span>
+                              ))}
                             </div>
                           </div>
 
-                          <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+                          <div className="flex flex-row gap-3 lg:flex-col">
                             <Link
                               href={`/courses/${course.slug}`}
-                              className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50"
+                              className="inline-flex items-center justify-center rounded-xl border border-[#30363d] bg-[#2d333b] px-4 py-2.5 text-sm font-semibold text-[#e6edf3] transition duration-200 hover:bg-[#3d444d]"
                             >
                               View Course
                             </Link>
                             <Link
                               href={`/instructor/courses/${course.id}`}
-                              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
+                              className="inline-flex items-center justify-center rounded-xl bg-[#209cee] px-4 py-2.5 text-sm font-semibold text-white transition duration-200 hover:bg-[#1786c9]"
                             >
-                              Manage Course
+                              Manage
                             </Link>
                           </div>
                         </div>
@@ -326,21 +219,15 @@ export default async function InstructorPage() {
                   })}
                 </div>
               ) : (
-                <div className="mt-6 rounded-[28px] border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center">
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
-                    Empty State
-                  </p>
-                  <h3 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
-                    No courses are assigned yet
-                  </h3>
-                  <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-600">
-                    This instructor workspace is ready, but your account does not
-                    own any courses yet. The next step is connecting real course
-                    creation and management flows to this area.
+                <div className="mt-5 rounded-xl border border-dashed border-[#30363d] bg-[#21262d] p-7 text-center">
+                  <p className="font-pixel text-[9px] text-[#209cee]">Empty State</p>
+                  <h3 className="font-heading mt-3 text-xl font-bold text-[#e6edf3]">No courses assigned yet</h3>
+                  <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-[#8b949e]">
+                    Your workspace is ready. Create your first course to get started.
                   </p>
                   <Link
                     href="/instructor/courses/new"
-                    className="mt-6 inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
+                    className="mt-5 inline-flex items-center justify-center rounded-xl bg-[#209cee] px-5 py-3 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(32,156,238,0.25)] transition duration-200 hover:bg-[#1786c9]"
                   >
                     Create Your First Course
                   </Link>
@@ -349,56 +236,30 @@ export default async function InstructorPage() {
             </section>
           </div>
 
-          <aside className="space-y-6">
-            <section className="rounded-[30px] border border-white/80 bg-white/90 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
-                Quick Actions
-              </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+          <aside className="space-y-5">
+            {/* Quick Actions */}
+            <section className="rounded-2xl border border-[#30363d] bg-[#161b22] p-5">
+              <p className="font-pixel text-[9px] text-[#209cee]">Quick Actions</p>
+              <h2 className="font-heading mt-2 text-xl font-bold tracking-tight text-[#e6edf3]">
                 Next instructor moves
               </h2>
-              <div className="mt-6 space-y-3">
+              <div className="mt-5 space-y-3">
                 {[
-                  {
-                    label: "Create New Course",
-                    note: "Start a new draft in the database",
-                    href: "/instructor/courses/new",
-                    primary: true,
-                  },
-                  {
-                    label: "Review Draft Courses",
-                    note: `${draftCourses.length} draft course${
-                      draftCourses.length === 1 ? "" : "s"
-                    } currently linked`,
-                    href: "/instructor",
-                    primary: false,
-                  },
-                  {
-                    label: "Review Published Courses",
-                    note: `${publishedCourses.length} published course${
-                      publishedCourses.length === 1 ? "" : "s"
-                    } live`,
-                    href: "/instructor",
-                    primary: false,
-                  },
+                  { label: "Create New Course", note: "Start a new draft in the database", href: "/instructor/courses/new", primary: true },
+                  { label: "Review Drafts", note: `${draftCourses.length} draft course${draftCourses.length === 1 ? "" : "s"}`, href: "/instructor", primary: false },
+                  { label: "Review Published", note: `${publishedCourses.length} published course${publishedCourses.length === 1 ? "" : "s"}`, href: "/instructor", primary: false },
                 ].map((action) => (
                   <Link
                     key={action.label}
                     href={action.href}
                     className={
                       action.primary
-                        ? "block rounded-2xl bg-blue-600 px-4 py-4 text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
-                        : "block rounded-2xl border border-slate-200 bg-white px-4 py-4 text-slate-800 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50"
+                        ? "block rounded-xl bg-[#209cee] px-4 py-3.5 text-white shadow-[0_4px_12px_rgba(32,156,238,0.25)] transition duration-200 hover:bg-[#1786c9]"
+                        : "block rounded-xl border border-[#30363d] bg-[#21262d] px-4 py-3.5 text-[#e6edf3] transition duration-200 hover:bg-[#2d333b]"
                     }
                   >
-                    <span className="block text-sm font-semibold">
-                      {action.label}
-                    </span>
-                    <span
-                      className={`mt-1 block text-xs ${
-                        action.primary ? "text-blue-100" : "text-slate-500"
-                      }`}
-                    >
+                    <span className="block text-sm font-semibold">{action.label}</span>
+                    <span className={`mt-0.5 block text-xs ${action.primary ? "text-white/70" : "text-[#6e7681]"}`}>
                       {action.note}
                     </span>
                   </Link>
@@ -406,58 +267,41 @@ export default async function InstructorPage() {
               </div>
             </section>
 
-            <section className="rounded-[30px] border border-blue-100 bg-[radial-gradient(circle_at_top_right,_rgba(96,165,250,0.16),_transparent_32%),linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(239,246,255,0.9)_100%)] p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
-                Workflow Guidance
-              </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                Recommended instructor flow
-              </h2>
-              <div className="mt-5 space-y-3">
+            {/* Workflow */}
+            <section className="rounded-2xl border border-[#30363d] bg-[#21262d] p-5">
+              <p className="font-pixel text-[9px] text-[#209cee]">Workflow Guidance</p>
+              <h2 className="font-heading mt-2 text-lg font-semibold text-[#e6edf3]">Recommended flow</h2>
+              <div className="mt-4 space-y-3">
                 {[
                   "Create a draft course and define its core identity.",
                   "Add and organize lessons in the course editor.",
                   "Use the publishing checklist before going live.",
                 ].map((step, index) => (
-                  <div
-                    key={step}
-                    className="flex gap-3 rounded-2xl bg-white/85 px-4 py-4 ring-1 ring-blue-100"
-                  >
-                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+                  <div key={step} className="flex gap-3 rounded-xl border border-[#30363d] bg-[#2d333b] px-4 py-3">
+                    <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[rgba(32,156,238,0.12)] font-pixel text-[9px] text-[#209cee]">
                       {index + 1}
                     </span>
-                    <p className="text-sm leading-6 text-slate-600">{step}</p>
+                    <p className="text-xs leading-6 text-[#8b949e]">{step}</p>
                   </div>
                 ))}
               </div>
             </section>
 
-            <section className="rounded-[30px] border border-amber-100 bg-[radial-gradient(circle_at_top_right,_rgba(253,224,71,0.22),_transparent_30%),linear-gradient(135deg,_#ffffff_0%,_#fffaf0_100%)] p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-600">
-                Publishing Visibility
-              </p>
-              <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
-                Status balance
-              </h2>
-              <div className="mt-5 space-y-4">
-                <div className="rounded-2xl bg-white/80 px-4 py-4 ring-1 ring-amber-100">
-                  <p className="text-sm font-medium text-slate-500">Drafts</p>
-                  <p className="mt-2 text-xl font-semibold tracking-tight text-amber-700">
-                    {draftCourses.length}
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-white/80 px-4 py-4 ring-1 ring-emerald-100">
-                  <p className="text-sm font-medium text-slate-500">Published</p>
-                  <p className="mt-2 text-xl font-semibold tracking-tight text-emerald-700">
-                    {publishedCourses.length}
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-white/80 px-4 py-4 ring-1 ring-slate-200">
-                  <p className="text-sm font-medium text-slate-500">Archived</p>
-                  <p className="mt-2 text-xl font-semibold tracking-tight text-slate-700">
-                    {archivedCourses.length}
-                  </p>
-                </div>
+            {/* Status Balance */}
+            <section className="rounded-2xl border border-[#30363d] bg-[#21262d] p-5">
+              <p className="font-pixel text-[9px] text-[#f7d51d]">Publishing Visibility</p>
+              <h2 className="font-heading mt-2 text-lg font-semibold text-[#e6edf3]">Status balance</h2>
+              <div className="mt-4 space-y-3">
+                {[
+                  { label: "Drafts", value: draftCourses.length, color: "text-[#f7d51d]" },
+                  { label: "Published", value: publishedCourses.length, color: "text-[#92cc41]" },
+                  { label: "Archived", value: archivedCourses.length, color: "text-[#8b949e]" },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-xl border border-[#30363d] bg-[#2d333b] px-4 py-3.5">
+                    <p className="text-xs font-medium text-[#8b949e]">{item.label}</p>
+                    <p className={`mt-1.5 text-xl font-bold ${item.color}`}>{item.value}</p>
+                  </div>
+                ))}
               </div>
             </section>
           </aside>

@@ -16,13 +16,12 @@ type NavLinksProps = {
 
 export default function NavLinks({ userRole }: NavLinksProps) {
   const pathname = usePathname();
-  const visibleLinks =
-    canAccessInstructorArea(userRole)
-      ? [...links, { href: "/instructor", label: "Instructor" }]
-      : links;
+  const visibleLinks = canAccessInstructorArea(userRole)
+    ? [...links, { href: "/instructor", label: "Instructor" }]
+    : links;
 
   return (
-    <div className="hidden xl:flex items-center gap-1 rounded-2xl border border-slate-200/70 bg-slate-50/80 p-1 text-sm font-medium text-slate-500 shadow-sm">
+    <div className="hidden lg:flex items-center gap-1 rounded-xl border border-[#30363d] bg-[#21262d] p-1 text-sm font-medium text-[#8b949e]">
       {visibleLinks.map((link) => {
         const isActive =
           pathname === link.href ||
@@ -32,10 +31,10 @@ export default function NavLinks({ userRole }: NavLinksProps) {
           <Link
             key={link.href}
             href={link.href}
-            className={`rounded-xl px-4 py-2 transition duration-200 ${
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition duration-200 ${
               isActive
-                ? "bg-white text-blue-700 shadow-sm ring-1 ring-blue-100"
-                : "hover:-translate-y-0.5 hover:bg-white hover:text-slate-900"
+                ? "bg-[#209cee] text-white shadow-[0_2px_8px_rgba(32,156,238,0.3)]"
+                : "hover:bg-[#2d333b] hover:text-[#e6edf3]"
             }`}
           >
             {link.label}

@@ -1,6 +1,20 @@
 import type { Metadata } from "next";
+import { Press_Start_2P, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+
+const pressStart = Press_Start_2P({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-pixel",
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-heading",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Paidevia",
@@ -14,9 +28,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="text-slate-900 antialiased">
+      <body
+        className={`${pressStart.variable} ${spaceGrotesk.variable} antialiased`}
+        style={{ backgroundColor: "#0d1117", color: "#e6edf3" }}
+      >
         <div className="relative min-h-screen overflow-x-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_32%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_30%)]" />
           <Navbar />
           <div className="relative pb-10">{children}</div>
         </div>

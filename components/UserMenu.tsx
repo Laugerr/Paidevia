@@ -16,10 +16,7 @@ type UserMenuProps = {
   userRole?: string | null;
 };
 
-export default function UserMenu({
-  session,
-  userRole,
-}: UserMenuProps) {
+export default function UserMenu({ session, userRole }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const isAdmin = isAdminRole(userRole);
@@ -29,7 +26,7 @@ export default function UserMenu({
     return (
       <Link
         href="/login"
-        className="rounded-2xl bg-[linear-gradient(135deg,_#1d4ed8_0%,_#0ea5e9_100%)] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:brightness-105"
+        className="rounded-xl bg-[#209cee] px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(32,156,238,0.3)] transition duration-200 hover:bg-[#1786c9] hover:-translate-y-0.5"
       >
         Sign In
       </Link>
@@ -47,33 +44,31 @@ export default function UserMenu({
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/88 px-2 py-1.5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-md"
+        className="flex items-center gap-2 rounded-xl border border-[#30363d] bg-[#21262d] px-2 py-1.5 transition duration-200 hover:border-[#3d444d] hover:bg-[#2d333b]"
       >
         {image ? (
           <img
             src={image}
             alt="avatar"
-            className="h-9 w-9 rounded-2xl object-cover"
+            className="h-8 w-8 rounded-lg object-cover ring-1 ring-[#30363d]"
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-pink-500 text-sm font-bold text-white">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#209cee] to-[#92cc41] text-xs font-bold text-white">
             {fallback}
           </div>
         )}
 
         <div className="hidden text-left md:block">
-          <p className="max-w-[12rem] truncate text-sm font-semibold text-slate-900">
+          <p className="max-w-[10rem] truncate text-sm font-semibold text-[#e6edf3]">
             {name}
           </p>
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
-            {roleLabel}
-          </p>
+          <p className="font-pixel text-[8px] text-[#209cee]">{roleLabel}</p>
         </div>
 
         <svg
           viewBox="0 0 24 24"
-          className="hidden h-4 w-4 text-slate-400 md:block"
+          className="hidden h-4 w-4 text-[#6e7681] md:block"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
@@ -83,13 +78,13 @@ export default function UserMenu({
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-[24px] border border-white/80 bg-white/95 shadow-[0_24px_60px_rgba(15,23,42,0.16)] backdrop-blur">
-          <div className="border-b border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(191,219,254,0.9),_transparent_40%),linear-gradient(135deg,_#ffffff_0%,_#f8fbff_100%)] px-5 py-4">
-            <p className="truncate text-sm text-slate-500">Signed in as</p>
-            <p className="mt-1 truncate text-base font-semibold text-slate-950">
+        <div className="absolute right-0 mt-2 w-60 overflow-hidden rounded-2xl border border-[#30363d] bg-[#161b22] shadow-[0_16px_48px_rgba(0,0,0,0.6)]">
+          <div className="border-b border-[#30363d] bg-[#21262d] px-4 py-3.5">
+            <p className="text-xs text-[#6e7681]">Signed in as</p>
+            <p className="mt-1 truncate text-sm font-semibold text-[#e6edf3]">
               {name}
             </p>
-            <p className="mt-2 inline-flex rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+            <p className="mt-2 inline-flex rounded-md bg-[rgba(32,156,238,0.12)] px-2.5 py-1 font-pixel text-[8px] text-[#209cee]">
               {roleLabel}
             </p>
           </div>
@@ -111,10 +106,10 @@ export default function UserMenu({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`block px-5 py-3 text-sm font-medium transition ${
+                className={`block px-4 py-2.5 text-sm font-medium transition duration-200 ${
                   isActive
-                    ? "bg-sky-50 text-sky-700"
-                    : "text-slate-700 hover:bg-slate-50"
+                    ? "bg-[rgba(32,156,238,0.1)] text-[#209cee]"
+                    : "text-[#8b949e] hover:bg-[#21262d] hover:text-[#e6edf3]"
                 }`}
                 onClick={() => setOpen(false)}
               >
@@ -126,7 +121,7 @@ export default function UserMenu({
           {isAdmin && (
             <Link
               href="/admin"
-              className="block px-5 py-3 text-sm font-medium text-red-600 transition hover:bg-red-50"
+              className="block px-4 py-2.5 text-sm font-medium text-[#e76e55] transition duration-200 hover:bg-[rgba(231,110,85,0.1)]"
               onClick={() => setOpen(false)}
             >
               Admin
@@ -135,7 +130,7 @@ export default function UserMenu({
 
           <button
             onClick={() => signOut({ callbackUrl: "/home" })}
-            className="w-full border-t border-slate-200 px-5 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            className="w-full border-t border-[#30363d] px-4 py-2.5 text-left text-sm font-medium text-[#8b949e] transition duration-200 hover:bg-[#21262d] hover:text-[#e6edf3]"
           >
             Sign Out
           </button>

@@ -12,37 +12,32 @@ export default async function Navbar() {
 
   if (session?.user?.email) {
     const user = await prisma.user.findUnique({
-      where: {
-        email: session.user.email,
-      },
-      select: {
-        role: true,
-      },
+      where: { email: session.user.email },
+      select: { role: true },
     });
-
     userRole = user?.role ?? null;
   }
 
   return (
-    <header className="sticky top-0 z-50 px-4 pt-4 sm:px-6 lg:px-8">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-[28px] border border-white/80 bg-white/78 px-4 py-3.5 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:px-5">
-        <div className="flex min-w-0 items-center gap-4 lg:gap-5">
-          <Link href="/home" className="flex items-center gap-3">
+    <header className="sticky top-0 z-50 px-3 pt-3 sm:px-5 lg:px-8">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-2xl border border-[#30363d] bg-[#161b22]/95 px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl sm:px-5">
+        {/* Left: Logo + NavLinks */}
+        <div className="flex min-w-0 items-center gap-4">
+          <Link href="/home" className="flex shrink-0 items-center gap-2.5">
             <Image
               src="/assets/paidevia_logo.png"
               alt="Paidevia logo"
               width={128}
               height={32}
-              className="h-8 w-auto object-contain sm:h-12"
+              className="h-7 w-auto object-contain sm:h-9"
               priority
             />
-
-            <div className="min-w-0">
-              <p className="text-xl font-semibold tracking-tight text-slate-950 sm:text-2xl">
+            <div className="hidden min-w-0 sm:block">
+              <p className="font-pixel text-[11px] tracking-tight text-[#e6edf3] sm:text-[13px]">
                 Paidevia
               </p>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-sky-600 sm:text-xs">
-                LMS Platform
+              <p className="font-pixel text-[7px] text-[#209cee] sm:text-[8px]">
+                LMS
               </p>
             </div>
           </Link>
@@ -50,11 +45,12 @@ export default async function Navbar() {
           <NavLinks userRole={userRole} />
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/90 px-4 py-2.5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-md lg:flex">
+        {/* Right: Search + UserMenu */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="hidden items-center gap-2 rounded-xl border border-[#30363d] bg-[#21262d] px-3 py-2 transition duration-200 hover:border-[#3d444d] lg:flex">
             <svg
               viewBox="0 0 24 24"
-              className="h-5 w-5 text-slate-400"
+              className="h-4 w-4 text-[#6e7681]"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -64,8 +60,8 @@ export default async function Navbar() {
             </svg>
             <input
               type="text"
-              placeholder="Search learning paths..."
-              className="w-44 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 xl:w-60"
+              placeholder="Search courses..."
+              className="w-36 bg-transparent text-sm text-[#8b949e] outline-none placeholder:text-[#6e7681] xl:w-52"
             />
           </div>
 

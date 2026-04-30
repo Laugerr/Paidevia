@@ -39,19 +39,11 @@ function GitHubIcon() {
   );
 }
 
-function FeaturePill({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function FeaturePill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[24px] bg-white/10 px-4 py-4 ring-1 ring-white/15 backdrop-blur-sm">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-200">
-        {label}
-      </p>
-      <p className="mt-2 text-sm font-medium leading-6 text-white/90">{value}</p>
+    <div className="rounded-xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
+      <p className="font-pixel text-[8px] text-[#209cee]">{label}</p>
+      <p className="mt-2 text-sm font-medium leading-6 text-white/80">{value}</p>
     </div>
   );
 }
@@ -71,16 +63,17 @@ function ProviderButton({
     <form action={action}>
       <button
         type="submit"
-        className="flex w-full items-center justify-between rounded-[24px] border border-slate-200 bg-white px-5 py-4 text-left text-sm font-semibold text-slate-900 shadow-[0_16px_40px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50/80 hover:shadow-[0_22px_48px_rgba(15,23,42,0.1)]"
+        className="flex w-full items-center justify-between rounded-xl border border-[#30363d] bg-[#21262d] px-5 py-4 text-left text-sm font-semibold text-[#e6edf3] transition duration-200 hover:border-[#3d444d] hover:bg-[#2d333b] hover:-translate-y-0.5"
       >
         <span className="flex items-center gap-3">
-          <span
-            className={`flex h-11 w-11 items-center justify-center rounded-2xl ${accent}`}
-          >
+          <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${accent}`}>
             {icon}
           </span>
           <span>{label}</span>
         </span>
+        <svg viewBox="0 0 24 24" className="h-4 w-4 text-[#6e7681]" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="m9 18 6-6-6-6" />
+        </svg>
       </button>
     </form>
   );
@@ -88,13 +81,16 @@ function ProviderButton({
 
 export default function LoginPage() {
   return (
-    <main className="px-4 py-8 sm:px-6 lg:px-8">
-      <section className="mx-auto max-w-6xl overflow-hidden rounded-[40px] border border-white/70 bg-[radial-gradient(circle_at_top,_rgba(191,219,254,0.45),_transparent_30%),linear-gradient(180deg,_rgba(255,255,255,0.96)_0%,_rgba(248,250,252,0.94)_100%)] p-3 shadow-[0_30px_80px_rgba(15,23,42,0.08)] sm:p-4">
-        <div className="grid overflow-hidden rounded-[34px] border border-white/80 bg-white/85 shadow-[0_24px_70px_rgba(15,23,42,0.08)] lg:grid-cols-[1.1fr_0.9fr]">
-          <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(125,211,252,0.28),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(191,219,254,0.22),_transparent_22%),linear-gradient(160deg,_#0f172a_0%,_#142f57_54%,_#2563eb_100%)] p-8 text-white sm:p-10 lg:p-12">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(255,255,255,0.14),transparent_16%),radial-gradient(circle_at_85%_75%,rgba(255,255,255,0.12),transparent_18%)]" />
-            <div className="absolute -right-12 top-10 h-40 w-40 rounded-full border border-white/10" />
-            <div className="absolute bottom-8 left-8 h-28 w-28 rounded-full bg-cyan-300/10 blur-3xl" />
+    <main className="px-3 py-8 sm:px-5 lg:px-8">
+      <section className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-[#30363d] bg-[#161b22] shadow-[0_24px_64px_rgba(0,0,0,0.6)]">
+        <div className="grid lg:grid-cols-[1.1fr_0.9fr]">
+
+          {/* Left panel */}
+          <section className="relative overflow-hidden bg-gradient-to-br from-[#0a1628] via-[#0e2040] to-[#0a1628] p-7 text-white sm:p-10">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(32,156,238,0.18),transparent_35%),radial-gradient(circle_at_85%_85%,rgba(146,204,65,0.08),transparent_35%)]" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#209cee]/60 to-transparent" />
+            <div className="absolute -right-12 top-10 h-40 w-40 rounded-full border border-white/5" />
+            <div className="absolute bottom-8 left-8 h-24 w-24 rounded-full bg-[#209cee]/8 blur-3xl" />
 
             <div className="relative">
               <div className="flex items-center gap-3">
@@ -103,78 +99,59 @@ export default function LoginPage() {
                   alt="Paidevia logo"
                   width={128}
                   height={36}
-                  className="h-10 w-auto object-contain"
+                  className="h-9 w-auto object-contain"
                   priority
                 />
                 <div>
-                  <p className="text-2xl font-semibold tracking-tight">Paidevia</p>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-200">
-                    Learning Platform
-                  </p>
+                  <p className="font-pixel text-[12px] tracking-tight text-white">Paidevia</p>
+                  <p className="font-pixel text-[8px] text-[#209cee]">LMS Platform</p>
                 </div>
               </div>
 
-              <div className="mt-12 max-w-xl">
-                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-200">
-                  Welcome Back
-                </p>
-
-                <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">
+              <div className="mt-10 max-w-lg">
+                <p className="font-pixel text-[8px] text-[#209cee]">Welcome Back</p>
+                <h1 className="font-heading mt-5 text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
                   Sign in to keep your learning momentum going
                 </h1>
-
-                <p className="mt-5 max-w-lg text-sm leading-7 text-slate-200 sm:text-base">
+                <p className="mt-5 max-w-md text-sm leading-7 text-white/60 sm:text-base">
                   Re-enter your workspace, continue active lessons, and keep your
-                  progress moving inside a cleaner, premium LMS experience.
+                  progress moving inside a focused LMS experience.
                 </p>
               </div>
 
-              <div className="mt-10 grid gap-4 sm:grid-cols-3">
-                <FeaturePill
-                  label="Dashboard"
-                  value="Jump back into your learning workspace."
-                />
-                <FeaturePill
-                  label="Progress"
-                  value="Resume lessons without losing momentum."
-                />
-                <FeaturePill
-                  label="Account"
-                  value="Use one identity across the platform."
-                />
+              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                <FeaturePill label="Dashboard" value="Jump back into your learning workspace." />
+                <FeaturePill label="Progress" value="Resume lessons without losing momentum." />
+                <FeaturePill label="Account" value="One identity across the platform." />
               </div>
             </div>
           </section>
 
-          <section className="flex items-center p-8 sm:p-10 lg:p-12">
+          {/* Right panel */}
+          <section className="flex items-center bg-[#161b22] p-7 sm:p-10">
             <div className="mx-auto w-full max-w-md">
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-blue-600">
-                Authentication
-              </p>
-
-              <h2 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950">
+              <p className="font-pixel text-[9px] text-[#209cee]">Authentication</p>
+              <h2 className="font-heading mt-4 text-2xl font-bold tracking-tight text-[#e6edf3] sm:text-3xl">
                 Access your account
               </h2>
-
-              <p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">
+              <p className="mt-3 text-sm leading-7 text-[#8b949e]">
                 Choose your preferred provider to continue to your dashboard,
                 courses, and lesson history.
               </p>
 
-              <div className="mt-8 space-y-4">
+              <div className="mt-7 space-y-3">
                 <ProviderButton
                   label="Continue with Google"
-                  accent="bg-white ring-1 ring-slate-200 shadow-sm"
+                  accent="bg-white"
                   icon={<GoogleIcon />}
                   action={async () => {
                     "use server";
                     await signIn("google", { redirectTo: "/dashboard" });
                   }}
                 />
-
                 <ProviderButton
                   label="Continue with GitHub"
-                  accent="bg-slate-950 text-white ring-1 ring-slate-900"
+                  accent="bg-[#21262d] text-white ring-1 ring-[#30363d]"
                   icon={<GitHubIcon />}
                   action={async () => {
                     "use server";
@@ -183,26 +160,24 @@ export default function LoginPage() {
                 />
               </div>
 
-              <div className="mt-8 rounded-[28px] border border-slate-200 bg-slate-50/80 p-5">
-                <p className="text-sm font-medium text-slate-500">
-                  Looking ahead
-                </p>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
+              <div className="mt-6 rounded-xl border border-[#30363d] bg-[#21262d] p-4">
+                <p className="font-pixel text-[8px] text-[#6e7681]">Looking ahead</p>
+                <p className="mt-2 text-sm leading-6 text-[#8b949e]">
                   This layout is ready for future email sign-in or passwordless
-                  auth without needing to change the overall structure.
+                  auth without structural changes.
                 </p>
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="mt-5 flex flex-wrap gap-3">
                 <Link
                   href="/home"
-                  className="inline-flex rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-slate-50"
+                  className="inline-flex rounded-xl border border-[#30363d] bg-[#21262d] px-4 py-2.5 text-sm font-semibold text-[#e6edf3] transition duration-200 hover:bg-[#2d333b]"
                 >
                   Back to Home
                 </Link>
                 <Link
                   href="/courses"
-                  className="inline-flex rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600 transition duration-200 hover:bg-slate-100"
+                  className="inline-flex rounded-xl border border-[#30363d] bg-[#21262d] px-4 py-2.5 text-sm font-semibold text-[#8b949e] transition duration-200 hover:bg-[#2d333b] hover:text-[#e6edf3]"
                 >
                   Browse Courses
                 </Link>
