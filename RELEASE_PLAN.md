@@ -1,15 +1,15 @@
 # 🎓 Paidevia — Release Plan
 
 > A living document tracking what has shipped and where the platform is headed.
-> Updated: 2026-04-14
+> Updated: 2026-04-30
 
 ---
 
 ## 🧭 Platform Overview
 
-**Paidevia** is a modern Learning Management System (LMS) built on Next.js 16 (App Router), PostgreSQL via Prisma ORM, and NextAuth 5 for authentication. The platform supports three roles — student, instructor, and admin — and delivers a structured, self-paced learning experience.
+**Paidevia** is a modern Learning Management System built on Next.js 16 (App Router), PostgreSQL via Prisma v6, and NextAuth 5. The platform supports three roles — student, instructor, and admin — and delivers a structured, self-paced learning experience.
 
-**Current Status:** v1.2.0 shipped — full course data migrated to database, instructor foundation live. Lessons lack deliverable content (video, text body). Platform is not yet publicly launchable.
+**Current Status:** v1.3.0 shipped — complete UI redesign and UX overhaul. All core flows work end-to-end. Lessons still lack deliverable content (video, rich text). Platform is not yet publicly launchable.
 
 ---
 
@@ -32,16 +32,12 @@
 - Course detail pages (description, lessons, level)
 - One-click enrollment system
 - Lesson player with per-lesson completion tracking
-- Student dashboard:
-  - Enrolled courses and "continue learning" resume point
-  - Completion percentage, lesson count, and study time stats
-  - Recommended courses feed
-  - Achievement and streak display (UI)
-- User profile page (name, username, email, account ID, role)
+- Student dashboard with enrolled courses, completion stats, and recommended courses
+- User profile page
 
 #### 🛡️ Admin Panel
 - Platform-wide stats (total users, courses, enrollments, lesson completions)
-- User management: view all users, change roles, with self-protection guard
+- User management: view all users, change roles, self-protection guard
 - Course moderation: view all courses, change status, control visibility
 
 #### 🗄️ Data & Architecture
@@ -64,7 +60,7 @@
 
 ---
 
-### 🗃️ v1.2.0 — Full Course Data Migration *(Latest)*
+### 🗃️ v1.2.0 — Full Course Data Migration
 
 **Goal: Eliminate all static course data — every course and lesson served from the database.**
 
@@ -73,6 +69,43 @@
 - Polished learner progress feedback across the full LMS flow
 - Improved empty state handling for students across the learning flow
 - Static course data files removed post-migration
+
+---
+
+### ✨ v1.3.0 — UI Redesign & UX Overhaul *(Latest)*
+
+**Goal: Rebuild the interface from scratch with a modern, unique design system and fix all major UX gaps.**
+
+#### 🎨 Design System
+- New CSS custom properties design system with dark theme tokens
+- Dot grid background texture (`radial-gradient` repeating pattern)
+- Animated floating gradient orbs on hero sections
+- Gradient text utility (`.gradient-text`)
+- Glow card hover effect (`.glow-card`) with lift and border glow
+- Consistent type scale with `font-heading` and `font-pixel` families
+
+#### 🏗️ Layout Architecture
+- Two-layout route group system: `(marketing)` top nav vs `(app)` sidebar
+- Sticky glassmorphism top nav with `backdrop-filter` blur
+- 220px persistent sidebar with role-based navigation sections (Platform / Instructor / Admin)
+- Active nav state: gradient background + left accent border + glow shadow
+- User profile card at sidebar bottom with sign-out
+
+#### 🖥️ Page Redesigns
+- **Home** — Full-viewport hero with three animated orbs, gradient heading, frosted glass stat bar, scroll indicator, course cards with level-gradient strips
+- **Courses** — Moved to app layout (sidebar stays visible), same gradient card treatment as home
+- **Login** — Glassmorphism card, floating orbs, gradient logo icon with glow
+- **Dashboard** — "Continue Learning" hero banner with progress bar and resume CTA, stat cards, enrolled courses list, recommended grid
+- **Profile** — Avatar with fallback, role badge, 3 stat cards, account details table
+- **Instructor** — Rewritten into new design system: stats, course list with status badges, sidebar with breakdown and quick actions
+- **Admin** — Rewritten into new design system: stat cards with color-coded top borders, management cards with icon blocks and radial glows
+
+#### 🔧 UX Fixes
+- Logged-in users auto-redirect from `/home` → `/dashboard`
+- Root `/` redirects to `/dashboard` if authenticated, `/home` if not
+- Courses page moved from `(marketing)` to `(app)` so the sidebar no longer disappears when browsing courses
+- App layout allows unauthenticated access to public pages (each page handles its own auth redirect)
+- Marketing nav shows "Dashboard" button for signed-in users
 
 ---
 
@@ -89,8 +122,8 @@
 - ✍️ **Rich Lesson Content Editor** — Instructors get a WYSIWYG / markdown editor (Tiptap or Markdoc) with heading, list, code block, image upload, and callout support. Lesson body stored as structured JSON or markdown in the database.
 - 📎 **File & Asset Uploads** — Instructors can attach supplementary materials (PDFs, slides) to lessons. Storage via S3-compatible bucket (Cloudflare R2 or AWS S3).
 - 🖼️ **Course Thumbnail Images** — Courses have cover images uploaded by instructors. Displayed on catalog cards and course detail pages.
-- 🏁 **True Course Completion** — Auto-detect when a student has completed all lessons in an enrolled course, mark it as completed, and display the completion state in the dashboard.
-- ⬅️➡️ **Lesson Navigation UX** — Previous / Next lesson buttons inside the player, sidebar showing lesson list with completion checkmarks, and keyboard shortcut support.
+- 🏁 **True Course Completion** — Auto-detect when a student has completed all lessons, mark it as completed, and display the completion state in the dashboard.
+- ⬅️➡️ **Lesson Navigation UX** — Previous / Next lesson buttons inside the player, sidebar showing lesson list with completion checkmarks.
 - ⚡ **Database Indexes** — Add indexes on `userId`, `courseId`, `status`, and `lessonSlug` for query performance at scale.
 
 ### 🏆 Definition of Done
@@ -103,13 +136,13 @@ A student can log in, find a published course, enroll, watch videos, read lesson
 **Goal: Help learners find the right courses and decide with confidence. Turn the catalog from a list into a discovery engine.**
 
 ### ✨ Features
-- 🏷️ **Course Categories & Tags** — Structured taxonomy (e.g., Programming, Design, Business). Courses tagged by instructors, category pages surfaced publicly. Home page categories link to live filtered results.
-- 🔎 **Full-Text Search** — Search bar on the catalog with PostgreSQL full-text search across course titles, descriptions, and tags. Instant results with keyboard navigation.
-- ⭐ **Ratings & Reviews** — Students who complete a course can leave a star rating and written review. Courses display average rating and review count on catalog cards and detail pages.
-- 👤 **Instructor Public Profiles** — Each instructor gets a public profile page showing their bio, photo, and all published courses. Linked from every course detail page.
-- 🔗 **Course Prerequisites** — Instructors can mark prerequisite courses. Students see what they should complete first. Advisory only for v2.0, enforceable in v3.0.
+- 🏷️ **Course Categories & Tags** — Structured taxonomy (e.g., Programming, Design, Security). Courses tagged by instructors, category pages surfaced publicly.
+- 🔎 **Full-Text Search** — Search bar on the catalog with PostgreSQL full-text search across course titles, descriptions, and tags.
+- ⭐ **Ratings & Reviews** — Students who complete a course can leave a star rating and written review. Courses display average rating and review count.
+- 👤 **Instructor Public Profiles** — Each instructor gets a public profile showing their bio, photo, and all published courses.
+- 🔗 **Course Prerequisites** — Instructors can mark prerequisite courses. Students see what they should complete first.
 - 📄 **Pagination & Sorting** — Catalog and admin list pages paginate at 20 items. Sort by newest, rating, enrollment count, or alphabetical.
-- 🌐 **SEO & Open Graph** — Dynamic `<title>`, `description`, and Open Graph meta tags for course and instructor pages. Proper canonical URLs.
+- 🌐 **SEO & Open Graph** — Dynamic `<title>`, `description`, and Open Graph meta tags for course and instructor pages.
 
 ### 🏆 Definition of Done
 A first-time visitor can discover a course through category browsing or search, read reviews and instructor bio, and make an informed decision to enroll — without needing a direct link.
@@ -121,31 +154,30 @@ A first-time visitor can discover a course through category browsing or search, 
 **Goal: Give learners reasons to come back. Build the mechanics that turn one-time visitors into active, returning students.**
 
 ### ✨ Features
-- 🎓 **Certificates of Completion** — Auto-generated PDF certificate when a course is completed. Unique verification URL per certificate. Downloadable and shareable. Instructors can customize certificate template (course name, their logo).
-- 🏅 **Badge & Achievement System** — Persistent badges earned for milestones: First Enrollment, First Completion, 7-Day Streak, 5 Courses Completed, etc. Displayed on profile and dashboard.
-- 🔥 **Streak & Learning Goals** — Daily learning streak tracked server-side (not just UI). Weekly goal setting (e.g., complete 3 lessons this week). Progress ring on dashboard.
-- 📬 **Email Notifications** — Transactional email via Resend or Postmark: enrollment confirmation, weekly learning recap, course update alerts for enrolled students, certificate delivery.
-- 💬 **Lesson Q&A / Comments** — Per-lesson threaded discussion where students ask questions and instructors answer. Instructors can pin top answers. Lightweight, not a full forum.
-- 📢 **Course Announcements** — Instructors broadcast announcements to enrolled students (stored + email delivery).
-- 📊 **Instructor Analytics** — Instructors see per-course analytics: enrollment over time, average completion rate, lesson drop-off points, rating breakdown.
+- 🎓 **Certificates of Completion** — Auto-generated PDF certificate when a course is completed. Unique verification URL per certificate.
+- 🏅 **Badge & Achievement System** — Persistent badges earned for milestones: First Enrollment, First Completion, 7-Day Streak, 5 Courses Completed, etc.
+- 🔥 **Streak & Learning Goals** — Daily learning streak tracked server-side. Weekly goal setting with progress display on the dashboard.
+- 📬 **Email Notifications** — Transactional email via Resend or Postmark: enrollment confirmation, weekly recap, certificate delivery.
+- 💬 **Lesson Q&A / Comments** — Per-lesson threaded discussion where students ask questions and instructors answer.
+- 📢 **Course Announcements** — Instructors broadcast announcements to enrolled students.
+- 📊 **Instructor Analytics** — Per-course analytics: enrollment over time, average completion rate, lesson drop-off points.
 
 ### 🏆 Definition of Done
-A student has visible reasons to return daily (streaks, goals), feels recognized for their progress (badges, certificates), and can get their questions answered without leaving the platform.
+A student has visible reasons to return daily, feels recognized for their progress, and can get questions answered without leaving the platform.
 
 ---
 
 ## v5.0 — 💰 Monetization
 
-**Goal: Make Paidevia financially self-sustaining by enabling instructors to sell courses and the platform to take a revenue share.**
+**Goal: Make Paidevia financially self-sustaining by enabling instructors to sell courses.**
 
 ### ✨ Features
-- 💵 **Paid Course Pricing** — Instructors set a price on courses (USD, fixed). Free and paid courses coexist. Price displayed on catalog and enforced at enrollment.
-- 💳 **Stripe Checkout Integration** — One-time payment flow via Stripe. Checkout hosted by Stripe, redirect back to Paidevia on success. Payment receipt emailed automatically.
-- 🏦 **Instructor Payout System** — Platform keeps a configurable revenue share (e.g., 20%). Remaining balance tracked per instructor and paid out via Stripe Connect on a monthly schedule.
-- 🎟️ **Coupon & Discount Codes** — Instructors create coupon codes (percentage or fixed discount, usage limits, expiry). Applied at checkout.
-- 👑 **Subscription Tier (Paidevia Pro)** — Optional platform-level subscription giving access to all courses for a monthly fee. Managed via Stripe Subscriptions. Instructors opted into the subscription pool get a share of pool revenue proportional to minutes watched.
-- 🧾 **Invoice & Billing History** — Students see past purchases in their profile. Instructors see their earnings history and payout schedule.
-- 🔄 **Refund Policy Enforcement** — Configurable refund window (e.g., 30-day no-questions-asked). Admin refund interface connected to Stripe.
+- 💵 **Paid Course Pricing** — Instructors set a price on courses. Free and paid courses coexist.
+- 💳 **Stripe Checkout Integration** — One-time payment flow via Stripe. Redirect back on success, receipt emailed automatically.
+- 🏦 **Instructor Payout System** — Platform keeps a configurable revenue share. Remaining balance paid out via Stripe Connect on a schedule.
+- 🎟️ **Coupon & Discount Codes** — Instructors create coupon codes (percentage or fixed discount, usage limits, expiry).
+- 👑 **Subscription Tier (Paidevia Pro)** — Optional platform-level subscription giving access to all courses for a monthly fee.
+- 🧾 **Invoice & Billing History** — Students see past purchases in their profile. Instructors see earnings history.
 
 ### 🏆 Definition of Done
 An instructor can publish a paid course, a student can purchase it with a credit card, and the instructor receives a payout — with the platform taking its cut automatically.
@@ -154,35 +186,34 @@ An instructor can publish a paid course, a student can purchase it with a credit
 
 ## v6.0 — 🏢 Scale & Enterprise
 
-**Goal: Open Paidevia to organizations. Enable teams, companies, and institutions to run the platform as their own internal or branded learning hub.**
+**Goal: Open Paidevia to organizations. Enable teams and institutions to run the platform as their own internal learning hub.**
 
 ### ✨ Features
-- 🏗️ **Organizations / Workspaces** — A company or institution creates an organization. Admins invite members via email. Members get auto-enrolled in designated courses. Usage isolated per organization.
-- 🎨 **White-Label / Custom Branding** — Organizations configure custom logo, primary color, and domain. The platform renders under their brand (e.g., `learn.acme.com`).
-- 🔑 **SSO Integration** — SAML 2.0 / OIDC support so enterprise users log in with their company identity provider (Okta, Azure AD, Google Workspace).
-- 📈 **Team Analytics & Reporting** — Organization admins see team-level dashboards: who completed what, time spent, compliance training status. Exportable to CSV.
-- 👥 **Bulk Enrollment & Assignments** — Admins assign courses to groups or all members at once. Deadline-based assignments with completion tracking.
-- 🔌 **API Platform** — Public REST API with API key auth so organizations can integrate Paidevia data into their own dashboards, HR systems, or Slack bots. Rate-limited and documented.
-- 🗂️ **Audit Logs** — Full activity log for admin and instructor actions within an organization. Filterable by user, action type, and date range.
-- ⚙️ **SLA & Uptime Guarantees** — Infrastructure hardening: Redis caching layer, read replicas for analytics queries, CDN for static assets, monitoring dashboards.
+- 🏗️ **Organizations / Workspaces** — A company creates an organization, invites members, and auto-enrolls them in designated courses.
+- 🎨 **White-Label / Custom Branding** — Organizations configure custom logo, primary color, and domain.
+- 🔑 **SSO Integration** — SAML 2.0 / OIDC support for enterprise identity providers (Okta, Azure AD, Google Workspace).
+- 📈 **Team Analytics & Reporting** — Organization admins see team-level dashboards: who completed what, time spent, compliance status. Exportable to CSV.
+- 👥 **Bulk Enrollment & Assignments** — Admins assign courses to groups. Deadline-based assignments with completion tracking.
+- 🔌 **Public REST API** — API key auth so organizations can integrate Paidevia data into their own dashboards or HR systems.
 
 ### 🏆 Definition of Done
-A 500-person company onboards their team, assigns mandatory compliance courses, tracks completion rates for their HR department, and has their employees experience Paidevia under the company's own brand and domain.
+A 500-person company onboards their team, assigns mandatory compliance courses, tracks completion rates, and has employees experience Paidevia under the company's own brand and domain.
 
 ---
 
-## 📅 Release Timeline (Targets)
+## 📅 Release Timeline
 
-| Release | Focus                        | Status         | Target Quarter |
-|---------|------------------------------|----------------|---------------|
-| v1.0.0  | 🚀 Core LMS System            | ✅ Shipped      | Q1 2026       |
-| v1.1.0  | 🧑‍🏫 Instructor Foundation     | ✅ Shipped      | Q1 2026       |
-| v1.2.0  | 🗃️ Full Course Data Migration  | ✅ Shipped      | Q1 2026       |
-| v2.0    | 🎬 Content Delivery           | 🔜 Next        | Q2 2026       |
-| v3.0    | 🔍 Discovery & Trust          | 📅 Planned     | Q3 2026       |
-| v4.0    | 🔥 Engagement & Achievement   | 📅 Planned     | Q4 2026       |
-| v5.0    | 💰 Monetization               | 📅 Planned     | Q1 2027       |
-| v6.0    | 🏢 Scale & Enterprise         | 📅 Planned     | Q3 2027       |
+| Release | Focus | Status | Target |
+|---------|-------|--------|--------|
+| v1.0.0 | 🚀 Core LMS System | ✅ Shipped | Q1 2026 |
+| v1.1.0 | 🧑‍🏫 Instructor Foundation | ✅ Shipped | Q1 2026 |
+| v1.2.0 | 🗃️ Full Course Data Migration | ✅ Shipped | Q1 2026 |
+| v1.3.0 | ✨ UI Redesign & UX Overhaul | ✅ Shipped | Q2 2026 |
+| v2.0 | 🎬 Content Delivery (video, rich text) | 🔜 Next | Q2 2026 |
+| v3.0 | 🔍 Discovery & Trust | 📅 Planned | Q3 2026 |
+| v4.0 | 🔥 Engagement & Achievement | 📅 Planned | Q4 2026 |
+| v5.0 | 💰 Monetization | 📅 Planned | Q1 2027 |
+| v6.0 | 🏢 Scale & Enterprise | 📅 Planned | Q3 2027 |
 
 ---
 
