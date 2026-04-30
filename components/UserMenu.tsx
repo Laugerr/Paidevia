@@ -36,9 +36,8 @@ export default function UserMenu({ session, userRole }: UserMenuProps) {
   const name = session.user.name ?? "User";
   const image = session.user.image;
   const fallback = name[0]?.toUpperCase() ?? "U";
-  const roleLabel = isUserRole(userRole ?? "")
-    ? USER_ROLE_LABELS[userRole]
-    : USER_ROLE_LABELS.student;
+  const role = userRole ?? "";
+  const roleLabel = isUserRole(role) ? USER_ROLE_LABELS[role] : USER_ROLE_LABELS.student;
 
   return (
     <div className="relative">

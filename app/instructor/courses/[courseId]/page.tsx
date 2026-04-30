@@ -4,25 +4,25 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { canAccessInstructorArea, isAdminRole } from "@/lib/roles";
 
+type CourseSearchParams = {
+  error?: string;
+  publishError?: string;
+  publishSuccess?: string;
+  title?: string;
+  slug?: string;
+  description?: string;
+  level?: string;
+  status?: string;
+  lessonError?: string;
+  lessonTitle?: string;
+  lessonSlug?: string;
+  lessonSummary?: string;
+  editingLessonId?: string;
+};
+
 type ManageInstructorCoursePageProps = {
-  params: Promise<{
-    courseId: string;
-  }>;
-  searchParams?: Promise<{
-    error?: string;
-    publishError?: string;
-    publishSuccess?: string;
-    title?: string;
-    slug?: string;
-    description?: string;
-    level?: string;
-    status?: string;
-    lessonError?: string;
-    lessonTitle?: string;
-    lessonSlug?: string;
-    lessonSummary?: string;
-    editingLessonId?: string;
-  }>;
+  params: Promise<{ courseId: string }>;
+  searchParams?: Promise<CourseSearchParams>;
 };
 
 const COURSE_LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
@@ -145,7 +145,7 @@ export default async function ManageInstructorCoursePage({
 }: ManageInstructorCoursePageProps) {
   const [{ courseId }, resolvedSearchParams] = await Promise.all([
     params,
-    searchParams ?? Promise.resolve({} as NonNullable<Awaited<typeof searchParams>>),
+    searchParams ?? Promise.resolve({} as CourseSearchParams),
   ]);
 
   const user = await getAuthorizedInstructorActor();
