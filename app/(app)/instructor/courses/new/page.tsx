@@ -2,16 +2,16 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { canAccessInstructorArea, isAdminRole } from "@/lib/roles";
+import { canAccessInstructorArea } from "@/lib/roles";
 
 type NewCoursePageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     error?: string;
     title?: string;
     slug?: string;
     description?: string;
     level?: string;
-  };
+  }>;
 };
 
 function normalizeSlug(value: string) {
@@ -23,290 +23,231 @@ function normalizeSlug(value: string) {
     .replace(/-+/g, "-");
 }
 
-export default async function NewInstructorCoursePage({
-  searchParams,
-}: NewCoursePageProps) {
-  const session = await auth();
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "11px 14px",
+  background: "var(--surface)",
+  border: "1px solid var(--border)",
+  borderRadius: 10,
+  fontSize: 14,
+  color: "var(--text)",
+  outline: "none",
+  transition: "border-color 0.15s",
+};
 
-  if (!session?.user?.email) {
-    redirect("/login");
-  }
+const labelStyle: React.CSSProperties = {
+  display: "block",
+  fontSize: 12,
+  fontWeight: 600,
+  color: "var(--muted)",
+  marginBottom: 7,
+};
+
+export default async function NewInstructorCoursePage({ searchParams }: NewCoursePageProps) {
+  const session = await auth();
+  if (!session?.user?.email) redirect("/login");
 
   const user = await prisma.user.findUnique({
-    where: {
-      email: session.user.email,
-    },
-    select: {
-      id: true,
-      role: true,
-      name: true,
-    },
+    where: { email: session.user.email },
+    select: { id: true, role: true, name: true },
   });
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  if (!canAccessInstructorArea(user.role)) {
-    redirect("/dashboard");
-  }
+  if (!user || !canAccessInstructorArea(user.role)) redirect("/dashboard");
 
   async function createCourse(formData: FormData) {
     "use server";
 
     const session = await auth();
-
-    if (!session?.user?.email) {
-      redirect("/login");
-    }
+    if (!session?.user?.email) redirect("/login");
 
     const currentUser = await prisma.user.findUnique({
-      where: {
-        email: session.user.email,
-      },
-      select: {
-        id: true,
-        role: true,
-      },
+      where: { email: session.user.email },
+      select: { id: true, role: true },
     });
-
-    if (!currentUser || !canAccessInstructorArea(currentUser.role)) {
-      redirect("/dashboard");
-    }
+    if (!currentUser || !canAccessInstructorArea(currentUser.role)) redirect("/dashboard");
 
     const title = String(formData.get("title") ?? "").trim();
     const slug = normalizeSlug(String(formData.get("slug") ?? ""));
     const description = String(formData.get("description") ?? "").trim();
     const level = String(formData.get("level") ?? "").trim();
 
-    const params = new URLSearchParams({
-      title,
-      slug,
-      description,
-      level,
-    });
+    const params = new URLSearchParams({ title, slug, description, level });
 
     if (!title || !slug || !description || !level) {
       params.set("error", "Please complete all required fields.");
       redirect(`/instructor/courses/new?${params.toString()}`);
     }
 
-    const existingCourse = await prisma.course.findUnique({
-      where: {
-        slug,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (existingCourse) {
+    const existing = await prisma.course.findUnique({ where: { slug }, select: { id: true } });
+    if (existing) {
       params.set("error", "That slug is already in use. Please choose another.");
       redirect(`/instructor/courses/new?${params.toString()}`);
     }
 
     await prisma.course.create({
-      data: {
-        title,
-        slug,
-        description,
-        level,
-        status: "draft",
-        lessons: 0,
-        instructorId: currentUser.id,
-      },
+      data: { title, slug, description, level, status: "draft", lessons: 0, instructorId: currentUser.id },
     });
 
     redirect("/instructor");
   }
 
-  const titleValue = searchParams?.title ?? "";
-  const slugValue = searchParams?.slug ?? "";
-  const descriptionValue = searchParams?.description ?? "";
-  const levelValue = searchParams?.level ?? "Beginner";
-  const errorMessage = searchParams?.error;
+  const sp = await searchParams;
+  const titleValue = sp?.title ?? "";
+  const slugValue = sp?.slug ?? "";
+  const descriptionValue = sp?.description ?? "";
+  const levelValue = sp?.level ?? "Beginner";
+  const errorMessage = sp?.error;
   const firstName = user.name?.split(" ")[0] ?? "Instructor";
 
   return (
-    <main className="px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl space-y-6 lg:space-y-7">
-        <section className="relative overflow-hidden rounded-[36px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(253,224,71,0.22),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(224,231,255,0.72),_transparent_24%),linear-gradient(180deg,_rgba(255,255,255,0.96)_0%,_rgba(248,250,252,0.94)_100%)] p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
-          <div className="absolute -left-10 top-0 h-40 w-40 rounded-full bg-amber-200/30 blur-3xl" />
-          <div className="absolute bottom-0 right-0 h-48 w-48 rounded-full bg-blue-200/25 blur-3xl" />
+    <div className="r-page" style={{ padding: "32px 32px 80px", maxWidth: 720 }}>
 
-          <div className="relative">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-600">
-              Instructor Workspace
-            </p>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
-              Create a new course draft
-            </h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              Start with the core course identity first. This draft will be
-              saved to the database and linked to your instructor account.
-            </p>
-            <p className="mt-3 text-sm font-medium text-blue-700">
-              Creating as {firstName}.
-            </p>
-            {isAdminRole(user.role) ? (
-              <p className="mt-3 text-sm font-medium text-amber-700">
-                Admin access is enabled here for testing and oversight.
-              </p>
-            ) : null}
+      {/* Header */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 16, fontSize: 13, color: "var(--subtle)" }}>
+          <Link href="/instructor" style={{ color: "var(--muted)" }}>Instructor</Link>
+          <svg viewBox="0 0 24 24" width={12} height={12} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+          <span style={{ color: "var(--text)" }}>New Course</span>
+        </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/instructor"
-                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white/92 px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white"
-              >
-                Back to Instructor Workspace
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-[30px] border border-white/80 bg-white/92 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:p-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
-                Course Details
-              </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-                Draft setup
-              </h2>
-            </div>
-            <p className="max-w-xl text-sm leading-6 text-slate-500">
-              Newly created courses are stored as drafts. Public course pages
-              still rely on static course data for now, so this workflow is the
-              instructor-side foundation first.
-            </p>
-          </div>
-
-          {errorMessage ? (
-            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-              {errorMessage}
-            </div>
-          ) : null}
-
-          <form action={createCourse} className="mt-6 space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <label className="block">
-                <span className="text-sm font-semibold text-slate-700">
-                  Course Title
-                </span>
-                <input
-                  name="title"
-                  type="text"
-                  defaultValue={titleValue}
-                  placeholder="Introduction to Product Design"
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-blue-400"
-                  required
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-sm font-semibold text-slate-700">
-                  Course Slug
-                </span>
-                <input
-                  name="slug"
-                  type="text"
-                  defaultValue={slugValue}
-                  placeholder="introduction-to-product-design"
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-blue-400"
-                  required
-                />
-              </label>
-            </div>
-
-            <label className="block">
-              <span className="text-sm font-semibold text-slate-700">
-                Description
-              </span>
-              <textarea
-                name="description"
-                rows={5}
-                defaultValue={descriptionValue}
-                placeholder="Write a clear summary of what learners will gain from this course."
-                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-blue-400"
-                required
-              />
-            </label>
-
-            <div className="grid gap-6 md:grid-cols-[minmax(0,240px)_1fr]">
-              <label className="block">
-                <span className="text-sm font-semibold text-slate-700">Level</span>
-                <select
-                  name="level"
-                  defaultValue={levelValue}
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-blue-400"
-                >
-                  {["Beginner", "Intermediate", "Advanced"].map((level) => (
-                    <option key={level} value={level}>
-                      {level}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <div className="rounded-[28px] border border-slate-200 bg-slate-50/80 p-5">
-                <p className="text-sm font-semibold text-slate-900">
-                  Draft defaults
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600 ring-1 ring-slate-200">
-                    Status: Draft
-                  </span>
-                  <span className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600 ring-1 ring-slate-200">
-                    Lessons: 0
-                  </span>
-                  <span className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600 ring-1 ring-slate-200">
-                    Owner linked
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-[28px] border border-blue-100 bg-[radial-gradient(circle_at_top_right,_rgba(96,165,250,0.14),_transparent_34%),linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(239,246,255,0.88)_100%)] p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
-                What happens next
-              </p>
-              <div className="mt-4 grid gap-3 md:grid-cols-3">
-                {[
-                  "Your draft appears immediately in the instructor workspace.",
-                  "You can add lessons and adjust the course structure next.",
-                  "Publishing stays blocked until the course is ready.",
-                ].map((item, index) => (
-                  <div
-                    key={item}
-                    className="rounded-2xl bg-white/85 px-4 py-4 ring-1 ring-blue-100"
-                  >
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
-                      {index + 1}
-                    </span>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">{item}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <button
-                type="submit"
-                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
-              >
-                Create Draft Course
-              </button>
-              <Link
-                href="/instructor"
-                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-sm font-semibold text-slate-700 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50"
-              >
-                Cancel
-              </Link>
-            </div>
-          </form>
-        </section>
+        <p style={{ fontSize: 11, fontWeight: 700, color: "var(--accent-hover)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>
+          Instructor Workspace
+        </p>
+        <h1 className="font-heading" style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em", marginBottom: 6 }}>
+          Create a new course
+        </h1>
+        <p style={{ fontSize: 14, color: "var(--muted)", lineHeight: 1.7 }}>
+          Creating as <strong style={{ color: "var(--text)", fontWeight: 600 }}>{firstName}</strong>. Courses start as drafts and can be published once lessons are added.
+        </p>
       </div>
-    </main>
+
+      {/* Error */}
+      {errorMessage && (
+        <div style={{
+          padding: "12px 16px", marginBottom: 24,
+          background: "rgba(248,113,113,0.08)",
+          border: "1px solid rgba(248,113,113,0.2)",
+          borderRadius: 10, fontSize: 13, color: "var(--red)",
+        }}>
+          {errorMessage}
+        </div>
+      )}
+
+      {/* Form */}
+      <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 16, padding: "32px" }}>
+        <form action={createCourse} style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+
+          {/* Title + Slug row */}
+          <div className="r-form-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div>
+              <label style={labelStyle}>Course Title</label>
+              <input
+                name="title"
+                type="text"
+                defaultValue={titleValue}
+                placeholder="e.g. Introduction to Python"
+                required
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Slug <span style={{ color: "var(--subtle)", fontWeight: 400 }}>(URL-safe, auto-normalized)</span></label>
+              <input
+                name="slug"
+                type="text"
+                defaultValue={slugValue}
+                placeholder="e.g. intro-to-python"
+                required
+                style={inputStyle}
+              />
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label style={labelStyle}>Description</label>
+            <textarea
+              name="description"
+              rows={4}
+              defaultValue={descriptionValue}
+              placeholder="Write a clear summary of what learners will gain from this course."
+              required
+              style={{ ...inputStyle, resize: "vertical", lineHeight: 1.7 }}
+            />
+          </div>
+
+          {/* Level */}
+          <div style={{ maxWidth: 240 }}>
+            <label style={labelStyle}>Difficulty Level</label>
+            <select name="level" defaultValue={levelValue} style={inputStyle}>
+              {["Beginner", "Intermediate", "Advanced"].map((l) => (
+                <option key={l} value={l}>{l}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Draft info */}
+          <div style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: 10,
+            padding: "16px 20px",
+          }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>What happens after creation</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {[
+                "Course is saved as a draft — not visible to students yet.",
+                "You can add lessons from the instructor workspace.",
+                "An admin can publish it once it's ready.",
+              ].map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                  <span style={{
+                    width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
+                    background: "var(--accent-bg)", border: "1px solid var(--accent-border)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 10, fontWeight: 700, color: "var(--accent-hover)", marginTop: 1,
+                  }}>
+                    {i + 1}
+                  </span>
+                  <p style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.6 }}>{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
+            <button
+              type="submit"
+              style={{
+                padding: "11px 28px",
+                background: "var(--accent)",
+                color: "#fff",
+                borderRadius: 10,
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: "pointer",
+                boxShadow: "0 2px 16px var(--accent-glow)",
+                transition: "all 0.15s",
+              }}
+            >
+              Create Draft
+            </button>
+            <Link href="/instructor" style={{
+              padding: "11px 22px",
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: 10,
+              fontSize: 14,
+              fontWeight: 500,
+              color: "var(--muted)",
+            }}>
+              Cancel
+            </Link>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }

@@ -1,29 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
+type Lesson = { title: string; slug: string };
 
-function Icon({ children, className = "h-5 w-5" }: { children: ReactNode; className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      {children}
-    </svg>
-  );
-}
-
-const heroArt = [
-  "from-blue-900 via-sky-800 to-indigo-900",
-  "from-emerald-900 via-teal-800 to-green-900",
-  "from-orange-900 via-red-800 to-rose-900",
-];
-
-type CourseDetailLesson = { title: string; slug: string };
-type CourseDetailClientProps = {
+type Props = {
   course: {
     id: string;
     slug: string;
@@ -31,313 +14,433 @@ type CourseDetailClientProps = {
     description: string;
     level: string;
     lessons: number;
-    lessonList: CourseDetailLesson[];
+    lessonList: Lesson[];
   };
 };
 
-function getArtIndex(seed: string) {
-  return seed.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
-}
+const levelColor: Record<string, string> = {
+  Beginner: "var(--green)",
+  Intermediate: "var(--yellow)",
+  Advanced: "var(--red)",
+};
 
-export default function CourseDetailClient({ course: foundCourse }: CourseDetailClientProps) {
+const levelBg: Record<string, string> = {
+  Beginner: "rgba(52,211,153,0.1)",
+  Intermediate: "rgba(251,191,36,0.1)",
+  Advanced: "rgba(248,113,113,0.1)",
+};
+
+export default function CourseDetailClient({ course }: Props) {
   const router = useRouter();
   const [isEnrolled, setIsEnrolled] = useState(false);
-  const [currentLesson, setCurrentLesson] = useState<string | null>(null);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
-  const [isLoadingEnrollment, setIsLoadingEnrollment] = useState(true);
-  const [isEnrolling, setIsEnrolling] = useState(false);
-  const [enrollmentError, setEnrollmentError] = useState<string | null>(null);
-  const [enrollmentSuccess, setEnrollmentSuccess] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [enrolling, setEnrolling] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadCourseState() {
+    async function load() {
       try {
         const [enrollRes, progressRes] = await Promise.all([
           fetch("/api/enrollments", { cache: "no-store" }),
           fetch("/api/progress", { cache: "no-store" }),
         ]);
-        if (!enrollRes.ok || !progressRes.ok) throw new Error("Failed to load state");
         const enrollData = await enrollRes.json();
         const progressData = await progressRes.json();
-        const enrolledCourses: string[] = enrollData.enrolledCourses ?? [];
-        const completedSlugs: string[] = progressData.completedLessons ?? [];
-        setIsEnrolled(enrolledCourses.includes(foundCourse.slug));
-        setCompletedLessons(completedSlugs);
-        const firstIncomplete = foundCourse.lessonList.find((l) => !completedSlugs.includes(l.slug)) ?? foundCourse.lessonList[0];
-        setCurrentLesson(firstIncomplete?.slug ?? null);
-      } catch (error) {
-        console.error("Failed to load course state:", error);
+        setIsEnrolled((enrollData.enrolledCourses ?? []).includes(course.slug));
+        setCompletedLessons(progressData.completedLessons ?? []);
+      } catch (e) {
+        console.error(e);
       } finally {
-        setIsLoadingEnrollment(false);
+        setLoading(false);
       }
     }
-    loadCourseState();
-  }, [foundCourse]);
+    load();
+  }, [course.slug]);
 
-  const totalLessons = foundCourse.lessonList.length;
-  const completedLessonsInCourse = useMemo(
-    () => foundCourse.lessonList.filter((l) => completedLessons.includes(l.slug)).length,
-    [completedLessons, foundCourse.lessonList]
+  const completedCount = useMemo(
+    () => course.lessonList.filter((l) => completedLessons.includes(l.slug)).length,
+    [completedLessons, course.lessonList]
   );
-  const progressPercentage = totalLessons > 0 ? Math.round((completedLessonsInCourse / totalLessons) * 100) : 0;
-  const hasLessons = totalLessons > 0;
+  const total = course.lessonList.length;
+  const pct = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+  const nextLesson = course.lessonList.find((l) => !completedLessons.includes(l.slug)) ?? course.lessonList[0];
 
   const handleEnroll = async () => {
+    setEnrolling(true);
+    setError(null);
     try {
-      setIsEnrolling(true);
-      setEnrollmentError(null);
-      setEnrollmentSuccess(null);
-      const response = await fetch("/api/enroll", {
+      const res = await fetch("/api/enroll", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ courseSlug: foundCourse.slug }),
+        body: JSON.stringify({ courseSlug: course.slug }),
       });
-      if (response.status === 401) { router.push("/login"); return; }
-      if (!response.ok) {
-        const data = await response.json().catch(() => null);
-        setEnrollmentError(data?.error ?? "Failed to enroll");
+      if (res.status === 401) { router.push("/login"); return; }
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(data?.error ?? "Enrollment failed. Please try again.");
         return;
       }
       setIsEnrolled(true);
-      setEnrollmentSuccess("You're enrolled! Jump straight into the lesson flow.");
-    } catch (error) {
-      console.error("Enrollment failed:", error);
+    } catch {
+      setError("Something went wrong. Please try again.");
     } finally {
-      setIsEnrolling(false);
+      setEnrolling(false);
     }
   };
 
-  const artIndex = getArtIndex(foundCourse.id);
-
   return (
-    <main className="px-3 py-8 sm:px-5 lg:px-8">
-      <div className="mx-auto max-w-6xl space-y-5">
+    <div className="r-page" style={{ maxWidth: 1000, margin: "0 auto", padding: "40px 32px 80px" }}>
 
-        {/* Hero */}
-        <section className="relative overflow-hidden rounded-2xl border border-[#30363d] bg-[#161b22] p-5 shadow-[0_16px_48px_rgba(0,0,0,0.5)] sm:p-8 lg:p-10">
-          <div className="absolute -left-8 -top-8 h-48 w-48 rounded-full bg-[#209cee]/8 blur-3xl" />
-          <div className="absolute -bottom-8 -right-8 h-40 w-40 rounded-full bg-[#a78bfa]/6 blur-3xl" />
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#209cee]/40 to-transparent" />
+      {/* Breadcrumb */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 6,
+        marginBottom: 32, fontSize: 13, color: "var(--subtle)",
+      }}>
+        <Link href="/courses" style={{ color: "var(--muted)", transition: "color 0.15s" }}>
+          Courses
+        </Link>
+        <svg viewBox="0 0 24 24" width={12} height={12} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+        <span style={{ color: "var(--text)", maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {course.title}
+        </span>
+      </div>
 
-          <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_320px] xl:items-center">
-            <div className="max-w-3xl">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-lg border border-[#30363d] bg-[#21262d] px-3 py-1.5 font-pixel text-[8px] text-[#209cee]">
-                  {foundCourse.level}
-                </span>
-                <span className="rounded-lg bg-[#209cee] px-3 py-1.5 font-pixel text-[8px] text-white">
-                  Learning Path
-                </span>
-              </div>
+      {/* Page header */}
+      <div style={{ marginBottom: 36 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+          <span style={{
+            fontSize: 12, fontWeight: 600,
+            color: levelColor[course.level] ?? "var(--muted)",
+            background: levelBg[course.level] ?? "var(--card)",
+            padding: "3px 12px", borderRadius: 99,
+            border: `1px solid ${levelColor[course.level] ?? "var(--border)"}22`,
+          }}>
+            {course.level}
+          </span>
+          <span style={{ fontSize: 13, color: "var(--subtle)" }}>
+            {total} lessons · Self-paced
+          </span>
+        </div>
 
-              <h1 className="font-heading mt-5 text-2xl font-bold tracking-tight text-[#e6edf3] sm:text-3xl lg:text-4xl">
-                {foundCourse.title}
-              </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-[#8b949e] sm:text-base">
-                {foundCourse.description}
-              </p>
+        <h1 className="font-heading" style={{
+          fontSize: "clamp(26px, 4vw, 42px)",
+          fontWeight: 800,
+          color: "var(--text)",
+          letterSpacing: "-0.03em",
+          lineHeight: 1.15,
+          marginBottom: 14,
+        }}>
+          {course.title}
+        </h1>
 
-              <div className="mt-5 flex flex-wrap gap-2">
-                {[`${foundCourse.lessons} lessons`, "Self-paced", "Guided progression"].map((tag) => (
-                  <span key={tag} className="rounded-lg border border-[#30363d] bg-[#21262d] px-3 py-1.5 text-sm font-medium text-[#8b949e]">
-                    {tag}
-                  </span>
-                ))}
-              </div>
+        <p style={{
+          fontSize: 15, color: "var(--muted)",
+          lineHeight: 1.8, maxWidth: 680,
+        }}>
+          {course.description}
+        </p>
+      </div>
+
+      {/* Progress bar — only when enrolled */}
+      {!loading && isEnrolled && (
+        <div style={{
+          background: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: 14,
+          padding: "20px 24px",
+          marginBottom: 28,
+          display: "flex",
+          alignItems: "center",
+          gap: 24,
+          flexWrap: "wrap",
+        }}>
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>Your progress</span>
+              <span style={{
+                fontSize: 13, fontWeight: 700,
+                color: pct === 100 ? "var(--green)" : "var(--accent-hover)",
+              }}>
+                {pct}%
+              </span>
             </div>
-
-            <div className={cn("relative h-56 overflow-hidden rounded-2xl bg-gradient-to-br shadow-[0_12px_32px_rgba(0,0,0,0.4)]", heroArt[artIndex % heroArt.length])}>
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.06),transparent_40%)]" />
-              <div className="absolute left-4 top-4 rounded-lg border border-white/10 bg-black/40 px-2.5 py-1 font-pixel text-[8px] text-white backdrop-blur">
-                Featured Path
-              </div>
-              <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-black/40 p-4 backdrop-blur">
-                <p className="text-xs font-medium text-white/70">Course progress</p>
-                <p className="mt-1.5 text-3xl font-bold text-white">{progressPercentage}%</p>
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/20">
-                  <div className="h-full rounded-full bg-white" style={{ width: `${progressPercentage}%` }} />
-                </div>
-              </div>
+            <div style={{ height: 5, background: "var(--border)", borderRadius: 99, overflow: "hidden" }}>
+              <div style={{
+                width: `${pct}%`, height: "100%",
+                background: pct === 100
+                  ? "var(--green)"
+                  : "linear-gradient(90deg, var(--accent), #a78bfa)",
+                borderRadius: 99,
+                transition: "width 0.6s ease",
+              }} />
             </div>
+            <p style={{ fontSize: 12, color: "var(--subtle)", marginTop: 6 }}>
+              {completedCount} of {total} lessons completed
+            </p>
           </div>
-        </section>
 
-        {/* Content grid */}
-        <section className="grid gap-5 xl:grid-cols-[minmax(0,1.25fr)_300px]">
+          {pct < 100 && nextLesson ? (
+            <Link href={`/lesson/${nextLesson.slug}`} style={{
+              padding: "10px 22px",
+              background: "var(--accent)",
+              color: "#fff",
+              borderRadius: 10,
+              fontSize: 13, fontWeight: 700,
+              boxShadow: "0 2px 16px var(--accent-glow)",
+              whiteSpace: "nowrap", flexShrink: 0,
+            }}>
+              {completedCount === 0 ? "Start Course" : "Continue →"}
+            </Link>
+          ) : pct === 100 ? (
+            <span style={{
+              padding: "10px 22px",
+              background: "rgba(52,211,153,0.1)",
+              color: "var(--green)",
+              borderRadius: 10, fontSize: 13, fontWeight: 700,
+              border: "1px solid rgba(52,211,153,0.2)",
+              flexShrink: 0,
+            }}>
+              ✓ Completed
+            </span>
+          ) : null}
+        </div>
+      )}
 
-          {/* Sidebar */}
-          <aside className="order-1 space-y-4 xl:order-2">
-            <section className="rounded-2xl border border-[#30363d] bg-[#161b22] p-5">
-              <p className="font-pixel text-[8px] text-[#6e7681]">Course Access</p>
-              <h2 className="font-heading mt-2 text-lg font-semibold text-[#e6edf3]">Start learning right away</h2>
-              <p className="mt-2 text-sm leading-6 text-[#8b949e]">
-                Enroll to unlock the lesson flow and continue through the player experience.
-              </p>
+      {/* Main grid */}
+      <div className="r-course-grid" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 272px", gap: 24, alignItems: "start" }}>
 
-              {isLoadingEnrollment ? (
-                <div className="mt-5 rounded-xl border border-[#30363d] bg-[#21262d] px-5 py-4 text-center text-sm text-[#8b949e]">
-                  Checking enrollment...
-                </div>
-              ) : !hasLessons ? (
-                <div className="mt-5 rounded-xl border border-[rgba(247,213,29,0.3)] bg-[rgba(247,213,29,0.08)] px-5 py-4 text-sm font-medium text-[#f7d51d]">
-                  No lessons available yet.
-                </div>
-              ) : !isEnrolled ? (
-                <button
-                  onClick={handleEnroll}
-                  disabled={isEnrolling}
-                  className="mt-5 w-full rounded-xl bg-[#209cee] px-5 py-3.5 text-sm font-semibold text-white shadow-[0_4px_16px_rgba(32,156,238,0.3)] transition duration-200 hover:bg-[#1786c9] hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+        {/* Lesson list */}
+        <div style={{ flex: 1, minWidth: 300 }}>
+          <h2 className="font-heading" style={{
+            fontSize: 16, fontWeight: 700, color: "var(--text)",
+            letterSpacing: "-0.02em", marginBottom: 14,
+          }}>
+            Course Content
+          </h2>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {course.lessonList.map((lesson, i) => {
+              const done = completedLessons.includes(lesson.slug);
+              const prevDone = i === 0 || completedLessons.includes(course.lessonList[i - 1].slug);
+              const unlocked = isEnrolled && prevDone;
+
+              return (
+                <div
+                  key={lesson.slug}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                    padding: "14px 18px",
+                    background: "var(--card)",
+                    border: `1px solid ${done ? "rgba(52,211,153,0.18)" : "var(--border)"}`,
+                    borderRadius: 12,
+                    opacity: !isEnrolled || unlocked ? 1 : 0.45,
+                    transition: "border-color 0.15s",
+                  }}
                 >
-                  {isEnrolling ? "Enrolling..." : "Enroll in Course"}
-                </button>
-              ) : (
-                <>
-                  <div className="mt-5 rounded-xl border border-[rgba(146,204,65,0.3)] bg-[rgba(146,204,65,0.08)] px-5 py-4 text-sm font-medium text-[#92cc41]">
-                    {currentLesson ? "You're enrolled and ready to continue." : "All lessons completed!"}
+                  {/* Number/checkmark */}
+                  <div style={{
+                    width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 12, fontWeight: 700,
+                    background: done
+                      ? "rgba(52,211,153,0.1)"
+                      : unlocked
+                      ? "var(--accent-bg)"
+                      : "var(--surface)",
+                    color: done
+                      ? "var(--green)"
+                      : unlocked
+                      ? "var(--accent-hover)"
+                      : "var(--subtle)",
+                    border: `1px solid ${done
+                      ? "rgba(52,211,153,0.2)"
+                      : unlocked
+                      ? "var(--accent-border)"
+                      : "var(--border)"}`,
+                  }}>
+                    {done ? (
+                      <svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    ) : (
+                      i + 1
+                    )}
                   </div>
-                  {currentLesson && (
-                    <Link
-                      href={`/lesson/${currentLesson}`}
-                      className="mt-3 block w-full rounded-xl bg-[#209cee] px-5 py-3.5 text-center text-sm font-semibold text-white shadow-[0_4px_12px_rgba(32,156,238,0.25)] transition duration-200 hover:bg-[#1786c9]"
-                    >
-                      Continue Learning
+
+                  {/* Text */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{
+                      fontSize: 14, fontWeight: 600,
+                      color: done ? "var(--subtle)" : "var(--text)",
+                      marginBottom: 2,
+                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    }}>
+                      {lesson.title}
+                    </p>
+                    <p style={{ fontSize: 12, color: "var(--subtle)" }}>
+                      {done
+                        ? "Completed"
+                        : unlocked
+                        ? "Ready to start"
+                        : !isEnrolled
+                        ? "Enroll to unlock"
+                        : "Complete previous lesson first"}
+                    </p>
+                  </div>
+
+                  {/* CTA */}
+                  {unlocked ? (
+                    <Link href={`/lesson/${lesson.slug}`} style={{
+                      fontSize: 12, fontWeight: 600,
+                      color: done ? "var(--subtle)" : "var(--accent-hover)",
+                      padding: "5px 14px", borderRadius: 8,
+                      border: "1px solid var(--border)",
+                      background: "var(--surface)",
+                      whiteSpace: "nowrap", flexShrink: 0,
+                      transition: "all 0.15s",
+                    }}>
+                      {done ? "Review" : "Start"}
+                    </Link>
+                  ) : (
+                    <svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="var(--subtle)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div style={{ position: "sticky", top: 24 }}>
+          <div style={{
+            background: "var(--card)",
+            border: "1px solid var(--border)",
+            borderRadius: 16,
+            overflow: "hidden",
+          }}>
+            {/* Enrollment section */}
+            <div style={{ padding: "24px" }}>
+              {loading ? (
+                <div style={{
+                  padding: "12px", background: "var(--surface)", borderRadius: 10,
+                  fontSize: 13, color: "var(--subtle)", textAlign: "center",
+                }}>
+                  Loading...
+                </div>
+              ) : isEnrolled ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{
+                    padding: "11px 16px",
+                    background: "rgba(52,211,153,0.08)",
+                    border: "1px solid rgba(52,211,153,0.2)",
+                    borderRadius: 10, fontSize: 13,
+                    color: "var(--green)", fontWeight: 600,
+                    textAlign: "center",
+                  }}>
+                    ✓ You are enrolled
+                  </div>
+                  {pct < 100 && nextLesson && (
+                    <Link href={`/lesson/${nextLesson.slug}`} style={{
+                      display: "block", padding: "12px",
+                      background: "var(--accent)", color: "#fff",
+                      borderRadius: 10, fontSize: 14, fontWeight: 700,
+                      textAlign: "center",
+                      boxShadow: "0 2px 16px var(--accent-glow)",
+                    }}>
+                      {completedCount === 0 ? "Start Learning" : "Continue Learning"}
                     </Link>
                   )}
-                </>
-              )}
-
-              {enrollmentError && (
-                <div className="mt-3 rounded-xl border border-[rgba(231,110,85,0.3)] bg-[rgba(231,110,85,0.08)] px-5 py-4 text-sm font-medium text-[#e76e55]">
-                  {enrollmentError}
+                  {pct === 100 && (
+                    <div style={{
+                      padding: "12px",
+                      background: "rgba(52,211,153,0.08)",
+                      borderRadius: 10, fontSize: 14,
+                      fontWeight: 700, color: "var(--green)",
+                      textAlign: "center",
+                    }}>
+                      Course Complete 🎉
+                    </div>
+                  )}
                 </div>
-              )}
-              {enrollmentSuccess && (
-                <div className="mt-3 rounded-xl border border-[rgba(146,204,65,0.3)] bg-[rgba(146,204,65,0.08)] px-5 py-4 text-sm font-medium text-[#92cc41]">
-                  {enrollmentSuccess}
-                </div>
-              )}
-
-              <Link
-                href="/dashboard"
-                className="mt-3 block w-full rounded-xl border border-[#30363d] bg-[#21262d] px-5 py-3.5 text-center text-sm font-semibold text-[#e6edf3] transition duration-200 hover:bg-[#2d333b]"
-              >
-                Go to Dashboard
-              </Link>
-            </section>
-
-            <section className="rounded-2xl border border-[#30363d] bg-[#161b22] p-5">
-              <p className="font-pixel text-[8px] text-[#209cee]">Learning Snapshot</p>
-              <div className="mt-4 space-y-3">
-                {[
-                  { label: "Lessons", value: foundCourse.lessons },
-                  { label: "Completed", value: completedLessonsInCourse },
-                  { label: "Current state", value: isEnrolled ? "Active" : "Preview" },
-                ].map((item) => (
-                  <div key={item.label} className="rounded-xl border border-[#30363d] bg-[#21262d] px-4 py-4">
-                    <p className="text-xs font-medium text-[#8b949e]">{item.label}</p>
-                    <p className="mt-1.5 text-xl font-bold text-[#e6edf3]">{item.value}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </aside>
-
-          {/* Main content */}
-          <div className="order-2 space-y-5 xl:order-1">
-            {/* Progress */}
-            <section className="rounded-2xl border border-[#30363d] bg-[#161b22] p-5 sm:p-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              ) : (
                 <div>
-                  <p className="font-pixel text-[9px] text-[#209cee]">Course Progress</p>
-                  <h2 className="font-heading mt-2 text-xl font-bold tracking-tight text-[#e6edf3]">Track your journey</h2>
+                  <p style={{
+                    fontSize: 13, color: "var(--muted)",
+                    lineHeight: 1.7, marginBottom: 16,
+                  }}>
+                    Enroll for free to unlock all lessons and track your progress.
+                  </p>
+                  <button
+                    onClick={handleEnroll}
+                    disabled={enrolling || total === 0}
+                    style={{
+                      width: "100%", padding: "13px",
+                      background: enrolling ? "var(--subtle)" : "var(--accent)",
+                      color: "#fff", borderRadius: 10,
+                      fontSize: 14, fontWeight: 700,
+                      cursor: enrolling || total === 0 ? "not-allowed" : "pointer",
+                      boxShadow: enrolling ? "none" : "0 2px 16px var(--accent-glow)",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    {enrolling ? "Enrolling..." : "Enroll for Free"}
+                  </button>
+                  {error && (
+                    <p style={{
+                      fontSize: 12, color: "var(--red)",
+                      marginTop: 10, textAlign: "center", lineHeight: 1.5,
+                    }}>
+                      {error}
+                    </p>
+                  )}
                 </div>
-                <div className="rounded-xl border border-[#30363d] bg-[#21262d] px-5 py-3 text-center">
-                  <p className="text-xs font-medium text-[#8b949e]">Progress</p>
-                  <p className="mt-1 text-2xl font-bold text-[#e6edf3]">{progressPercentage}%</p>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: "var(--border)" }} />
+
+            {/* Course meta */}
+            <div style={{ padding: "16px 24px" }}>
+              {[
+                { label: "Lessons", value: `${total}` },
+                { label: "Level", value: course.level },
+                { label: "Pace", value: "Self-paced" },
+                { label: "Price", value: "Free" },
+              ].map((item, idx, arr) => (
+                <div key={item.label} style={{
+                  display: "flex", justifyContent: "space-between",
+                  alignItems: "center", padding: "10px 0",
+                  borderBottom: idx < arr.length - 1 ? "1px solid var(--border-subtle)" : "none",
+                }}>
+                  <span style={{ fontSize: 13, color: "var(--subtle)" }}>{item.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{item.value}</span>
                 </div>
-              </div>
-              <div className="mt-5 h-2 w-full overflow-hidden rounded-full bg-[#2d333b]">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-[#209cee] to-[#92cc41] transition-all"
-                  style={{ width: `${progressPercentage}%` }}
-                />
-              </div>
-              <p className="mt-2 text-sm text-[#8b949e]">{completedLessonsInCourse} / {totalLessons} lessons completed</p>
-            </section>
-
-            {/* Lesson Roadmap */}
-            <section className="rounded-2xl border border-[#30363d] bg-[#161b22] p-5 sm:p-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="font-pixel text-[9px] text-[#209cee]">Lessons</p>
-                  <h2 className="font-heading mt-2 text-xl font-bold tracking-tight text-[#e6edf3]">Course roadmap</h2>
-                </div>
-                <Link
-                  href="/courses"
-                  className="inline-flex items-center justify-center rounded-xl border border-[#30363d] bg-[#21262d] px-4 py-2 text-sm font-semibold text-[#e6edf3] transition duration-200 hover:bg-[#2d333b]"
-                >
-                  Back to Courses
-                </Link>
-              </div>
-
-              <ul className="mt-6 space-y-3">
-                {foundCourse.lessonList.map((lesson, index) => {
-                  const isCompleted = completedLessons.includes(lesson.slug);
-                  const isUnlocked = index === 0 || completedLessons.includes(foundCourse.lessonList[index - 1].slug);
-
-                  return (
-                    <li
-                      key={lesson.slug}
-                      className={cn(
-                        "rounded-xl border px-4 py-4 transition duration-200",
-                        isUnlocked ? "border-[#30363d] bg-[#21262d] hover:border-[#3d444d]" : "border-[#30363d] bg-[#1a1f26] opacity-60"
-                      )}
-                    >
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex items-start gap-3">
-                          <span className={cn(
-                            "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-pixel text-[9px]",
-                            isCompleted && "bg-[rgba(146,204,65,0.15)] text-[#92cc41]",
-                            !isCompleted && isUnlocked && "bg-[#2d333b] text-[#e6edf3] ring-1 ring-[#30363d]",
-                            !isUnlocked && "bg-[#2d333b] text-[#6e7681]"
-                          )}>
-                            {isCompleted ? "OK" : isUnlocked ? index + 1 : "..."}
-                          </span>
-                          <div>
-                            <p className="font-pixel text-[8px] text-[#209cee]">Lesson {index + 1}</p>
-                            <h3 className="font-heading mt-1.5 text-base font-semibold text-[#e6edf3]">{lesson.title}</h3>
-                            <p className="mt-1 text-xs text-[#8b949e]">
-                              {isCompleted ? "Completed and ready for review." : isUnlocked ? "Unlocked and ready to start." : "Finish the previous lesson to unlock."}
-                            </p>
-                          </div>
-                        </div>
-
-                        {isUnlocked ? (
-                          <Link
-                            href={`/lesson/${lesson.slug}`}
-                            className="inline-flex items-center justify-center rounded-xl bg-[#209cee] px-4 py-2.5 text-sm font-semibold text-white transition duration-200 hover:bg-[#1786c9]"
-                          >
-                            Open Lesson
-                          </Link>
-                        ) : (
-                          <span className="inline-flex items-center justify-center rounded-xl bg-[#2d333b] px-4 py-2.5 text-sm font-semibold text-[#6e7681]">
-                            Locked
-                          </span>
-                        )}
-                      </div>
-                    </li>
-                  );
-                })}
-                {foundCourse.lessonList.length === 0 && (
-                  <li className="rounded-xl border border-dashed border-[#30363d] bg-[#21262d] px-5 py-6 text-sm leading-7 text-[#8b949e]">
-                    This course is published, but lessons are still being prepared.
-                  </li>
-                )}
-              </ul>
-            </section>
+              ))}
+            </div>
           </div>
-        </section>
+
+          <Link href="/courses" style={{
+            display: "block", marginTop: 12,
+            padding: "11px", borderRadius: 10,
+            border: "1px solid var(--border)",
+            background: "var(--surface)",
+            fontSize: 13, fontWeight: 500,
+            color: "var(--muted)", textAlign: "center",
+            transition: "all 0.15s",
+          }}>
+            ← Back to all courses
+          </Link>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }

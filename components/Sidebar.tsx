@@ -122,7 +122,7 @@ export default function Sidebar({ userRole, userName, userImage, userEmail }: Si
               <path d="M12 3 5 6v5c0 5 3.5 8 7 10 3.5-2 7-5 7-10V6z" />
             </svg>
           </div>
-          <span className="font-pixel" style={{ fontSize: 10, color: "var(--text)", letterSpacing: "-0.01em" }}>
+          <span className="font-heading" style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em" }}>
             Paidevia
           </span>
         </Link>

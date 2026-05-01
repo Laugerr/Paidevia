@@ -42,7 +42,9 @@ body {
   background-image: radial-gradient(rgba(109, 92, 247, 0.03) 1px, transparent 1px);
   background-size: 28px 28px;
   color: var(--text);
-  font-family: "Segoe UI", "Inter", "Helvetica Neue", sans-serif;
+  font-family: var(--font-sans), "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -112,4 +114,68 @@ input, textarea, select {
 @keyframes shimmer {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
+}
+
+/* ── Mobile layout ───────────────────────────────────── */
+.mobile-topbar  { display: none; }
+.mobile-backdrop { display: none; }
+.sidebar-wrap   { flex-shrink: 0; }
+
+/* Marketing nav: hide links on very small screens */
+.nav-links-desktop { display: flex; }
+
+@media (max-width: 768px) {
+  /* Mobile top bar */
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    height: 52px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-shrink: 0;
+  }
+
+  /* Sidebar drawer */
+  .mobile-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
+    z-index: 149;
+  }
+  .sidebar-wrap {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    z-index: 150 !important;
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .sidebar-wrap.sidebar-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.6);
+  }
+
+  /* Responsive grids */
+  .r-grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+  .r-grid-3 { grid-template-columns: 1fr !important; }
+  .r-grid-2 { grid-template-columns: 1fr !important; }
+  .r-course-grid { grid-template-columns: 1fr !important; }
+  .r-form-2  { grid-template-columns: 1fr !important; }
+
+  /* Page padding */
+  .r-page { padding: 20px 16px 60px !important; }
+
+  /* Table horizontal scroll */
+  .r-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Marketing nav links hidden on mobile */
+  .nav-links-desktop { display: none !important; }
 }

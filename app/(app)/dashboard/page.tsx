@@ -77,7 +77,7 @@ export default async function DashboardPage() {
   const activePct = activeTotal > 0 ? Math.round((activeDone / activeTotal) * 100) : 0;
 
   return (
-    <div style={{ padding: "32px 32px 64px", maxWidth: 1000 }}>
+    <div className="r-page" style={{ padding: "32px 32px 64px", maxWidth: 1000 }}>
 
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
@@ -183,7 +183,7 @@ export default async function DashboardPage() {
       )}
 
       {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 36 }}>
+      <div className="r-grid-3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 36 }}>
         {[
           { label: "Enrolled", value: enrolledCourses.length, color: "var(--accent)" },
           { label: "Completed", value: completedCount, color: "var(--green)" },

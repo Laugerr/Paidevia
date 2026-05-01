@@ -46,13 +46,13 @@ export default async function MarketingLayout({
                 <path d="M12 3 5 6v5c0 5 3.5 8 7 10 3.5-2 7-5 7-10V6z" />
               </svg>
             </div>
-            <span className="font-pixel" style={{ fontSize: 11, color: "var(--text)", letterSpacing: "0.02em" }}>
+            <span className="font-heading" style={{ fontSize: 15, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em" }}>
               Paidevia
             </span>
           </Link>
 
           {/* Nav links */}
-          <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <div className="nav-links-desktop" style={{ alignItems: "center", gap: 2 }}>
             <Link href="/home" style={navLink}>Home</Link>
             <Link href="/courses" style={navLink}>Courses</Link>
           </div>
