@@ -24,7 +24,26 @@ function GitHubIcon() {
 const hasGoogle = !!(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET);
 const hasGitHub = !!(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET);
 
-export default function LoginPage() {
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  OAuthAccountNotLinked:
+    "This email is already registered with a different sign-in method. Please use your original method (e.g. email/password).",
+  OAuthCallbackError: "Something went wrong with the OAuth provider. Please try again.",
+  AccessDenied: "Access was denied. Please try again.",
+  Configuration: "There is a server configuration issue. Please contact support.",
+  Default: "An error occurred during sign in. Please try again.",
+};
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ error?: string }>;
+}) {
+  const sp = await (searchParams ?? Promise.resolve({} as { error?: string }));
+  const errorKey = sp?.error;
+  const errorMessage = errorKey
+    ? (AUTH_ERROR_MESSAGES[errorKey] ?? AUTH_ERROR_MESSAGES.Default)
+    : null;
+
   return (
     <div style={{
       minHeight: "calc(100vh - 60px)",
@@ -80,6 +99,22 @@ export default function LoginPage() {
               Sign in or create a free account
             </p>
           </div>
+
+          {/* OAuth error banner */}
+          {errorMessage && (
+            <div style={{
+              padding: "12px 16px",
+              marginBottom: 20,
+              background: "rgba(248,113,113,0.08)",
+              border: "1px solid rgba(248,113,113,0.2)",
+              borderRadius: 10,
+              fontSize: 13,
+              color: "var(--red)",
+              lineHeight: 1.6,
+            }}>
+              {errorMessage}
+            </div>
+          )}
 
           {/* Email / Password Forms (Login + Register tabs) */}
           <AuthForms />

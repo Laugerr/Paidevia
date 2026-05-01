@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import Link from "next/link";
 import { loginAction, registerAction } from "@/lib/actions/auth";
 
 type Tab = "login" | "register";
@@ -80,7 +81,12 @@ export default function AuthForms() {
             />
           </div>
           <div>
-            <label htmlFor="login-password" style={labelStyle}>Password</label>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <label htmlFor="login-password" style={{ ...labelStyle, marginBottom: 0 }}>Password</label>
+              <Link href="/forgot-password" style={{ fontSize: 12, color: "var(--accent-hover)" }}>
+                Forgot password?
+              </Link>
+            </div>
             <input
               id="login-password"
               name="password"

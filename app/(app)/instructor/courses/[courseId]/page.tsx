@@ -625,8 +625,7 @@ export default async function ManageInstructorCoursePage({
 
   const titleValue = resolvedSearchParams.title ?? course.title;
   const slugValue = resolvedSearchParams.slug ?? course.slug;
-  const descriptionValue =
-    resolvedSearchParams.description ?? course.description;
+  const descriptionValue = resolvedSearchParams.description ?? course.description;
   const levelValue = resolvedSearchParams.level ?? course.level;
   const statusValue = resolvedSearchParams.status ?? course.status;
   const errorMessage = resolvedSearchParams.error;
@@ -646,610 +645,511 @@ export default async function ManageInstructorCoursePage({
     lessonCount: course.courseLessons.length,
   });
 
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "11px 14px",
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
+    borderRadius: 10,
+    fontSize: 14,
+    color: "var(--text)",
+    outline: "none",
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: 12,
+    fontWeight: 600,
+    color: "var(--muted)",
+    marginBottom: 7,
+  };
+
+  const statusColors: Record<string, string> = {
+    published: "var(--green)",
+    draft: "var(--yellow)",
+    archived: "var(--subtle)",
+  };
+  const statusBgs: Record<string, string> = {
+    published: "rgba(52,211,153,0.1)",
+    draft: "rgba(251,191,36,0.1)",
+    archived: "rgba(74,74,101,0.15)",
+  };
+
   return (
-    <main className="px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl space-y-6 lg:space-y-7">
-        <section className="relative overflow-hidden rounded-[36px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(253,224,71,0.22),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(224,231,255,0.72),_transparent_24%),linear-gradient(180deg,_rgba(255,255,255,0.96)_0%,_rgba(248,250,252,0.94)_100%)] p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
-          <div className="absolute -left-10 top-0 h-40 w-40 rounded-full bg-amber-200/30 blur-3xl" />
-          <div className="absolute bottom-0 right-0 h-48 w-48 rounded-full bg-blue-200/25 blur-3xl" />
+    <div className="r-page" style={{ padding: "32px 32px 80px", maxWidth: 1000 }}>
 
-          <div className="relative grid gap-8 xl:grid-cols-[minmax(0,1.25fr)_320px] xl:items-center">
-            <div className="max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-600">
-                Instructor Workspace
-              </p>
-              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
-                Manage course
-              </h1>
-              <p className="mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-                Update the core identity of your course, build out its lesson
-                roadmap, and keep the draft, published, or archived state
-                organized from one clean editor.
-              </p>
-              <p className="mt-3 text-sm font-medium text-amber-700">
-                Editing as {firstName}
-                {isAdminRole(user.role) ? " with admin oversight access." : "."}
-              </p>
+      {/* Breadcrumb */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 16, fontSize: 13, color: "var(--subtle)" }}>
+        <Link href="/instructor" style={{ color: "var(--muted)" }}>Instructor</Link>
+        <svg viewBox="0 0 24 24" width={12} height={12} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+        <span style={{ color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 300 }}>
+          {course.title}
+        </span>
+      </div>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <Link
-                  href="/instructor"
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white/92 px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white"
-                >
-                  Back to Instructor Workspace
-                </Link>
-                <Link
-                  href={`/courses/${course.slug}`}
-                  className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
-                >
-                  View Public Course
-                </Link>
-              </div>
-            </div>
+      {/* Header */}
+      <div style={{ marginBottom: 32 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: "var(--accent-hover)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>
+          Instructor Workspace
+        </p>
+        <h1 className="font-heading" style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em", marginBottom: 6 }}>
+          Manage course
+        </h1>
+        <p style={{ fontSize: 14, color: "var(--muted)", lineHeight: 1.7, marginBottom: 16 }}>
+          Editing as <strong style={{ color: "var(--text)", fontWeight: 600 }}>{firstName}</strong>
+          {isAdminRole(user.role) ? " with admin oversight access." : "."}
+        </p>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <Link href="/instructor" style={{
+            padding: "9px 20px",
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: 10, fontSize: 13, fontWeight: 500,
+            color: "var(--muted)",
+          }}>
+            ← Back to Workspace
+          </Link>
+          <Link href={`/courses/${course.slug}`} style={{
+            padding: "9px 20px",
+            background: "var(--accent)", color: "#fff",
+            borderRadius: 10, fontSize: 13, fontWeight: 600,
+            boxShadow: "0 2px 12px var(--accent-glow)",
+          }}>
+            View Public Page →
+          </Link>
+        </div>
+      </div>
 
-            <aside className="rounded-[30px] border border-white/90 bg-white/82 p-5 shadow-[0_18px_48px_rgba(15,23,42,0.07)] sm:p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
-                Course Snapshot
-              </p>
-              <div className="mt-5 space-y-4">
-                <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
-                  <p className="text-sm font-medium text-slate-500">Status</p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                    {course.status}
-                  </p>
-                </div>
-                <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
-                  <p className="text-sm font-medium text-slate-500">Lesson entries</p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                    {course.courseLessons.length}
-                  </p>
-                </div>
-                <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
-                  <p className="text-sm font-medium text-slate-500">Enrollments</p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                    {course.enrollments.length}
-                  </p>
-                </div>
-                <div className="rounded-[24px] bg-slate-50/80 px-4 py-4 ring-1 ring-slate-200/70">
-                  <p className="text-sm font-medium text-slate-500">
-                    Last updated
-                  </p>
-                  <p className="mt-2 text-base font-semibold tracking-tight text-slate-950">
-                    {new Intl.DateTimeFormat("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    }).format(course.updatedAt)}
-                  </p>
-                </div>
-              </div>
-            </aside>
+      {/* Snapshot stats */}
+      <div className="r-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 28 }}>
+        {[
+          { label: "Status", value: course.status, color: statusColors[course.status] ?? "var(--text)" },
+          { label: "Lessons", value: course.courseLessons.length, color: "var(--text)" },
+          { label: "Enrolled", value: course.enrollments.length, color: "var(--text)" },
+          {
+            label: "Updated",
+            value: new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(course.updatedAt),
+            color: "var(--muted)",
+          },
+        ].map((s) => (
+          <div key={s.label} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: "16px 18px" }}>
+            <p style={{ fontSize: 12, color: "var(--subtle)", marginBottom: 6 }}>{s.label}</p>
+            <p style={{ fontSize: 20, fontWeight: 800, color: s.color, letterSpacing: "-0.02em" }}>{s.value}</p>
           </div>
-        </section>
+        ))}
+      </div>
 
-        <section className="rounded-[30px] border border-white/80 bg-white/92 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:p-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      {/* ── Course Settings ── */}
+      <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 16, padding: "28px 32px", marginBottom: 24 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: "var(--accent-hover)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>
+          Course Editor
+        </p>
+        <h2 className="font-heading" style={{ fontSize: 20, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em", marginBottom: 20 }}>
+          Course settings
+        </h2>
+
+        {errorMessage && (
+          <div style={{
+            padding: "12px 16px", marginBottom: 20,
+            background: "rgba(248,113,113,0.08)",
+            border: "1px solid rgba(248,113,113,0.2)",
+            borderRadius: 10, fontSize: 13, color: "var(--red)",
+          }}>
+            {errorMessage}
+          </div>
+        )}
+
+        <form action={updateCourse} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div className="r-form-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
-                Course Editor
-              </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-                Course settings
-              </h2>
+              <label style={labelStyle}>Course Title</label>
+              <input name="title" type="text" defaultValue={titleValue} required style={inputStyle} />
             </div>
-            <p className="max-w-xl text-sm leading-6 text-slate-500">
-              Public course pages still use static data for now, but these
-              updates are stored in the database and ready for the instructor
-              workflow.
-            </p>
+            <div>
+              <label style={labelStyle}>Slug <span style={{ color: "var(--subtle)", fontWeight: 400 }}>(URL-safe)</span></label>
+              <input name="slug" type="text" defaultValue={slugValue} required style={inputStyle} />
+            </div>
           </div>
 
-          {errorMessage ? (
-            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-              {errorMessage}
+          <div>
+            <label style={labelStyle}>Description</label>
+            <textarea name="description" rows={4} defaultValue={descriptionValue} required style={{ ...inputStyle, resize: "vertical", lineHeight: 1.7 }} />
+          </div>
+
+          <div className="r-form-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div>
+              <label style={labelStyle}>Level</label>
+              <select name="level" defaultValue={levelValue} style={inputStyle}>
+                {COURSE_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+              </select>
             </div>
-          ) : null}
-
-          <form action={updateCourse} className="mt-6 space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <label className="block">
-                <span className="text-sm font-semibold text-slate-700">
-                  Course Title
-                </span>
-                <input
-                  name="title"
-                  type="text"
-                  defaultValue={titleValue}
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-blue-400"
-                  required
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-sm font-semibold text-slate-700">
-                  Course Slug
-                </span>
-                <input
-                  name="slug"
-                  type="text"
-                  defaultValue={slugValue}
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-blue-400"
-                  required
-                />
-              </label>
-            </div>
-
-            <label className="block">
-              <span className="text-sm font-semibold text-slate-700">
-                Description
-              </span>
-              <textarea
-                name="description"
-                rows={5}
-                defaultValue={descriptionValue}
-                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-blue-400"
-                required
-              />
-            </label>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              <label className="block">
-                <span className="text-sm font-semibold text-slate-700">Level</span>
-                <select
-                  name="level"
-                  defaultValue={levelValue}
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-blue-400"
-                >
-                  {COURSE_LEVELS.map((level) => (
-                    <option key={level} value={level}>
-                      {level}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="block">
-                <span className="text-sm font-semibold text-slate-700">Status</span>
-                <select
-                  name="status"
-                  defaultValue={statusValue}
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-blue-400"
-                >
-                  {COURSE_STATUSES.map((status) => (
-                    <option key={status} value={status}>
-                      {status[0].toUpperCase()}
-                      {status.slice(1)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <div className="rounded-[28px] border border-slate-200 bg-slate-50/70 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                Editing Guidance
-              </p>
-              <div className="mt-4 grid gap-3 md:grid-cols-3">
-                {[
-                  "Keep the slug stable once learners start using the course.",
-                  "Use the description to clarify the learning outcome.",
-                  "Set the final status from the publishing controls below.",
-                ].map((tip) => (
-                  <div
-                    key={tip}
-                    className="rounded-2xl bg-white px-4 py-4 ring-1 ring-slate-200"
-                  >
-                    <p className="text-sm leading-6 text-slate-600">{tip}</p>
-                  </div>
+            <div>
+              <label style={labelStyle}>Status</label>
+              <select name="status" defaultValue={statusValue} style={inputStyle}>
+                {COURSE_STATUSES.map((s) => (
+                  <option key={s} value={s}>{s[0].toUpperCase()}{s.slice(1)}</option>
                 ))}
-              </div>
+              </select>
             </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <button
-                type="submit"
-                style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
-                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
-              >
-                Save Course Changes
-              </button>
-              <Link
-                href="/instructor"
-                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-sm font-semibold text-slate-700 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50"
-              >
-                Cancel
-              </Link>
-            </div>
-          </form>
-        </section>
-
-        <section
-          id="lesson-management"
-          className="rounded-[30px] border border-white/80 bg-white/92 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:p-8"
-        >
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-600">
-                Lesson Management
-              </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-                Build your lesson roadmap
-              </h2>
-            </div>
-            <p className="max-w-xl text-sm leading-6 text-slate-500">
-              Add lessons, keep the order clean, and update lesson titles and
-              summaries before the public course flow moves to the database.
-            </p>
           </div>
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-            <aside className="rounded-[28px] border border-emerald-100 bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.15),_transparent_26%),linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(240,253,244,0.92)_100%)] p-5 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-600">
+          {/* Tips */}
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "14px 18px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {[
+                "Keep the slug stable once learners start using the course.",
+                "Use the description to clarify the learning outcome.",
+                "Set the final status from the publishing controls below.",
+              ].map((tip, i) => (
+                <p key={i} style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.6 }}>· {tip}</p>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: 10 }}>
+            <button type="submit" style={{
+              padding: "11px 28px",
+              background: "var(--accent)", color: "#fff",
+              borderRadius: 10, fontSize: 14, fontWeight: 700,
+              cursor: "pointer", boxShadow: "0 2px 16px var(--accent-glow)",
+            }}>
+              Save Changes
+            </button>
+            <Link href="/instructor" style={{
+              padding: "11px 22px",
+              background: "var(--surface)", border: "1px solid var(--border)",
+              borderRadius: 10, fontSize: 14, fontWeight: 500, color: "var(--muted)",
+            }}>
+              Cancel
+            </Link>
+          </div>
+        </form>
+      </div>
+
+      {/* ── Lesson Management ── */}
+      <div id="lesson-management" style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 16, padding: "28px 32px", marginBottom: 24 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: "var(--accent-hover)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>
+          Lesson Management
+        </p>
+        <h2 className="font-heading" style={{ fontSize: 20, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em", marginBottom: 20 }}>
+          Build your lesson roadmap
+        </h2>
+
+        {lessonErrorMessage && (
+          <div style={{
+            padding: "12px 16px", marginBottom: 20,
+            background: "rgba(248,113,113,0.08)",
+            border: "1px solid rgba(248,113,113,0.2)",
+            borderRadius: 10, fontSize: 13, color: "var(--red)",
+          }}>
+            {lessonErrorMessage}
+          </div>
+        )}
+
+        <div style={{ display: "grid", gridTemplateColumns: "320px minmax(0,1fr)", gap: 24, alignItems: "start" }} className="r-course-grid">
+
+          {/* Add lesson form */}
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 22px" }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>Add Lesson</p>
+            <p style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.6, marginBottom: 16 }}>
+              Give it a title and optional slug. Summary is for your internal notes.
+            </p>
+            <form action={addLesson} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={labelStyle}>Lesson Title</label>
+                <input name="lessonTitle" type="text" defaultValue={lessonTitleValue} required style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Lesson Slug <span style={{ color: "var(--subtle)", fontWeight: 400 }}>(auto from title)</span></label>
+                <input name="lessonSlug" type="text" defaultValue={lessonSlugValue} placeholder="auto-generated if blank" style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Summary</label>
+                <textarea name="lessonSummary" rows={3} defaultValue={lessonSummaryValue} placeholder="Short planning note for this lesson" style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
+              </div>
+              <button type="submit" style={{
+                width: "100%", padding: "11px",
+                background: "var(--accent)", color: "#fff",
+                borderRadius: 10, fontSize: 14, fontWeight: 700,
+                cursor: "pointer", boxShadow: "0 2px 12px var(--accent-glow)",
+              }}>
                 Add Lesson
-              </p>
-              <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                Create a lesson entry
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                Start with the lesson title, give it a clean slug, and add a
-                short summary that helps you identify the lesson later.
-              </p>
+              </button>
+            </form>
+          </div>
 
-              {lessonErrorMessage ? (
-                <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                  {lessonErrorMessage}
-                </div>
-              ) : null}
-
-              <form action={addLesson} className="mt-5 space-y-4">
-                <label className="block">
-                  <span className="text-sm font-semibold text-slate-700">
-                    Lesson Title
-                  </span>
-                  <input
-                    name="lessonTitle"
-                    type="text"
-                    defaultValue={lessonTitleValue}
-                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-emerald-400"
-                    required
-                  />
-                </label>
-
-                <label className="block">
-                  <span className="text-sm font-semibold text-slate-700">
-                    Lesson Slug
-                  </span>
-                  <input
-                    name="lessonSlug"
-                    type="text"
-                    defaultValue={lessonSlugValue}
-                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-emerald-400"
-                    placeholder="auto-generated from title if left blank"
-                  />
-                </label>
-
-                <label className="block">
-                  <span className="text-sm font-semibold text-slate-700">
-                    Summary
-                  </span>
-                  <textarea
-                    name="lessonSummary"
-                    rows={4}
-                    defaultValue={lessonSummaryValue}
-                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-emerald-400"
-                    placeholder="Short note for your internal lesson planning"
-                  />
-                </label>
-
-                <button
-                  type="submit"
-                  style={{ backgroundColor: "#059669", color: "#ffffff" }}
-                  className="inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-700"
-                >
-                  Add Lesson
-                </button>
-              </form>
-            </aside>
-
-            <div className="space-y-4">
-              {course.courseLessons.length > 0 ? (
-                course.courseLessons.map((lesson, index) => {
-                  const isEditing = editingLessonId === lesson.id;
-
-                  return (
-                    <article
-                      key={lesson.id}
-                      className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:shadow-md"
-                    >
-                      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
-                              Lesson {lesson.position}
-                            </span>
-                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                              {lesson.slug}
-                            </span>
-                          </div>
-                          <h3 className="mt-4 text-2xl font-semibold tracking-tight text-slate-950">
-                            {lesson.title}
-                          </h3>
-                          <p className="mt-3 text-sm leading-6 text-slate-500">
-                            {lesson.summary?.trim()
-                              ? lesson.summary
-                              : "No summary added yet. Add one when you want a clearer planning note for this lesson."}
-                          </p>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 xl:w-[220px] xl:justify-end">
-                          <form action={moveLesson}>
-                            <input type="hidden" name="lessonId" value={lesson.id} />
-                            <input type="hidden" name="direction" value="up" />
-                            <button
-                              type="submit"
-                              disabled={index === 0}
-                              className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                            >
-                              Move Up
-                            </button>
-                          </form>
-
-                          <form action={moveLesson}>
-                            <input type="hidden" name="lessonId" value={lesson.id} />
-                            <input type="hidden" name="direction" value="down" />
-                            <button
-                              type="submit"
-                              disabled={index === course.courseLessons.length - 1}
-                              className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                            >
-                              Move Down
-                            </button>
-                          </form>
-
-                          <form action={deleteLesson}>
-                            <input type="hidden" name="lessonId" value={lesson.id} />
-                            <button
-                              type="submit"
-                              className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition duration-200 hover:-translate-y-0.5 hover:bg-red-100"
-                            >
-                              Delete
-                            </button>
-                          </form>
-                        </div>
+          {/* Lesson list */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {course.courseLessons.length === 0 ? (
+              <div style={{
+                padding: "40px 24px", textAlign: "center",
+                background: "var(--surface)", border: "1px dashed var(--border)",
+                borderRadius: 14,
+              }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "var(--muted)", marginBottom: 6 }}>No lessons yet</p>
+                <p style={{ fontSize: 13, color: "var(--subtle)", lineHeight: 1.6 }}>
+                  Add your first lesson from the panel on the left.
+                </p>
+              </div>
+            ) : (
+              course.courseLessons.map((lesson, index) => {
+                const isEditing = editingLessonId === lesson.id;
+                return (
+                  <div key={lesson.id} style={{
+                    background: "var(--surface)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 14,
+                    overflow: "hidden",
+                  }}>
+                    {/* Lesson header row */}
+                    <div style={{ padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 14 }}>
+                      {/* Position badge */}
+                      <div style={{
+                        width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 12, fontWeight: 700,
+                        background: "var(--accent-bg)", color: "var(--accent-hover)",
+                        border: "1px solid var(--accent-border)",
+                      }}>
+                        {lesson.position}
                       </div>
 
-                      <details
-                        open={isEditing}
-                        className="mt-5 rounded-[24px] border border-slate-200 bg-slate-50/60 p-4"
-                      >
-                        <summary className="cursor-pointer list-none text-sm font-semibold text-slate-700">
-                          Edit lesson details
-                        </summary>
+                      {/* Info */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text)", marginBottom: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {lesson.title}
+                        </p>
+                        <p style={{ fontSize: 12, color: "var(--subtle)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {lesson.slug}
+                        </p>
+                        {lesson.summary && (
+                          <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 4, lineHeight: 1.5 }}>
+                            {lesson.summary}
+                          </p>
+                        )}
+                      </div>
 
-                        <form action={updateLesson} className="mt-4 space-y-4">
+                      {/* Action buttons */}
+                      <div style={{ display: "flex", gap: 6, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                        <form action={moveLesson} style={{ display: "inline" }}>
                           <input type="hidden" name="lessonId" value={lesson.id} />
+                          <input type="hidden" name="direction" value="up" />
+                          <button type="submit" disabled={index === 0} style={{
+                            padding: "6px 12px", borderRadius: 8,
+                            background: "var(--card)", border: "1px solid var(--border)",
+                            fontSize: 12, fontWeight: 600, color: "var(--muted)",
+                            cursor: index === 0 ? "not-allowed" : "pointer",
+                            opacity: index === 0 ? 0.4 : 1,
+                          }}>↑</button>
+                        </form>
+                        <form action={moveLesson} style={{ display: "inline" }}>
+                          <input type="hidden" name="lessonId" value={lesson.id} />
+                          <input type="hidden" name="direction" value="down" />
+                          <button type="submit" disabled={index === course.courseLessons.length - 1} style={{
+                            padding: "6px 12px", borderRadius: 8,
+                            background: "var(--card)", border: "1px solid var(--border)",
+                            fontSize: 12, fontWeight: 600, color: "var(--muted)",
+                            cursor: index === course.courseLessons.length - 1 ? "not-allowed" : "pointer",
+                            opacity: index === course.courseLessons.length - 1 ? 0.4 : 1,
+                          }}>↓</button>
+                        </form>
+                        <form action={deleteLesson} style={{ display: "inline" }}>
+                          <input type="hidden" name="lessonId" value={lesson.id} />
+                          <button type="submit" style={{
+                            padding: "6px 12px", borderRadius: 8,
+                            background: "rgba(248,113,113,0.08)",
+                            border: "1px solid rgba(248,113,113,0.2)",
+                            fontSize: 12, fontWeight: 600, color: "var(--red)",
+                            cursor: "pointer",
+                          }}>Delete</button>
+                        </form>
+                      </div>
+                    </div>
 
-                          <div className="grid gap-4 md:grid-cols-2">
-                            <label className="block">
-                              <span className="text-sm font-semibold text-slate-700">
-                                Title
-                              </span>
-                              <input
-                                name="title"
-                                type="text"
-                                defaultValue={isEditing ? lessonTitleValue || lesson.title : lesson.title}
-                                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-blue-400"
-                                required
-                              />
-                            </label>
-
-                            <label className="block">
-                              <span className="text-sm font-semibold text-slate-700">
-                                Slug
-                              </span>
-                              <input
-                                name="slug"
-                                type="text"
-                                defaultValue={isEditing ? lessonSlugValue || lesson.slug : lesson.slug}
-                                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-blue-400"
-                                required
-                              />
-                            </label>
+                    {/* Edit expand */}
+                    <details open={isEditing} style={{ borderTop: "1px solid var(--border)" }}>
+                      <summary style={{
+                        padding: "10px 18px", cursor: "pointer",
+                        fontSize: 12, fontWeight: 600, color: "var(--accent-hover)",
+                        listStyle: "none", userSelect: "none",
+                      }}>
+                        Edit lesson details
+                      </summary>
+                      <div style={{ padding: "16px 18px", background: "var(--card)" }}>
+                        <form action={updateLesson} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                          <input type="hidden" name="lessonId" value={lesson.id} />
+                          <div className="r-form-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                            <div>
+                              <label style={labelStyle}>Title</label>
+                              <input name="title" type="text" required defaultValue={isEditing ? lessonTitleValue || lesson.title : lesson.title} style={inputStyle} />
+                            </div>
+                            <div>
+                              <label style={labelStyle}>Slug</label>
+                              <input name="slug" type="text" required defaultValue={isEditing ? lessonSlugValue || lesson.slug : lesson.slug} style={inputStyle} />
+                            </div>
                           </div>
-
-                          <label className="block">
-                            <span className="text-sm font-semibold text-slate-700">
-                              Summary
-                            </span>
-                            <textarea
-                              name="summary"
-                              rows={3}
-                              defaultValue={
-                                isEditing
-                                  ? lessonSummaryValue || lesson.summary || ""
-                                  : lesson.summary || ""
-                              }
-                              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-blue-400"
-                            />
-                          </label>
-
-                          <button
-                            type="submit"
-                            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700"
-                          >
+                          <div>
+                            <label style={labelStyle}>Summary</label>
+                            <textarea name="summary" rows={3} defaultValue={isEditing ? lessonSummaryValue || lesson.summary || "" : lesson.summary || ""} style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
+                          </div>
+                          <button type="submit" style={{
+                            alignSelf: "flex-start",
+                            padding: "9px 22px",
+                            background: "var(--accent)", color: "#fff",
+                            borderRadius: 9, fontSize: 13, fontWeight: 700,
+                            cursor: "pointer", boxShadow: "0 2px 12px var(--accent-glow)",
+                          }}>
                             Save Lesson
                           </button>
                         </form>
-                      </details>
-                    </article>
-                  );
-                })
-              ) : (
-                <div className="rounded-[28px] border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center">
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                    Lesson Roadmap
-                  </p>
-                  <h3 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
-                    No lessons added yet
-                  </h3>
-                  <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-600">
-                    Start by adding your first lesson from the panel on the left.
-                    You can rename, reorder, and remove lessons here as your
-                    course structure evolves.
-                  </p>
+                      </div>
+                    </details>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Publishing Workflow ── */}
+      <div id="publishing-workflow" style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 16, padding: "28px 32px" }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: "var(--accent-hover)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>
+          Publishing Workflow
+        </p>
+        <h2 className="font-heading" style={{ fontSize: 20, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em", marginBottom: 20 }}>
+          Course readiness
+        </h2>
+
+        {publishErrorMessage && (
+          <div style={{
+            padding: "12px 16px", marginBottom: 20,
+            background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)",
+            borderRadius: 10, fontSize: 13, color: "var(--red)",
+          }}>
+            {publishErrorMessage}
+          </div>
+        )}
+
+        {publishSuccessMessage && (
+          <div style={{
+            padding: "12px 16px", marginBottom: 20,
+            background: "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.2)",
+            borderRadius: 10, fontSize: 13, color: "var(--green)",
+          }}>
+            {publishSuccessMessage}
+          </div>
+        )}
+
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 260px", gap: 24, alignItems: "start" }} className="r-course-grid">
+
+          {/* Checklist */}
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 22px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>Publish checklist</p>
+              <span style={{
+                fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 99,
+                background: publishReadiness.isReady ? "rgba(52,211,153,0.1)" : "rgba(251,191,36,0.1)",
+                color: publishReadiness.isReady ? "var(--green)" : "var(--yellow)",
+                border: `1px solid ${publishReadiness.isReady ? "rgba(52,211,153,0.2)" : "rgba(251,191,36,0.2)"}`,
+                textTransform: "uppercase", letterSpacing: "0.08em",
+              }}>
+                {publishReadiness.isReady ? "Ready" : "Needs attention"}
+              </span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {publishReadiness.checks.map((check) => (
+                <div key={check.id} style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "10px 14px",
+                  background: "var(--card)", border: "1px solid var(--border)",
+                  borderRadius: 10,
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{
+                      width: 24, height: 24, borderRadius: "50%", flexShrink: 0,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 11, fontWeight: 700,
+                      background: check.ready ? "rgba(52,211,153,0.1)" : "rgba(251,191,36,0.1)",
+                      color: check.ready ? "var(--green)" : "var(--yellow)",
+                      border: `1px solid ${check.ready ? "rgba(52,211,153,0.2)" : "rgba(251,191,36,0.2)"}`,
+                    }}>
+                      {check.ready ? "✓" : "!"}
+                    </span>
+                    <span style={{ fontSize: 13, color: "var(--text)" }}>{check.label}</span>
+                  </div>
+                  <span style={{
+                    fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em",
+                    color: check.ready ? "var(--green)" : "var(--yellow)",
+                  }}>
+                    {check.ready ? "Done" : "Pending"}
+                  </span>
                 </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Publish controls */}
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 22px" }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>Status actions</p>
+            <p style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.6, marginBottom: 16 }}>
+              Use these controls once the course structure is ready.
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {course.status !== "published" ? (
+                <form action={publishCourse}>
+                  <button type="submit" disabled={!publishReadiness.isReady} style={{
+                    width: "100%", padding: "12px",
+                    background: publishReadiness.isReady ? "var(--accent)" : "var(--surface)",
+                    color: publishReadiness.isReady ? "#fff" : "var(--subtle)",
+                    borderRadius: 10, fontSize: 14, fontWeight: 700,
+                    cursor: publishReadiness.isReady ? "pointer" : "not-allowed",
+                    border: "1px solid var(--border)",
+                    boxShadow: publishReadiness.isReady ? "0 2px 16px var(--accent-glow)" : "none",
+                  }}>
+                    Publish Course
+                  </button>
+                </form>
+              ) : (
+                <form action={moveCourseToDraft}>
+                  <button type="submit" style={{
+                    width: "100%", padding: "12px",
+                    background: "rgba(251,191,36,0.08)",
+                    border: "1px solid rgba(251,191,36,0.2)",
+                    color: "var(--yellow)",
+                    borderRadius: 10, fontSize: 14, fontWeight: 700,
+                    cursor: "pointer",
+                  }}>
+                    Move Back to Draft
+                  </button>
+                </form>
               )}
 
-              {course.courseLessons.length > 0 ? (
-                <div className="rounded-[28px] border border-slate-200 bg-slate-50/70 p-5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                    Lesson planning note
-                  </p>
-                  <p className="mt-3 text-sm leading-7 text-slate-600">
-                    Public lesson pages are now database-backed, so keeping this
-                    roadmap ordered and the lesson slugs unique directly affects
-                    the learner-facing experience.
-                  </p>
-                </div>
-              ) : null}
-            </div>
-          </div>
-        </section>
-
-        <section
-          id="publishing-workflow"
-          className="rounded-[30px] border border-white/80 bg-white/92 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:p-8"
-        >
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
-                Publishing Workflow
-              </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-                Course readiness
-              </h2>
-            </div>
-            <p className="max-w-xl text-sm leading-6 text-slate-500">
-              Publishing is now rule-based. A course can only go live when its
-              core identity is complete and it has at least one lesson.
-            </p>
-          </div>
-
-          {publishErrorMessage ? (
-            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-              {publishErrorMessage}
-            </div>
-          ) : null}
-
-          {publishSuccessMessage ? (
-            <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-              {publishSuccessMessage}
-            </div>
-          ) : null}
-
-          <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_320px]">
-            <div className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-slate-950">
-                    Publish checklist
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Every item below must be complete before the course can be published.
-                  </p>
-                </div>
-                <span
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] ${
-                    publishReadiness.isReady
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-amber-100 text-amber-700"
-                  }`}
-                >
-                  {publishReadiness.isReady ? "Ready to publish" : "Needs attention"}
+              <div style={{ padding: "10px 14px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 10 }}>
+                <p style={{ fontSize: 12, color: "var(--subtle)", marginBottom: 4 }}>Current status</p>
+                <span style={{
+                  fontSize: 13, fontWeight: 700,
+                  color: statusColors[course.status] ?? "var(--text)",
+                  background: statusBgs[course.status] ?? "transparent",
+                  padding: "2px 10px", borderRadius: 99,
+                  border: `1px solid ${statusColors[course.status] ?? "var(--border)"}33`,
+                }}>
+                  {course.status}
                 </span>
               </div>
 
-              <div className="mt-5 space-y-3">
-                {publishReadiness.checks.map((check) => (
-                  <div
-                    key={check.id}
-                    className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
-                          check.ready
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-amber-100 text-amber-700"
-                        }`}
-                      >
-                        {check.ready ? "✓" : "!"}
-                      </span>
-                      <span className="text-sm font-medium text-slate-700">
-                        {check.label}
-                      </span>
-                    </div>
-                    <span
-                      className={`text-xs font-semibold uppercase tracking-[0.14em] ${
-                        check.ready ? "text-emerald-700" : "text-amber-700"
-                      }`}
-                    >
-                      {check.ready ? "Complete" : "Pending"}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <p style={{ fontSize: 12, color: "var(--subtle)", lineHeight: 1.6 }}>
+                {publishReadiness.isReady
+                  ? "This course meets all publishing requirements."
+                  : "Complete the checklist items on the left before publishing."}
+              </p>
             </div>
-
-            <aside className="rounded-[28px] border border-blue-100 bg-[radial-gradient(circle_at_top_right,_rgba(59,130,246,0.16),_transparent_28%),linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(239,246,255,0.92)_100%)] p-5 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
-                Publish Controls
-              </p>
-              <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                Status actions
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                Use these controls once you are happy with the course structure.
-              </p>
-
-              <div className="mt-6 space-y-3">
-                {course.status !== "published" ? (
-                  <form action={publishCourse}>
-                    <button
-                      type="submit"
-                      disabled={!publishReadiness.isReady}
-                      className="inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-200 disabled:text-emerald-50 disabled:shadow-none"
-                    >
-                      Publish Course
-                    </button>
-                  </form>
-                ) : (
-                  <form action={moveCourseToDraft}>
-                    <button
-                      type="submit"
-                      className="inline-flex w-full items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-5 py-3.5 text-sm font-semibold text-amber-800 transition duration-200 hover:-translate-y-0.5 hover:bg-amber-100"
-                    >
-                      Move Back to Draft
-                    </button>
-                  </form>
-                )}
-
-                <p className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm leading-6 text-slate-600">
-                  Current status:
-                  <span className="ml-2 font-semibold text-slate-950">
-                    {course.status}
-                  </span>
-                </p>
-                <p className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm leading-6 text-slate-600">
-                  {publishReadiness.isReady
-                    ? "This course meets the current publishing rules."
-                    : "Complete the checklist items on the left before publishing."}
-                </p>
-              </div>
-            </aside>
           </div>
-        </section>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }
