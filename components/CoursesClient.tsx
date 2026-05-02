@@ -8,6 +8,7 @@ type Course = {
   title: string;
   description: string;
   level: string;
+  category: string | null;
   lessonCount: number;
   enrollmentCount: number;
   instructorName: string | null;
@@ -67,9 +68,12 @@ export default function CoursesClient({ courses, enrolledSlugs, totalEnrollments
         !search ||
         c.title.toLowerCase().includes(search.toLowerCase()) ||
         c.description.toLowerCase().includes(search.toLowerCase());
-      return matchLevel && matchSearch;
+      const matchCategory =
+        selectedCategories.length === 0 ||
+        (c.category != null && selectedCategories.includes(c.category));
+      return matchLevel && matchSearch && matchCategory;
     });
-  }, [courses, activeLevel, search]);
+  }, [courses, activeLevel, search, selectedCategories]);
 
   return (
     <div style={{ padding: "28px 28px 64px", maxWidth: 1200 }}>
@@ -113,28 +117,16 @@ export default function CoursesClient({ courses, enrolledSlugs, totalEnrollments
               }}
             />
           </div>
-          {/* Bell */}
-          <div style={{
-            width: 38, height: 38, borderRadius: 10,
-            background: "var(--card)", border: "1px solid var(--border)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "var(--muted)", flexShrink: 0,
-          }}>
-            <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-          </div>
         </div>
       </div>
 
       {/* ── Stats bar ── */}
       <div className="r-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 28 }}>
         {[
-          { icon: "📚", value: `${courses.length}+`, label: "Courses Available" },
-          { icon: "👥", value: `${totalEnrollments}+`, label: "Happy Learners" },
-          { icon: "⭐", value: "4.8", label: "Average Rating" },
-          { icon: "🆕", value: "Weekly", label: "New Courses" },
+          { icon: "📚", value: `${courses.length}`, label: "Courses Available" },
+          { icon: "👥", value: `${totalEnrollments}+`, label: "Total Enrollments" },
+          { icon: "👨‍🏫", value: `${new Set(courses.map(c => c.instructorName).filter(Boolean)).size}`, label: "Instructors" },
+          { icon: "🎯", value: `${LEVELS.slice(1).map(l => courses.filter(c => c.level === l).length).join(" · ")}`, label: "Beg · Int · Adv" },
         ].map((s) => (
           <div key={s.label} style={{
             background: "var(--card)", border: "1px solid var(--border)",
@@ -284,8 +276,8 @@ export default function CoursesClient({ courses, enrolledSlugs, totalEnrollments
                               {course.instructorName ?? "Paidevia"}
                             </p>
                             <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-                              <span style={{ color: "var(--yellow)", fontSize: 10 }}>★</span>
-                              <span style={{ fontSize: 10, color: "var(--subtle)" }}>4.8</span>
+                              <span style={{ fontSize: 10 }}>👥</span>
+                              <span style={{ fontSize: 10, color: "var(--subtle)" }}>{course.enrollmentCount} enrolled</span>
                             </div>
                           </div>
                         </div>
@@ -322,7 +314,7 @@ export default function CoursesClient({ courses, enrolledSlugs, totalEnrollments
               <p style={{ fontSize: 13, color: "var(--muted)" }}>
                 Try adjusting your search or level filter.
               </p>
-              <button onClick={() => { setSearch(""); setActiveLevel("All Courses"); }} style={{
+              <button onClick={() => { setSearch(""); setActiveLevel("All Courses"); setSelectedCategories([]); }} style={{
                 marginTop: 16, padding: "9px 20px",
                 background: "var(--accent)", color: "#fff",
                 borderRadius: 9, fontSize: 13, fontWeight: 700,
@@ -378,21 +370,32 @@ export default function CoursesClient({ courses, enrolledSlugs, totalEnrollments
               Category
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {CATEGORIES.map((cat) => (
-                <label key={cat} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedCategories.includes(cat)}
-                    onChange={() =>
-                      setSelectedCategories((prev) =>
-                        prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
-                      )
-                    }
-                    style={{ accentColor: "var(--accent)", width: 14, height: 14 }}
-                  />
-                  <span style={{ fontSize: 13, color: "var(--muted)" }}>{cat}</span>
-                </label>
-              ))}
+              {CATEGORIES.map((cat) => {
+                const count = courses.filter((c) => c.category === cat).length;
+                return (
+                  <label key={cat} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", opacity: count === 0 ? 0.4 : 1 }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.includes(cat)}
+                      disabled={count === 0}
+                      onChange={() =>
+                        setSelectedCategories((prev) =>
+                          prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+                        )
+                      }
+                      style={{ accentColor: "var(--accent)", width: 14, height: 14 }}
+                    />
+                    <span style={{ fontSize: 13, color: "var(--muted)", flex: 1 }}>{cat}</span>
+                    <span style={{
+                      fontSize: 10, fontWeight: 700,
+                      color: "var(--subtle)", background: "var(--surface)",
+                      padding: "1px 7px", borderRadius: 99,
+                    }}>
+                      {count}
+                    </span>
+                  </label>
+                );
+              })}
             </div>
           </div>
 

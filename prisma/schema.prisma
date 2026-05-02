@@ -73,6 +73,7 @@ model Course {
   title       String
   description String
   level       String
+  category    String?
   lessons     Int
   status      String    @default("published")
   instructorId String?

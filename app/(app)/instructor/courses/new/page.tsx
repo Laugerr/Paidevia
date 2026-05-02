@@ -69,6 +69,7 @@ export default async function NewInstructorCoursePage({ searchParams }: NewCours
     const slug = normalizeSlug(String(formData.get("slug") ?? ""));
     const description = String(formData.get("description") ?? "").trim();
     const level = String(formData.get("level") ?? "").trim();
+    const category = String(formData.get("category") ?? "").trim() || null;
 
     const params = new URLSearchParams({ title, slug, description, level });
 
@@ -84,7 +85,7 @@ export default async function NewInstructorCoursePage({ searchParams }: NewCours
     }
 
     await prisma.course.create({
-      data: { title, slug, description, level, status: "draft", lessons: 0, instructorId: currentUser.id },
+      data: { title, slug, description, level, category, status: "draft", lessons: 0, instructorId: currentUser.id },
     });
 
     redirect("/instructor");
@@ -286,6 +287,39 @@ export default async function NewInstructorCoursePage({ searchParams }: NewCours
             <p style={{ fontSize: 11, color: "var(--subtle)", marginTop: 10 }}>
               The difficulty level will be shown to students on the course listing.
             </p>
+          </div>
+
+          {/* Category */}
+          <div style={{
+            background: "var(--card)", border: "1px solid var(--border)",
+            borderRadius: 14, padding: "20px 20px",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 8,
+                background: "var(--accent-bg)", border: "1px solid var(--accent-border)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <svg viewBox="0 0 24 24" width={13} height={13} fill="none" stroke="var(--accent-hover)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 6h16M4 10h16M4 14h10" />
+                </svg>
+              </div>
+              <label style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>Category</label>
+            </div>
+            <select
+              name="category"
+              style={{
+                width: "100%", padding: "11px 14px",
+                background: "var(--surface)", border: "1px solid var(--border)",
+                borderRadius: 9, fontSize: 13, color: "var(--text)",
+                outline: "none",
+              }}
+            >
+              <option value="">— No category —</option>
+              {["Web Development", "Programming", "Cybersecurity", "Data Science", "Mobile Development"].map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
           </div>
 
           {/* What happens after creation */}
