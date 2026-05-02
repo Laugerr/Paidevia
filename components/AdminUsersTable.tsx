@@ -137,7 +137,8 @@ export default function AdminUsersTable({ users: initialUsers, currentUserId }: 
   ];
 
   return (
-    <div style={{ padding: "28px 28px 80px", display: "grid", gridTemplateColumns: "1fr 240px", gap: 20, alignItems: "start" }}>
+    <div className="r-page" style={{ padding: "28px 28px 80px" }}>
+    <div className="r-panel-grid" style={{ display: "grid", gridTemplateColumns: "1fr 240px", gap: 20, alignItems: "start" }}>
 
       {/* ── Main ── */}
       <div style={{ minWidth: 0 }}>
@@ -260,7 +261,8 @@ export default function AdminUsersTable({ users: initialUsers, currentUserId }: 
         )}
 
         {/* Table */}
-        <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
+        <div className="r-table-wrap">
+        <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden", minWidth: 640 }}>
           {/* Header */}
           <div style={{
             display: "grid", gridTemplateColumns: "2fr 2fr 110px 110px 90px 140px",
@@ -374,6 +376,7 @@ export default function AdminUsersTable({ users: initialUsers, currentUserId }: 
               </div>
             );
           })}
+        </div>
         </div>
 
         {/* Footer count */}
@@ -499,6 +502,7 @@ export default function AdminUsersTable({ users: initialUsers, currentUserId }: 
         </div>
 
       </div>
+    </div>
     </div>
   );
 }

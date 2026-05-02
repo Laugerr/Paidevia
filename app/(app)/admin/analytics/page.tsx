@@ -208,7 +208,8 @@ export default async function AnalyticsPage() {
   const weekEnrollments = recentEnrollmentRows.length;
 
   return (
-    <div style={{ padding: "28px 28px 80px", display: "grid", gridTemplateColumns: "1fr 260px", gap: 20, alignItems: "start" }}>
+    <div className="r-page" style={{ padding: "28px 28px 80px" }}>
+    <div className="r-panel-grid" style={{ display: "grid", gridTemplateColumns: "1fr 260px", gap: 20, alignItems: "start" }}>
 
       {/* ── Main ── */}
       <div style={{ minWidth: 0 }}>
@@ -255,7 +256,7 @@ export default async function AnalyticsPage() {
         </div>
 
         {/* Top stats */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 16 }}>
+        <div className="r-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 16 }}>
           {[
             { label: "Total Users", value: totalUsers, color: "var(--accent)", pct: "+20%" },
             { label: "Courses Created", value: totalCourses, color: "var(--green)", pct: "+8%" },
@@ -282,7 +283,7 @@ export default async function AnalyticsPage() {
         </div>
 
         {/* Enrollments over time + new enrollments */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 14, marginBottom: 14 }}>
+        <div className="r-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 14, marginBottom: 14 }}>
           <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 22px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <div>
@@ -327,7 +328,7 @@ export default async function AnalyticsPage() {
         </div>
 
         {/* User Growth + Users by Role + Completion Rate */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 14 }}>
+        <div className="r-grid-3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 14 }}>
 
           {/* User Growth bar chart */}
           <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, padding: "18px 18px 14px" }}>
@@ -384,7 +385,7 @@ export default async function AnalyticsPage() {
             <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>Platform Engagement</p>
             <span style={{ fontSize: 11, color: "var(--subtle)" }}>This week</span>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 0 }}>
+          <div className="r-grid-5" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 0 }}>
             {[
               { label: "Avg Topics / Session", value: (totalCourses / Math.max(totalUsers, 1)).toFixed(1), color: "var(--accent)" },
               { label: "Avg Session Time", value: "34m", color: "var(--blue)" },
@@ -417,7 +418,7 @@ export default async function AnalyticsPage() {
             {recentActivity.length === 0 ? (
               <p style={{ fontSize: 12, color: "var(--subtle)", padding: "16px", textAlign: "center" }}>No recent activity</p>
             ) : recentActivity.map((a, i) => {
-              const name = a.user.name ?? a.user.email.split("@")[0];
+              const name = a.user.name ?? (a.user.email ?? "Unknown").split("@")[0];
               const initial = name[0].toUpperCase();
               return (
                 <div key={i} style={{
@@ -528,6 +529,7 @@ export default async function AnalyticsPage() {
         </div>
 
       </div>
+    </div>
     </div>
   );
 }

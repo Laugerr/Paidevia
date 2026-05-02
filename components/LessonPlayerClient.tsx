@@ -77,10 +77,10 @@ export default function LessonPlayerClient({ course, lesson }: LessonPlayerClien
   };
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", minHeight: "100vh", alignItems: "start" }}>
+    <div className="r-panel-grid" style={{ display: "grid", gridTemplateColumns: "1fr 280px", minHeight: "100vh", alignItems: "start" }}>
 
       {/* ── Main content ── */}
-      <div style={{ padding: "28px 32px 80px", minWidth: 0 }}>
+      <div className="r-page" style={{ padding: "28px 32px 80px", minWidth: 0 }}>
 
         {/* Breadcrumb */}
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20, fontSize: 13, color: "var(--subtle)", flexWrap: "wrap" }}>
@@ -301,7 +301,7 @@ export default function LessonPlayerClient({ course, lesson }: LessonPlayerClien
       </div>
 
       {/* ── Right sidebar: lesson list ── */}
-      <div style={{
+      <div className="r-hide-mobile" style={{
         borderLeft: "1px solid var(--border)",
         minHeight: "100vh", position: "sticky", top: 0,
         background: "var(--surface)",

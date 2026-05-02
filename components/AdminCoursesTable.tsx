@@ -123,7 +123,8 @@ export default function AdminCoursesTable({ courses: initialCourses }: Props) {
   ];
 
   return (
-    <div style={{ padding: "28px 28px 80px", display: "grid", gridTemplateColumns: "1fr 248px", gap: 20, alignItems: "start" }}>
+    <div className="r-page" style={{ padding: "28px 28px 80px" }}>
+    <div className="r-panel-grid" style={{ display: "grid", gridTemplateColumns: "1fr 248px", gap: 20, alignItems: "start" }}>
 
       {/* ── Main ── */}
       <div style={{ minWidth: 0 }}>
@@ -231,7 +232,8 @@ export default function AdminCoursesTable({ courses: initialCourses }: Props) {
         </div>
 
         {/* Table */}
-        <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
+        <div className="r-table-wrap">
+        <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden", minWidth: 700 }}>
           {/* Header */}
           <div style={{
             display: "grid",
@@ -383,6 +385,7 @@ export default function AdminCoursesTable({ courses: initialCourses }: Props) {
             );
           })}
         </div>
+        </div>
 
         <p style={{ fontSize: 12, color: "var(--subtle)", marginTop: 12 }}>
           Showing {filtered.length} of {courses.length} courses
@@ -498,6 +501,7 @@ export default function AdminCoursesTable({ courses: initialCourses }: Props) {
         </div>
 
       </div>
+    </div>
     </div>
   );
 }

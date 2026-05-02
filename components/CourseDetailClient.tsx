@@ -92,7 +92,7 @@ export default function CourseDetailClient({ course }: Props) {
     <div style={{ paddingBottom: 80 }}>
 
       {/* ── Hero header ── */}
-      <div style={{
+      <div className="r-hero" style={{
         background: "linear-gradient(135deg, rgba(109,92,247,0.18) 0%, rgba(167,139,250,0.1) 50%, rgba(52,211,153,0.06) 100%)",
         borderBottom: "1px solid var(--border)",
         padding: "36px 32px 32px",
@@ -148,7 +148,7 @@ export default function CourseDetailClient({ course }: Props) {
       </div>
 
       {/* ── Body ── */}
-      <div style={{ padding: "28px 32px", maxWidth: 1000, margin: "0 auto" }}>
+      <div className="r-page" style={{ padding: "28px 32px", maxWidth: 1000, margin: "0 auto" }}>
 
         {/* Progress banner — enrolled only */}
         {!loading && isEnrolled && (
@@ -200,7 +200,7 @@ export default function CourseDetailClient({ course }: Props) {
         )}
 
         {/* Two-column: lesson list + sidebar */}
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 272px", gap: 24, alignItems: "start" }}>
+        <div className="r-panel-grid" style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 272px", gap: 24, alignItems: "start" }}>
 
           {/* Lesson list */}
           <div>

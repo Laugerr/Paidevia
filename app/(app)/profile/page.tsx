@@ -32,36 +32,19 @@ export default async function ProfilePage() {
   };
 
   return (
-    <div style={{ padding: "28px 28px 80px", maxWidth: 1100 }}>
+    <div className="r-page" style={{ padding: "28px 28px 80px", maxWidth: 1100 }}>
 
       {/* ── Top header ── */}
-      <div style={{
-        display: "flex", alignItems: "flex-start",
-        justifyContent: "space-between", gap: 24,
-        marginBottom: 28,
-      }}>
-        <div>
-          <h1 className="font-heading" style={{
-            fontSize: 26, fontWeight: 800, color: "var(--text)",
-            letterSpacing: "-0.02em", marginBottom: 4,
-          }}>
-            Profile
-          </h1>
-          <p style={{ fontSize: 14, color: "var(--muted)" }}>
-            Manage your account information and preferences.
-          </p>
-        </div>
-        <div style={{
-          width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-          background: "var(--card)", border: "1px solid var(--border)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          color: "var(--muted)",
+      <div style={{ marginBottom: 28 }}>
+        <h1 className="font-heading" style={{
+          fontSize: 26, fontWeight: 800, color: "var(--text)",
+          letterSpacing: "-0.02em", marginBottom: 4,
         }}>
-          <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
-        </div>
+          Profile
+        </h1>
+        <p style={{ fontSize: 14, color: "var(--muted)" }}>
+          Manage your account information and preferences.
+        </p>
       </div>
 
       {/* ── Hero identity card ── */}
@@ -132,7 +115,7 @@ export default async function ProfilePage() {
         </div>
 
         {/* Right decorative panel */}
-        <div style={{
+        <div className="r-hide-mobile" style={{
           width: 200, flexShrink: 0,
           background: "linear-gradient(135deg, rgba(109,92,247,0.25) 0%, rgba(167,139,250,0.15) 50%, rgba(52,211,153,0.1) 100%)",
           position: "relative", overflow: "hidden",

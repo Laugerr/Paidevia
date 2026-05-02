@@ -121,7 +121,8 @@ export default async function AdminPage() {
   ];
 
   return (
-    <div style={{ padding: "28px 28px 80px", display: "grid", gridTemplateColumns: "1fr 268px", gap: 20, alignItems: "start" }}>
+    <div className="r-page" style={{ padding: "28px 28px 80px" }}>
+    <div className="r-panel-grid" style={{ display: "grid", gridTemplateColumns: "1fr 268px", gap: 20, alignItems: "start" }}>
 
       {/* ── Main ── */}
       <div style={{ minWidth: 0 }}>
@@ -154,7 +155,7 @@ export default async function AdminPage() {
         </div>
 
         {/* Stats */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 16 }}>
+        <div className="r-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 16 }}>
           {stats.map((s) => (
             <div key={s.label} style={{
               background: "var(--card)", border: "1px solid var(--border)",
@@ -183,7 +184,7 @@ export default async function AdminPage() {
         </div>
 
         {/* Management cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 16 }}>
+        <div className="r-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 16 }}>
           <Link href="/admin/users" style={{
             background: "var(--card)", border: "1px solid var(--border)",
             borderRadius: 14, padding: "24px 24px",
@@ -345,7 +346,7 @@ export default async function AdminPage() {
           </div>
           <div style={{ padding: "6px 0" }}>
             {recentActivity.length > 0 ? recentActivity.map((a, i) => {
-              const name = a.user.name ?? a.user.email.split("@")[0];
+              const name = a.user.name ?? (a.user.email ?? "Unknown").split("@")[0];
               const initial = name[0].toUpperCase();
               return (
                 <div key={i} style={{
@@ -451,6 +452,7 @@ export default async function AdminPage() {
         </div>
 
       </div>
+    </div>
     </div>
   );
 }

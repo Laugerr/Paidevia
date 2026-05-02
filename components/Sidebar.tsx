@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
 import ThemeToggle from "./ThemeToggle";
 
 type NavItem = {
@@ -28,7 +27,7 @@ function Icon({ d, d2 }: { d: string; d2?: string }) {
   );
 }
 
-export default function Sidebar({ userRole, userName, userImage, userEmail }: SidebarProps) {
+export default function Sidebar({ userRole }: SidebarProps) {
   const pathname = usePathname();
 
   const isActive = (href: string, exact?: boolean) => {
@@ -95,7 +94,6 @@ export default function Sidebar({ userRole, userName, userImage, userEmail }: Si
 
   const isInstructor = userRole === "instructor" || userRole === "admin";
   const isAdmin = userRole === "admin";
-  const fallback = (userName?.[0] ?? userEmail?.[0] ?? "U").toUpperCase();
 
   return (
     <aside style={{
@@ -110,19 +108,15 @@ export default function Sidebar({ userRole, userName, userImage, userEmail }: Si
       flexDirection: "column",
       flexShrink: 0,
     }}>
+
       {/* Logo */}
       <div style={{ padding: "18px 14px 14px", borderBottom: "1px solid var(--border-subtle)" }}>
         <Link href="/dashboard" style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
-            width: 30,
-            height: 30,
-            borderRadius: 9,
+            width: 30, height: 30, borderRadius: 9,
             background: "linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-            boxShadow: "0 2px 12px var(--accent-glow)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0, boxShadow: "0 2px 12px var(--accent-glow)",
           }}>
             <svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="white" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 3 5 6v5c0 5 3.5 8 7 10 3.5-2 7-5 7-10V6z" />
@@ -162,63 +156,16 @@ export default function Sidebar({ userRole, userName, userImage, userEmail }: Si
         )}
       </nav>
 
-      {/* User footer */}
-      <div style={{ borderTop: "1px solid var(--border)", padding: 10 }}>
-        {/* Theme toggle row */}
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6, paddingRight: 2 }}>
-          <ThemeToggle size={30} />
+      {/* Footer: copyright + version + theme toggle */}
+      <div style={{
+        borderTop: "1px solid var(--border)", padding: "10px 14px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <div>
+          <p style={{ fontSize: 10, color: "var(--subtle)", lineHeight: 1.5 }}>© 2026 Paidevia</p>
+          <p style={{ fontSize: 10, color: "var(--subtle)", opacity: 0.6 }}>v1.4.0</p>
         </div>
-        <Link href="/profile" style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          padding: "8px 8px",
-          borderRadius: 10,
-          marginBottom: 2,
-          transition: "background 0.15s",
-        }}>
-          {userImage ? (
-            <img src={userImage} alt="avatar" referrerPolicy="no-referrer"
-              style={{ width: 30, height: 30, borderRadius: 9, objectFit: "cover", flexShrink: 0 }} />
-          ) : (
-            <div style={{
-              width: 30, height: 30, borderRadius: 9, flexShrink: 0,
-              background: "linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 12, fontWeight: 800, color: "#fff",
-            }}>
-              {fallback}
-            </div>
-          )}
-          <div style={{ minWidth: 0 }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {userName ?? "User"}
-            </p>
-            <p style={{ fontSize: 11, color: "var(--subtle)", textTransform: "capitalize" }}>
-              {userRole ?? "student"}
-            </p>
-          </div>
-        </Link>
-        <button
-          onClick={() => signOut({ callbackUrl: "/home" })}
-          style={{
-            width: "100%",
-            display: "flex", alignItems: "center", gap: 8,
-            padding: "7px 10px",
-            borderRadius: 8,
-            fontSize: 12, fontWeight: 500,
-            color: "var(--subtle)",
-            cursor: "pointer",
-            transition: "all 0.15s",
-          }}
-        >
-          <svg viewBox="0 0 24 24" width={13} height={13} fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-          Sign out
-        </button>
+        <ThemeToggle size={30} />
       </div>
     </aside>
   );
@@ -243,12 +190,8 @@ function Divider() {
 function NavLink({ item, active }: { item: NavItem; active: boolean }) {
   return (
     <Link href={item.href} style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 9,
-      padding: "7px 10px",
-      borderRadius: 9,
-      fontSize: 13,
+      display: "flex", alignItems: "center", gap: 9,
+      padding: "7px 10px", borderRadius: 9, fontSize: 13,
       fontWeight: active ? 600 : 500,
       color: active ? "#fff" : "var(--muted)",
       background: active ? "var(--accent)" : "transparent",

@@ -101,7 +101,7 @@ export default async function NewInstructorCoursePage({ searchParams }: NewCours
   const levels = ["Beginner", "Intermediate", "Advanced"];
 
   return (
-    <div style={{ padding: "28px 28px 80px" }}>
+    <div className="r-page" style={{ padding: "28px 28px 80px" }}>
 
       {/* Breadcrumb */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20, fontSize: 13, color: "var(--subtle)" }}>
@@ -138,13 +138,13 @@ export default async function NewInstructorCoursePage({ searchParams }: NewCours
       )}
 
       {/* Two-column layout */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 260px", gap: 20, alignItems: "start" }}>
+      <div className="r-panel-grid" style={{ display: "grid", gridTemplateColumns: "1fr 260px", gap: 20, alignItems: "start" }}>
 
         {/* ── Left: Form ── */}
         <form action={createCourse} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
           {/* Title + Slug row */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div className="r-form-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             {/* Title card */}
             <div style={{
               background: "var(--card)", border: "1px solid var(--border)",
