@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* ── Dark theme (default) ─────────────────────────────── */
 :root {
   --bg: #0a0a0f;
   --surface: #0f0f17;
@@ -24,6 +25,35 @@
   --yellow-bg: rgba(251, 191, 36, 0.1);
   --blue: #60a5fa;
   --blue-bg: rgba(96, 165, 250, 0.1);
+  --dot-color: rgba(109, 92, 247, 0.03);
+}
+
+/* ── Light theme ──────────────────────────────────────── */
+[data-theme="light"] {
+  --bg: #f0f0f8;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card-hover: #f8f8ff;
+  --border: #e2e2ee;
+  --border-subtle: #ebebf6;
+  --text: #12122a;
+  --muted: #5c5c80;
+  --subtle: #a0a0bc;
+  --accent: #6d5cf7;
+  --accent-hover: #5a49e0;
+  --accent-bg: rgba(109, 92, 247, 0.08);
+  --accent-border: rgba(109, 92, 247, 0.2);
+  --accent-glow: rgba(109, 92, 247, 0.18);
+  --green: #10b981;
+  --green-bg: rgba(16, 185, 129, 0.1);
+  --green-glow: rgba(16, 185, 129, 0.15);
+  --red: #ef4444;
+  --red-bg: rgba(239, 68, 68, 0.1);
+  --yellow: #f59e0b;
+  --yellow-bg: rgba(245, 158, 11, 0.1);
+  --blue: #3b82f6;
+  --blue-bg: rgba(59, 130, 246, 0.1);
+  --dot-color: rgba(109, 92, 247, 0.05);
 }
 
 * {
@@ -39,7 +69,7 @@ html {
 body {
   min-height: 100vh;
   background-color: var(--bg);
-  background-image: radial-gradient(rgba(109, 92, 247, 0.03) 1px, transparent 1px);
+  background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
   background-size: 28px 28px;
   color: var(--text);
   font-family: var(--font-sans), "Inter", "Segoe UI", "Helvetica Neue", sans-serif;

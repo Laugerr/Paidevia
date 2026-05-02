@@ -11,12 +11,8 @@ export default async function AdminCoursesPage() {
   }
 
   const currentUser = await prisma.user.findUnique({
-    where: {
-      email: session.user.email,
-    },
-    select: {
-      role: true,
-    },
+    where: { email: session.user.email },
+    select: { role: true },
   });
 
   if (!currentUser || currentUser.role !== "admin") {
@@ -24,16 +20,12 @@ export default async function AdminCoursesPage() {
   }
 
   const courses = await prisma.course.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: { createdAt: "desc" },
     include: {
       enrollments: true,
-      progress: {
-        where: {
-          completed: true,
-        },
-      },
+      progress: { where: { completed: true } },
+      instructor: { select: { name: true, image: true } },
+      _count: { select: { courseLessons: true } },
     },
   });
 

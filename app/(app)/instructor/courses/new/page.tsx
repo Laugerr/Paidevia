@@ -98,34 +98,37 @@ export default async function NewInstructorCoursePage({ searchParams }: NewCours
   const errorMessage = sp?.error;
   const firstName = user.name?.split(" ")[0] ?? "Instructor";
 
+  const levels = ["Beginner", "Intermediate", "Advanced"];
+
   return (
-    <div className="r-page" style={{ padding: "32px 32px 80px", maxWidth: 720 }}>
+    <div style={{ padding: "28px 28px 80px" }}>
 
-      {/* Header */}
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 16, fontSize: 13, color: "var(--subtle)" }}>
-          <Link href="/instructor" style={{ color: "var(--muted)" }}>Instructor</Link>
-          <svg viewBox="0 0 24 24" width={12} height={12} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-            <path d="m9 18 6-6-6-6" />
-          </svg>
-          <span style={{ color: "var(--text)" }}>New Course</span>
-        </div>
+      {/* Breadcrumb */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20, fontSize: 13, color: "var(--subtle)" }}>
+        <Link href="/instructor" style={{ color: "var(--muted)" }}>Instructor</Link>
+        <svg viewBox="0 0 24 24" width={12} height={12} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+        <span style={{ color: "var(--text)", fontWeight: 500 }}>New Course</span>
+      </div>
 
-        <p style={{ fontSize: 11, fontWeight: 700, color: "var(--accent-hover)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>
-          Instructor Workspace
-        </p>
-        <h1 className="font-heading" style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em", marginBottom: 6 }}>
+      {/* Page heading */}
+      <div style={{ marginBottom: 24 }}>
+        <h1 className="font-heading" style={{
+          fontSize: 26, fontWeight: 800, color: "var(--text)",
+          letterSpacing: "-0.02em", marginBottom: 6,
+        }}>
           Create a new course
         </h1>
-        <p style={{ fontSize: 14, color: "var(--muted)", lineHeight: 1.7 }}>
-          Creating as <strong style={{ color: "var(--text)", fontWeight: 600 }}>{firstName}</strong>. Courses start as drafts and can be published once lessons are added.
+        <p style={{ fontSize: 14, color: "var(--muted)" }}>
+          Start building your course. You can save it as a draft and publish it when it&apos;s ready.
         </p>
       </div>
 
       {/* Error */}
       {errorMessage && (
         <div style={{
-          padding: "12px 16px", marginBottom: 24,
+          padding: "12px 16px", marginBottom: 20,
           background: "rgba(248,113,113,0.08)",
           border: "1px solid rgba(248,113,113,0.2)",
           borderRadius: 10, fontSize: 13, color: "var(--red)",
@@ -134,14 +137,31 @@ export default async function NewInstructorCoursePage({ searchParams }: NewCours
         </div>
       )}
 
-      {/* Form */}
-      <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 16, padding: "32px" }}>
-        <form action={createCourse} style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+      {/* Two-column layout */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 260px", gap: 20, alignItems: "start" }}>
+
+        {/* ── Left: Form ── */}
+        <form action={createCourse} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
           {/* Title + Slug row */}
-          <div className="r-form-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            <div>
-              <label style={labelStyle}>Course Title</label>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            {/* Title card */}
+            <div style={{
+              background: "var(--card)", border: "1px solid var(--border)",
+              borderRadius: 14, padding: "20px 20px",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: 8,
+                  background: "var(--accent-bg)", border: "1px solid var(--accent-border)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <svg viewBox="0 0 24 24" width={13} height={13} fill="none" stroke="var(--accent-hover)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 6h16M4 12h16M4 18h7" />
+                  </svg>
+                </div>
+                <label style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>Course Title</label>
+              </div>
               <input
                 name="title"
                 type="text"
@@ -150,9 +170,29 @@ export default async function NewInstructorCoursePage({ searchParams }: NewCours
                 required
                 style={inputStyle}
               />
+              <p style={{ fontSize: 11, color: "var(--subtle)", marginTop: 8 }}>
+                e.g. Intro to Python · Create a short, engaging title for your learners
+              </p>
             </div>
-            <div>
-              <label style={labelStyle}>Slug <span style={{ color: "var(--subtle)", fontWeight: 400 }}>(URL-safe, auto-normalized)</span></label>
+
+            {/* Slug card */}
+            <div style={{
+              background: "var(--card)", border: "1px solid var(--border)",
+              borderRadius: 14, padding: "20px 20px",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: 8,
+                  background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.2)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <svg viewBox="0 0 24 24" width={13} height={13} fill="none" stroke="var(--green)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                  </svg>
+                </div>
+                <label style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>Slug</label>
+              </div>
               <input
                 name="slug"
                 type="text"
@@ -161,47 +201,108 @@ export default async function NewInstructorCoursePage({ searchParams }: NewCours
                 required
                 style={inputStyle}
               />
+              <p style={{ fontSize: 11, color: "var(--subtle)", marginTop: 8 }}>
+                e.g. intro-to-python · Readable URL identifier, auto-normalized
+              </p>
             </div>
           </div>
 
-          {/* Description */}
-          <div>
-            <label style={labelStyle}>Description</label>
+          {/* Description card */}
+          <div style={{
+            background: "var(--card)", border: "1px solid var(--border)",
+            borderRadius: 14, padding: "20px 20px",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 8,
+                background: "rgba(96,165,250,0.1)", border: "1px solid rgba(96,165,250,0.2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <svg viewBox="0 0 24 24" width={13} height={13} fill="none" stroke="var(--blue)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+                </svg>
+              </div>
+              <label style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>Description</label>
+            </div>
             <textarea
               name="description"
               rows={4}
               defaultValue={descriptionValue}
               placeholder="Write a clear summary of what learners will gain from this course."
               required
+              maxLength={500}
               style={{ ...inputStyle, resize: "vertical", lineHeight: 1.7 }}
             />
+            <p style={{ fontSize: 11, color: "var(--subtle)", marginTop: 8, textAlign: "right" }}>
+              {descriptionValue.length} / 500
+            </p>
           </div>
 
-          {/* Level */}
-          <div style={{ maxWidth: 240 }}>
-            <label style={labelStyle}>Difficulty Level</label>
-            <select name="level" defaultValue={levelValue} style={inputStyle}>
-              {["Beginner", "Intermediate", "Advanced"].map((l) => (
-                <option key={l} value={l}>{l}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Draft info */}
+          {/* Difficulty Level */}
           <div style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: 10,
-            padding: "16px 20px",
+            background: "var(--card)", border: "1px solid var(--border)",
+            borderRadius: 14, padding: "20px 20px",
           }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>What happens after creation</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 8,
+                background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <svg viewBox="0 0 24 24" width={13} height={13} fill="none" stroke="var(--yellow)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 20V10M12 20V4M6 20v-6" />
+                </svg>
+              </div>
+              <label style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>Difficulty Level</label>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {levels.map((l) => (
+                <label key={l} style={{ flex: 1, cursor: "pointer" }}>
+                  <input
+                    type="radio"
+                    name="level"
+                    value={l}
+                    defaultChecked={levelValue === l}
+                    style={{ display: "none" }}
+                  />
+                  <span style={{
+                    display: "block", textAlign: "center",
+                    padding: "9px 0",
+                    borderRadius: 9,
+                    fontSize: 13, fontWeight: 600,
+                    border: "1px solid var(--border)",
+                    cursor: "pointer",
+                    background: levelValue === l ? "var(--accent)" : "var(--surface)",
+                    color: levelValue === l ? "#fff" : "var(--muted)",
+                    boxShadow: levelValue === l ? "0 2px 12px var(--accent-glow)" : "none",
+                    transition: "all 0.15s",
+                  }}>
+                    {l}
+                  </span>
+                </label>
+              ))}
+            </div>
+            <p style={{ fontSize: 11, color: "var(--subtle)", marginTop: 10 }}>
+              The difficulty level will be shown to students on the course listing.
+            </p>
+          </div>
+
+          {/* What happens after creation */}
+          <div style={{
+            background: "var(--surface)", border: "1px solid var(--border)",
+            borderRadius: 14, padding: "20px 20px",
+          }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginBottom: 12 }}>
+              What happens after creation
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {[
                 "Course is saved as a draft — not visible to students yet.",
-                "You can add lessons from the instructor workspace.",
-                "An admin can publish it once it's ready.",
+                "You can add lessons, questions, and discussion from the instructor workspace.",
+                "An admin can review and publish the course once it's ready for learners.",
               ].map((item, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                   <span style={{
                     width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
                     background: "var(--accent-bg)", border: "1px solid var(--accent-border)",
@@ -236,17 +337,135 @@ export default async function NewInstructorCoursePage({ searchParams }: NewCours
             </button>
             <Link href="/instructor" style={{
               padding: "11px 22px",
-              background: "var(--surface)",
+              background: "var(--card)",
               border: "1px solid var(--border)",
               borderRadius: 10,
               fontSize: 14,
               fontWeight: 500,
               color: "var(--muted)",
+              display: "inline-flex", alignItems: "center",
             }}>
               Cancel
             </Link>
           </div>
         </form>
+
+        {/* ── Right panel ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+          {/* Course Preview */}
+          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
+            <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--border-subtle)" }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>Course Preview</p>
+              <p style={{ fontSize: 11, color: "var(--subtle)", marginTop: 2 }}>How your card will look</p>
+            </div>
+            <div style={{ padding: 16 }}>
+              {/* Mini course card */}
+              <div style={{
+                background: "var(--surface)", border: "1px solid var(--border)",
+                borderRadius: 12, overflow: "hidden",
+              }}>
+                {/* Card header */}
+                <div style={{
+                  height: 80,
+                  background: "linear-gradient(135deg, rgba(109,92,247,0.4) 0%, rgba(167,139,250,0.3) 100%)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  position: "relative",
+                }}>
+                  <span style={{ fontSize: 28 }}>📘</span>
+                  <div style={{
+                    position: "absolute", top: 8, right: 8,
+                    fontSize: 9, fontWeight: 700, textTransform: "uppercase",
+                    letterSpacing: "0.06em", color: "#fff",
+                    background: "rgba(109,92,247,0.7)", padding: "2px 8px",
+                    borderRadius: 99,
+                  }}>
+                    {levelValue}
+                  </div>
+                </div>
+                {/* Card body */}
+                <div style={{ padding: "12px 14px" }}>
+                  <p style={{
+                    fontSize: 13, fontWeight: 700, color: "var(--text)",
+                    marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>
+                    {titleValue || "Course Title"}
+                  </p>
+                  <p style={{
+                    fontSize: 11, color: "var(--muted)", lineHeight: 1.5,
+                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+                  }}>
+                    {descriptionValue || "Short description will appear here."}
+                  </p>
+                  <div style={{
+                    marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between",
+                  }}>
+                    <span style={{ fontSize: 10, color: "var(--subtle)" }}>Creating as {firstName}</span>
+                    <span style={{
+                      fontSize: 9, fontWeight: 700, textTransform: "uppercase",
+                      letterSpacing: "0.06em", color: "var(--yellow)",
+                      border: "1px solid var(--yellow)", padding: "2px 6px", borderRadius: 99,
+                    }}>
+                      Draft
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Need help? */}
+          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, padding: 18 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 8,
+                background: "var(--accent-bg)", border: "1px solid var(--accent-border)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <svg viewBox="0 0 24 24" width={13} height={13} fill="none" stroke="var(--accent-hover)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+              </div>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>Need help?</p>
+            </div>
+            <p style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.6, marginBottom: 14 }}>
+              Follow our best practices to create effective and engaging courses.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                "How to build a great title",
+                "Structuring your lessons",
+                "Publishing guidelines",
+              ].map((tip, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{
+                    width: 18, height: 18, borderRadius: 5, flexShrink: 0,
+                    background: "var(--accent)", display: "flex",
+                    alignItems: "center", justifyContent: "center",
+                    fontSize: 9, fontWeight: 800, color: "#fff",
+                  }}>
+                    {i + 1}
+                  </span>
+                  <p style={{ fontSize: 12, color: "var(--muted)" }}>{tip}</p>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--border-subtle)" }}>
+              <Link href="/instructor" style={{
+                fontSize: 12, fontWeight: 600, color: "var(--accent-hover)",
+                display: "flex", alignItems: "center", gap: 4,
+              }}>
+                View Instructor Guide
+                <svg viewBox="0 0 24 24" width={11} height={11} fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );

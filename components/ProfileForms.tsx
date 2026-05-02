@@ -76,7 +76,7 @@ export function EditNameForm({ currentName }: { currentName: string }) {
             transition: "all 0.15s",
           }}
         >
-          {pending ? "Saving…" : "Save Name"}
+          {pending ? "Saving…" : "Save Changes"}
         </button>
       </div>
     </form>

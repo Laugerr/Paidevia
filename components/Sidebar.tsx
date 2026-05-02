@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import ThemeToggle from "./ThemeToggle";
 
 type NavItem = {
   href: string;
@@ -85,6 +86,11 @@ export default function Sidebar({ userRole, userName, userImage, userEmail }: Si
       label: "Courses",
       icon: <Icon d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5a2.5 2.5 0 0 0-2.5-2.5H4z" d2="M6.5 3A2.5 2.5 0 0 0 4 5.5V21" />,
     },
+    {
+      href: "/admin/analytics",
+      label: "Analytics",
+      icon: <Icon d="M18 20V10M12 20V4M6 20v-6" />,
+    },
   ];
 
   const isInstructor = userRole === "instructor" || userRole === "admin";
@@ -132,7 +138,7 @@ export default function Sidebar({ userRole, userName, userImage, userEmail }: Si
       <nav style={{ flex: 1, padding: "10px 8px", display: "flex", flexDirection: "column", gap: 1, overflowY: "auto" }}>
         <SectionLabel>Platform</SectionLabel>
         {platformNav.map((item) => (
-          <NavLink key={item.href} item={item} active={isActive(item.href, item.exact)} />
+          <NavLink key={item.label} item={item} active={isActive(item.href, item.exact)} />
         ))}
 
         {isInstructor && (
@@ -140,7 +146,7 @@ export default function Sidebar({ userRole, userName, userImage, userEmail }: Si
             <Divider />
             <SectionLabel>Instructor</SectionLabel>
             {instructorNav.map((item) => (
-              <NavLink key={item.href} item={item} active={isActive(item.href, item.exact)} />
+              <NavLink key={item.label} item={item} active={isActive(item.href, item.exact)} />
             ))}
           </>
         )}
@@ -150,7 +156,7 @@ export default function Sidebar({ userRole, userName, userImage, userEmail }: Si
             <Divider />
             <SectionLabel>Admin</SectionLabel>
             {adminNav.map((item) => (
-              <NavLink key={item.href} item={item} active={isActive(item.href, item.exact)} />
+              <NavLink key={item.label} item={item} active={isActive(item.href, item.exact)} />
             ))}
           </>
         )}
@@ -158,13 +164,18 @@ export default function Sidebar({ userRole, userName, userImage, userEmail }: Si
 
       {/* User footer */}
       <div style={{ borderTop: "1px solid var(--border)", padding: 10 }}>
-        <div style={{
+        {/* Theme toggle row */}
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6, paddingRight: 2 }}>
+          <ThemeToggle size={30} />
+        </div>
+        <Link href="/profile" style={{
           display: "flex",
           alignItems: "center",
           gap: 10,
           padding: "8px 8px",
           borderRadius: 10,
           marginBottom: 2,
+          transition: "background 0.15s",
         }}>
           {userImage ? (
             <img src={userImage} alt="avatar" referrerPolicy="no-referrer"
@@ -187,7 +198,7 @@ export default function Sidebar({ userRole, userName, userImage, userEmail }: Si
               {userRole ?? "student"}
             </p>
           </div>
-        </div>
+        </Link>
         <button
           onClick={() => signOut({ callbackUrl: "/home" })}
           style={{
@@ -240,14 +251,11 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
       fontSize: 13,
       fontWeight: active ? 600 : 500,
       color: active ? "#fff" : "var(--muted)",
-      background: active
-        ? "linear-gradient(90deg, rgba(109,92,247,0.3) 0%, rgba(109,92,247,0.1) 100%)"
-        : "transparent",
-      borderLeft: active ? "2px solid var(--accent)" : "2px solid transparent",
-      boxShadow: active ? "0 0 12px rgba(109,92,247,0.15)" : "none",
+      background: active ? "var(--accent)" : "transparent",
+      boxShadow: active ? "0 2px 12px var(--accent-glow)" : "none",
       transition: "all 0.15s",
     }}>
-      <span style={{ color: active ? "var(--accent-hover)" : "var(--subtle)", flexShrink: 0 }}>
+      <span style={{ color: active ? "rgba(255,255,255,0.85)" : "var(--subtle)", flexShrink: 0 }}>
         {item.icon}
       </span>
       {item.label}

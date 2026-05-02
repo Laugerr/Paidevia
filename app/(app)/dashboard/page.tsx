@@ -3,6 +3,17 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
+const levelColor: Record<string, string> = {
+  Beginner: "var(--green)",
+  Intermediate: "var(--yellow)",
+  Advanced: "var(--red)",
+};
+const levelBg: Record<string, string> = {
+  Beginner: "var(--green-bg)",
+  Intermediate: "var(--yellow-bg)",
+  Advanced: "var(--red-bg)",
+};
+
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
@@ -37,21 +48,18 @@ export default async function DashboardPage() {
     }),
     prisma.lessonProgress.findMany({
       where: { userId: user.id, completed: true },
-      select: { lessonSlug: true },
+      select: { lessonSlug: true, completedAt: true },
     }),
   ]);
 
   const completedSlugs = new Set(progress.map((p) => p.lessonSlug));
-  const enrolledCourses = enrollments
-    .map((e) => e.course)
-    .filter((c) => c.courseLessons.length > 0);
+  const enrolledCourses = enrollments.map((e) => e.course).filter((c) => c.courseLessons.length > 0);
   const enrolledIds = new Set(enrolledCourses.map((c) => c.id));
-  const recommended = allPublished.filter((c) => !enrolledIds.has(c.id)).slice(0, 3);
+  const recommended = allPublished.filter((c) => !enrolledIds.has(c.id)).slice(0, 4);
 
   const totalLessons = enrolledCourses.reduce((t, c) => t + c.courseLessons.length, 0);
   const completedCount = enrolledCourses.reduce(
-    (t, c) => t + c.courseLessons.filter((l) => completedSlugs.has(l.slug)).length,
-    0
+    (t, c) => t + c.courseLessons.filter((l) => completedSlugs.has(l.slug)).length, 0
   );
   const overallProgress = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 
@@ -59,13 +67,6 @@ export default async function DashboardPage() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
-  const levelColor: Record<string, string> = {
-    Beginner: "var(--green)",
-    Intermediate: "var(--yellow)",
-    Advanced: "var(--red)",
-  };
-
-  // Find the active course (first in-progress, or first enrolled if none)
   const activeCourse = enrolledCourses.find((c) => {
     const done = c.courseLessons.filter((l) => completedSlugs.has(l.slug)).length;
     return done > 0 && done < c.courseLessons.length;
@@ -76,259 +77,489 @@ export default async function DashboardPage() {
   const activeTotal = activeCourse?.courseLessons.length ?? 0;
   const activePct = activeTotal > 0 ? Math.round((activeDone / activeTotal) * 100) : 0;
 
+  // Learning streak: check last 7 days for lesson completions
+  const today = new Date();
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const last7 = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - (6 - i));
+    return d;
+  });
+  const completionDates = new Set(
+    progress
+      .filter((p) => p.completedAt)
+      .map((p) => {
+        const d = new Date(p.completedAt!);
+        return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      })
+  );
+  const streakDays = last7.map((d) => ({
+    label: days[d.getDay()],
+    active: completionDates.has(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`),
+  }));
+
+  // Consecutive streak count (from today backwards)
+  let streakCount = 0;
+  for (let i = 6; i >= 0; i--) {
+    if (streakDays[i].active) streakCount++;
+    else break;
+  }
+
+  // Circular progress SVG
+  const r = 38;
+  const circ = 2 * Math.PI * r;
+  const offset = circ * (1 - overallProgress / 100);
+
   return (
-    <div className="r-page" style={{ padding: "32px 32px 64px", maxWidth: 1000 }}>
+    <div style={{ padding: "28px 28px 64px", maxWidth: 1200 }}>
 
-      {/* Header */}
-      <div style={{ marginBottom: 32 }}>
-        <h1 className="font-heading" style={{
-          fontSize: 28, fontWeight: 800, color: "var(--text)",
-          letterSpacing: "-0.02em", marginBottom: 4,
-        }}>
-          {greeting}, {firstName} 👋
-        </h1>
-        <p style={{ fontSize: 14, color: "var(--muted)" }}>
-          {enrolledCourses.length > 0
-            ? `You're enrolled in ${enrolledCourses.length} course${enrolledCourses.length !== 1 ? "s" : ""} · ${completedCount} lesson${completedCount !== 1 ? "s" : ""} completed`
-            : "Start learning by enrolling in a course below."}
-        </p>
-      </div>
-
-      {/* Continue Learning hero */}
-      {activeCourse && (
-        <div style={{
-          position: "relative",
-          overflow: "hidden",
-          background: "linear-gradient(135deg, rgba(109,92,247,0.15) 0%, rgba(109,92,247,0.05) 60%, rgba(52,211,153,0.05) 100%)",
-          border: "1px solid var(--accent-border)",
-          borderRadius: 16,
-          padding: "28px 32px",
-          marginBottom: 28,
-        }}>
-          {/* Glow orbs */}
-          <div style={{
-            position: "absolute", top: -40, right: -40,
-            width: 200, height: 200,
-            background: "radial-gradient(circle, rgba(109,92,247,0.2), transparent)",
-            borderRadius: "50%", pointerEvents: "none",
-          }} />
-          <div style={{
-            position: "absolute", bottom: -20, left: "40%",
-            width: 120, height: 120,
-            background: "radial-gradient(circle, rgba(52,211,153,0.1), transparent)",
-            borderRadius: "50%", pointerEvents: "none",
-          }} />
-
-          <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <span style={{
-                  fontSize: 10, fontWeight: 700, color: "var(--accent-hover)",
-                  letterSpacing: "0.1em", textTransform: "uppercase",
-                }}>
-                  Continue Learning
-                </span>
-                <span style={{
-                  fontSize: 11, fontWeight: 600,
-                  color: levelColor[activeCourse.level] ?? "var(--muted)",
-                  padding: "2px 8px", borderRadius: 99,
-                  border: "1px solid currentColor", opacity: 0.8,
-                }}>
-                  {activeCourse.level}
-                </span>
-              </div>
-              <h2 className="font-heading" style={{
-                fontSize: 20, fontWeight: 800, color: "var(--text)",
-                letterSpacing: "-0.02em", lineHeight: 1.2, marginBottom: 14,
-              }}>
-                {activeCourse.title}
-              </h2>
-              {/* Progress bar */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10, maxWidth: 360 }}>
-                <div style={{ flex: 1, height: 5, background: "rgba(255,255,255,0.08)", borderRadius: 99, overflow: "hidden" }}>
-                  <div style={{
-                    width: `${activePct}%`, height: "100%",
-                    background: "linear-gradient(90deg, var(--accent), #a78bfa)",
-                    borderRadius: 99,
-                    transition: "width 0.6s ease",
-                  }} />
-                </div>
-                <span style={{ fontSize: 12, color: "var(--muted)", whiteSpace: "nowrap", fontWeight: 500 }}>
-                  {activeDone}/{activeTotal} lessons
-                </span>
-              </div>
-            </div>
-
-            <Link
-              href={activeNext ? `/lesson/${activeNext.slug}` : `/courses/${activeCourse.slug}`}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                padding: "12px 24px",
-                background: "var(--accent)",
-                color: "#fff",
-                borderRadius: 10,
-                fontSize: 14, fontWeight: 700,
-                boxShadow: "0 4px 20px var(--accent-glow)",
-                flexShrink: 0,
-                whiteSpace: "nowrap",
-              }}
-            >
-              <svg viewBox="0 0 24 24" width={16} height={16} fill="currentColor">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              {activePct === 0 ? "Start" : "Continue"}
-            </Link>
-          </div>
+      {/* ── Top header ── */}
+      <div style={{
+        display: "flex", alignItems: "flex-start",
+        justifyContent: "space-between", gap: 24,
+        marginBottom: 28, flexWrap: "wrap",
+      }}>
+        <div>
+          <h1 className="font-heading" style={{
+            fontSize: 26, fontWeight: 800, color: "var(--text)",
+            letterSpacing: "-0.02em", marginBottom: 4,
+          }}>
+            {greeting}, {firstName} 👋
+          </h1>
+          <p style={{ fontSize: 14, color: "var(--muted)" }}>
+            Keep learning, keep growing. You&apos;re doing great!
+          </p>
         </div>
-      )}
 
-      {/* Stats */}
-      <div className="r-grid-3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 36 }}>
-        {[
-          { label: "Enrolled", value: enrolledCourses.length, color: "var(--accent)" },
-          { label: "Completed", value: completedCount, color: "var(--green)" },
-          { label: "Progress", value: `${overallProgress}%`, color: "var(--yellow)" },
-        ].map((s) => (
-          <div key={s.label} style={{
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          {/* Search */}
+          <Link href="/courses" style={{
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "9px 16px",
             background: "var(--card)",
             border: "1px solid var(--border)",
-            borderRadius: 12,
-            padding: "20px 24px",
+            borderRadius: 10,
+            color: "var(--subtle)",
+            fontSize: 13,
+            width: 200,
           }}>
-            <p style={{ fontSize: 28, fontWeight: 800, color: s.color, letterSpacing: "-0.02em" }}>
-              {s.value}
-            </p>
-            <p style={{ fontSize: 13, color: "var(--muted)", marginTop: 2 }}>{s.label}</p>
+            <svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+            </svg>
+            Search for courses…
+          </Link>
+          {/* Bell */}
+          <div style={{
+            width: 38, height: 38, borderRadius: 10,
+            background: "var(--card)", border: "1px solid var(--border)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "var(--muted)", flexShrink: 0,
+          }}>
+            <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
           </div>
-        ))}
+        </div>
       </div>
 
-      {/* Enrolled Courses */}
-      {enrolledCourses.length > 0 && (
-        <section style={{ marginBottom: 48 }}>
-          <h2 className="font-heading" style={{
-            fontSize: 17, fontWeight: 700, color: "var(--text)",
-            letterSpacing: "-0.01em", marginBottom: 14,
-          }}>
-            My Courses
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {enrolledCourses.map((course) => {
-              const done = course.courseLessons.filter((l) => completedSlugs.has(l.slug)).length;
-              const total = course.courseLessons.length;
-              const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-              const nextLesson = course.courseLessons.find((l) => !completedSlugs.has(l.slug));
+      {/* ── Two-column layout ── */}
+      <div className="r-course-grid" style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 260px", gap: 24, alignItems: "start" }}>
 
-              return (
-                <div key={course.id} style={{
-                  background: "var(--card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 12,
-                  padding: "18px 22px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 20,
-                }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                      <h3 className="font-heading" style={{
-                        fontSize: 15, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.01em",
-                      }}>
-                        {course.title}
-                      </h3>
-                      <span style={{
-                        fontSize: 11, fontWeight: 600,
-                        color: levelColor[course.level] ?? "var(--muted)",
-                        padding: "2px 8px", borderRadius: 99,
-                        border: "1px solid currentColor", flexShrink: 0,
-                      }}>
-                        {course.level}
-                      </span>
+        {/* ── Main column ── */}
+        <div style={{ minWidth: 0 }}>
+
+          {/* Hero banner */}
+          {activeCourse ? (
+            <div style={{
+              position: "relative", overflow: "hidden",
+              background: "linear-gradient(135deg, var(--accent) 0%, #8b7dff 60%, #a78bfa 100%)",
+              borderRadius: 16, padding: "28px 32px", marginBottom: 20,
+            }}>
+              {/* Decorative blobs */}
+              <div style={{
+                position: "absolute", top: -30, right: -30, width: 180, height: 180,
+                background: "rgba(255,255,255,0.06)", borderRadius: "50%", pointerEvents: "none",
+              }} />
+              <div style={{
+                position: "absolute", bottom: -40, right: 80, width: 120, height: 120,
+                background: "rgba(255,255,255,0.04)", borderRadius: "50%", pointerEvents: "none",
+              }} />
+
+              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{
+                    display: "inline-block", fontSize: 10, fontWeight: 700,
+                    color: "#fff", background: "rgba(255,255,255,0.2)",
+                    padding: "3px 10px", borderRadius: 99, letterSpacing: "0.1em",
+                    textTransform: "uppercase", marginBottom: 12,
+                  }}>
+                    Enrolled
+                  </span>
+                  <h2 className="font-heading" style={{
+                    fontSize: 20, fontWeight: 800, color: "#fff",
+                    letterSpacing: "-0.02em", lineHeight: 1.2, marginBottom: 14,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>
+                    {activeCourse.title}
+                  </h2>
+                  {/* Progress */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, maxWidth: 340, marginBottom: 20 }}>
+                    <div style={{ flex: 1, height: 5, background: "rgba(255,255,255,0.25)", borderRadius: 99, overflow: "hidden" }}>
+                      <div style={{
+                        width: `${activePct}%`, height: "100%",
+                        background: "#fff", borderRadius: 99, transition: "width 0.6s ease",
+                      }} />
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{ flex: 1, height: 4, background: "var(--border)", borderRadius: 99, overflow: "hidden" }}>
-                        <div style={{
-                          width: `${pct}%`, height: "100%",
-                          background: pct === 100 ? "var(--green)" : "linear-gradient(90deg, var(--accent), #a78bfa)",
-                          borderRadius: 99,
-                        }} />
-                      </div>
-                      <span style={{ fontSize: 12, color: "var(--muted)", whiteSpace: "nowrap" }}>
-                        {done}/{total}
-                      </span>
-                    </div>
+                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap", fontWeight: 500 }}>
+                      {activeDone} of {activeTotal} lessons completed
+                    </span>
                   </div>
-                  <Link
-                    href={nextLesson ? `/lesson/${nextLesson.slug}` : `/courses/${course.slug}`}
-                    style={{
-                      padding: "8px 18px",
-                      background: pct === 100 ? "transparent" : "var(--accent)",
-                      color: pct === 100 ? "var(--muted)" : "#fff",
-                      borderRadius: 8,
-                      fontSize: 13, fontWeight: 600,
-                      whiteSpace: "nowrap",
-                      border: pct === 100 ? "1px solid var(--border)" : "none",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {pct === 100 ? "Done ✓" : pct > 0 ? "Continue" : "Start"}
+                  <Link href={activeNext ? `/lesson/${activeNext.slug}` : `/courses/${activeCourse.slug}`} style={{
+                    display: "inline-flex", alignItems: "center", gap: 8,
+                    padding: "10px 22px",
+                    background: "#fff", color: "var(--accent)",
+                    borderRadius: 10, fontSize: 13, fontWeight: 700,
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+                  }}>
+                    <svg viewBox="0 0 24 24" width={14} height={14} fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                    {activePct === 0 ? "Start Learning" : "Continue Learning"}
                   </Link>
                 </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
 
-      {/* Recommended */}
-      {recommended.length > 0 && (
-        <section>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-            <h2 className="font-heading" style={{ fontSize: 17, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.01em" }}>
-              {enrolledCourses.length === 0 ? "Start Learning" : "Discover More"}
-            </h2>
-            <Link href="/courses" style={{ fontSize: 13, fontWeight: 600, color: "var(--accent-hover)" }}>
-              Browse all →
-            </Link>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
-            {recommended.map((course) => (
-              <Link key={course.id} href={`/courses/${course.slug}`} className="glow-card" style={{
-                background: "var(--card)",
-                border: "1px solid var(--border)",
-                borderRadius: 12,
-                padding: 20,
-                display: "block",
-              }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                  <span style={{
-                    fontSize: 11, fontWeight: 600,
-                    color: levelColor[course.level] ?? "var(--muted)",
-                    padding: "2px 8px", borderRadius: 99, border: "1px solid currentColor",
-                  }}>
-                    {course.level}
-                  </span>
-                  <span style={{ fontSize: 12, color: "var(--subtle)" }}>
-                    {course._count.courseLessons} lessons
-                  </span>
+                {/* Decorative illustration area */}
+                <div style={{
+                  width: 120, height: 90, flexShrink: 0,
+                  background: "rgba(255,255,255,0.1)",
+                  borderRadius: 16, border: "1px solid rgba(255,255,255,0.15)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 40,
+                }}>
+                  🎓
                 </div>
-                <p className="font-heading" style={{ fontSize: 15, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.01em" }}>
-                  {course.title}
-                </p>
+              </div>
+            </div>
+          ) : (
+            <div style={{
+              background: "var(--card)", border: "1px dashed var(--border)",
+              borderRadius: 16, padding: "32px", marginBottom: 20, textAlign: "center",
+            }}>
+              <p style={{ fontSize: 28, marginBottom: 10 }}>📚</p>
+              <p className="font-heading" style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 6 }}>
+                No courses yet
+              </p>
+              <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 16 }}>
+                Browse and enroll in a course to get started.
+              </p>
+              <Link href="/courses" style={{
+                display: "inline-block", padding: "10px 22px",
+                background: "var(--accent)", color: "#fff",
+                borderRadius: 10, fontSize: 13, fontWeight: 700,
+                boxShadow: "0 2px 12px var(--accent-glow)",
+              }}>
+                Browse Courses
               </Link>
+            </div>
+          )}
+
+          {/* Stats row */}
+          <div className="r-grid-3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 24 }}>
+            {[
+              {
+                label: "Enrolled Courses", value: enrolledCourses.length,
+                sub: enrolledCourses.length === 0 ? "Start learning journey" : "Keep learning and growing",
+                icon: "📘", color: "var(--accent)",
+              },
+              {
+                label: "Lessons Completed", value: completedCount,
+                sub: completedCount === 0 ? "Complete your first lesson" : "Great progress! Keep it up!",
+                icon: "✅", color: "var(--green)",
+              },
+              {
+                label: "Day Streak", value: streakCount,
+                sub: streakCount === 0 ? "Start your streak today!" : `${streakCount} day${streakCount !== 1 ? "s" : ""} in a row!`,
+                icon: "🔥", color: "var(--yellow)",
+              },
+            ].map((s) => (
+              <div key={s.label} style={{
+                background: "var(--card)", border: "1px solid var(--border)",
+                borderRadius: 12, padding: "18px 20px",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  <span style={{ fontSize: 20 }}>{s.icon}</span>
+                  <p style={{ fontSize: 26, fontWeight: 800, color: s.color, letterSpacing: "-0.02em" }}>
+                    {s.value}
+                  </p>
+                </div>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text)", marginBottom: 2 }}>{s.label}</p>
+                <p style={{ fontSize: 11, color: "var(--subtle)" }}>{s.sub}</p>
+              </div>
             ))}
           </div>
-        </section>
-      )}
 
-      {enrolledCourses.length === 0 && recommended.length === 0 && (
-        <div style={{ textAlign: "center", padding: "64px 24px", border: "1px dashed var(--border)", borderRadius: 12 }}>
-          <p className="font-heading" style={{ fontSize: 20, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>
-            No courses available yet
-          </p>
-          <p style={{ color: "var(--muted)", fontSize: 14 }}>Check back soon.</p>
+          {/* My Courses */}
+          {enrolledCourses.length > 0 && (
+            <section style={{ marginBottom: 28 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                <h2 className="font-heading" style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.01em" }}>
+                  My Courses
+                </h2>
+                <Link href="/courses" style={{ fontSize: 12, fontWeight: 600, color: "var(--accent-hover)" }}>
+                  View all →
+                </Link>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {enrolledCourses.map((course) => {
+                  const done = course.courseLessons.filter((l) => completedSlugs.has(l.slug)).length;
+                  const total = course.courseLessons.length;
+                  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+                  const nextLesson = course.courseLessons.find((l) => !completedSlugs.has(l.slug));
+
+                  return (
+                    <div key={course.id} style={{
+                      background: "var(--card)", border: "1px solid var(--border)",
+                      borderRadius: 12, padding: "16px 20px",
+                      display: "flex", alignItems: "center", gap: 16,
+                    }}>
+                      {/* Icon */}
+                      <div style={{
+                        width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                        background: "var(--accent-bg)", border: "1px solid var(--accent-border)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 20,
+                      }}>
+                        📘
+                      </div>
+
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+                          <span style={{
+                            fontSize: 10, fontWeight: 700, letterSpacing: "0.08em",
+                            textTransform: "uppercase",
+                            color: levelColor[course.level] ?? "var(--muted)",
+                            background: levelBg[course.level] ?? "var(--card)",
+                            padding: "2px 8px", borderRadius: 99,
+                          }}>
+                            {course.level}
+                          </span>
+                        </div>
+                        <p className="font-heading" style={{
+                          fontSize: 14, fontWeight: 700, color: "var(--text)",
+                          marginBottom: 8, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                        }}>
+                          {course.title}
+                        </p>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div style={{ flex: 1, height: 4, background: "var(--border)", borderRadius: 99, overflow: "hidden" }}>
+                            <div style={{
+                              width: `${pct}%`, height: "100%",
+                              background: pct === 100 ? "var(--green)" : "linear-gradient(90deg, var(--accent), #a78bfa)",
+                              borderRadius: 99,
+                            }} />
+                          </div>
+                          <span style={{ fontSize: 11, color: "var(--subtle)", whiteSpace: "nowrap" }}>
+                            {done}/{total} lessons
+                          </span>
+                        </div>
+                      </div>
+
+                      <Link href={nextLesson ? `/lesson/${nextLesson.slug}` : `/courses/${course.slug}`} style={{
+                        padding: "8px 18px", flexShrink: 0,
+                        background: pct === 100 ? "transparent" : "var(--accent)",
+                        color: pct === 100 ? "var(--muted)" : "#fff",
+                        borderRadius: 9, fontSize: 12, fontWeight: 700,
+                        border: pct === 100 ? "1px solid var(--border)" : "none",
+                        boxShadow: pct === 100 ? "none" : "0 2px 10px var(--accent-glow)",
+                      }}>
+                        {pct === 100 ? "Done ✓" : pct > 0 ? "Continue" : "Start"}
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Discover More */}
+          {recommended.length > 0 && (
+            <section>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                <h2 className="font-heading" style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.01em" }}>
+                  {enrolledCourses.length === 0 ? "Start Learning" : "Discover More"}
+                </h2>
+                <Link href="/courses" style={{ fontSize: 12, fontWeight: 600, color: "var(--accent-hover)" }}>
+                  Browse all courses →
+                </Link>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
+                {recommended.map((course) => (
+                  <Link key={course.id} href={`/courses/${course.slug}`} className="glow-card" style={{
+                    background: "var(--card)", border: "1px solid var(--border)",
+                    borderRadius: 12, padding: 16, display: "block",
+                  }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 10, marginBottom: 12,
+                      background: "var(--accent-bg)", border: "1px solid var(--accent-border)",
+                      display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
+                    }}>
+                      📗
+                    </div>
+                    <span style={{
+                      fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
+                      color: levelColor[course.level] ?? "var(--muted)",
+                      background: levelBg[course.level] ?? "var(--card)",
+                      padding: "2px 8px", borderRadius: 99, marginBottom: 8, display: "inline-block",
+                    }}>
+                      {course.level}
+                    </span>
+                    <p className="font-heading" style={{
+                      fontSize: 13, fontWeight: 700, color: "var(--text)",
+                      lineHeight: 1.4, marginTop: 6, marginBottom: 6,
+                    }}>
+                      {course.title}
+                    </p>
+                    <p style={{ fontSize: 11, color: "var(--subtle)" }}>
+                      {course._count.courseLessons} lessons
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {enrolledCourses.length === 0 && recommended.length === 0 && (
+            <div style={{ textAlign: "center", padding: "48px 24px", border: "1px dashed var(--border)", borderRadius: 12 }}>
+              <p style={{ fontSize: 28, marginBottom: 10 }}>🚀</p>
+              <p className="font-heading" style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", marginBottom: 6 }}>
+                No courses available yet
+              </p>
+              <p style={{ color: "var(--muted)", fontSize: 13 }}>Check back soon or ask an admin to publish courses.</p>
+            </div>
+          )}
         </div>
-      )}
+
+        {/* ── Right panel ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+          {/* Learning Streak */}
+          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <span style={{ fontSize: 20 }}>🔥</span>
+              <p style={{ fontSize: 15, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.01em" }}>
+                Learning Streak
+              </p>
+            </div>
+            <p style={{ fontSize: 22, fontWeight: 800, color: "var(--yellow)", marginBottom: 2 }}>
+              {streakCount} <span style={{ fontSize: 13, fontWeight: 600, color: "var(--muted)" }}>
+                day{streakCount !== 1 ? "s" : ""} in a row
+              </span>
+            </p>
+            <p style={{ fontSize: 11, color: "var(--subtle)", marginBottom: 16 }}>
+              {streakCount === 0 ? "Complete a lesson to start your streak!" : "Keep it up!"}
+            </p>
+
+            {/* Day dots */}
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              {streakDays.map((d, i) => (
+                <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: "50%",
+                    background: d.active ? "var(--accent)" : "var(--surface)",
+                    border: `2px solid ${d.active ? "var(--accent)" : "var(--border)"}`,
+                    boxShadow: d.active ? "0 2px 10px var(--accent-glow)" : "none",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    {d.active && (
+                      <svg viewBox="0 0 24 24" width={12} height={12} fill="none" stroke="white" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    )}
+                  </div>
+                  <span style={{ fontSize: 9, fontWeight: 600, color: d.active ? "var(--accent-hover)" : "var(--subtle)", textTransform: "uppercase" }}>
+                    {d.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Overall Progress */}
+          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 20px" }}>
+            <p style={{ fontSize: 15, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.01em", marginBottom: 4 }}>
+              Overall Progress
+            </p>
+            <p style={{ fontSize: 11, color: "var(--subtle)", marginBottom: 20 }}>
+              {overallProgress === 0
+                ? "Enroll in a course to track progress."
+                : overallProgress === 100
+                ? "Amazing! You completed everything! 🎉"
+                : "Keep going, you can do it!"}
+            </p>
+
+            {/* Circular progress */}
+            <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+              <div style={{ position: "relative", width: 96, height: 96, flexShrink: 0 }}>
+                <svg width={96} height={96} viewBox="0 0 96 96">
+                  {/* Track */}
+                  <circle cx={48} cy={48} r={r} fill="none" stroke="var(--border)" strokeWidth={7} />
+                  {/* Progress arc */}
+                  <circle
+                    cx={48} cy={48} r={r}
+                    fill="none"
+                    stroke="var(--accent)"
+                    strokeWidth={7}
+                    strokeLinecap="round"
+                    strokeDasharray={circ}
+                    strokeDashoffset={offset}
+                    transform="rotate(-90 48 48)"
+                    style={{ transition: "stroke-dashoffset 0.8s ease" }}
+                  />
+                </svg>
+                <div style={{
+                  position: "absolute", inset: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  flexDirection: "column",
+                }}>
+                  <span style={{ fontSize: 18, fontWeight: 800, color: "var(--text)", lineHeight: 1 }}>
+                    {overallProgress}%
+                  </span>
+                </div>
+              </div>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>
+                  {completedCount} / {totalLessons}
+                </p>
+                <p style={{ fontSize: 11, color: "var(--subtle)", lineHeight: 1.5 }}>
+                  lessons<br />completed
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick links */}
+          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, padding: "16px 20px" }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>
+              Quick Links
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              {[
+                { label: "Browse Courses", href: "/courses", icon: "📚" },
+                { label: "My Profile", href: "/profile", icon: "👤" },
+              ].map((l) => (
+                <Link key={l.href} href={l.href} style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "9px 12px", borderRadius: 9,
+                  fontSize: 13, fontWeight: 500, color: "var(--muted)",
+                  transition: "all 0.15s",
+                }}>
+                  <span>{l.icon}</span>
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
