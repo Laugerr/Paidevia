@@ -15,8 +15,80 @@ type LessonPlayerClientProps = {
     title: string;
     slug: string;
     summary: string | null;
+    content: string | null;
+    videoUrl: string | null;
   };
 };
+
+function getEmbedUrl(url: string): string | null {
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?rel=0&modestbranding=1`;
+  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+  return null;
+}
+
+function renderContent(text: string) {
+  const lines = text.split("\n");
+  const elements: React.ReactNode[] = [];
+  let listItems: string[] = [];
+  let key = 0;
+
+  function flushList() {
+    if (listItems.length === 0) return;
+    elements.push(
+      <ul key={key++} style={{ paddingLeft: 24, marginBottom: 18, display: "flex", flexDirection: "column", gap: 6 }}>
+        {listItems.map((item, i) => (
+          <li key={i} style={{ fontSize: 15, color: "var(--muted)", lineHeight: 1.8 }}>
+            {inlineFormat(item)}
+          </li>
+        ))}
+      </ul>
+    );
+    listItems = [];
+  }
+
+  function inlineFormat(line: string): React.ReactNode {
+    const parts = line.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("**") && part.endsWith("**"))
+        return <strong key={i} style={{ color: "var(--text)", fontWeight: 700 }}>{part.slice(2, -2)}</strong>;
+      if (part.startsWith("`") && part.endsWith("`"))
+        return <code key={i} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 5, padding: "1px 6px", fontSize: 13, fontFamily: "monospace", color: "var(--accent-hover)" }}>{part.slice(1, -1)}</code>;
+      return part;
+    });
+  }
+
+  for (const line of lines) {
+    if (line.startsWith("# ")) {
+      flushList();
+      elements.push(<h2 key={key++} className="font-heading" style={{ fontSize: 22, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em", marginBottom: 10, marginTop: 28 }}>{line.slice(2)}</h2>);
+    } else if (line.startsWith("## ")) {
+      flushList();
+      elements.push(<h3 key={key++} className="font-heading" style={{ fontSize: 17, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.01em", marginBottom: 8, marginTop: 22 }}>{line.slice(3)}</h3>);
+    } else if (line.startsWith("### ")) {
+      flushList();
+      elements.push(<h4 key={key++} style={{ fontSize: 15, fontWeight: 700, color: "var(--text)", marginBottom: 6, marginTop: 18 }}>{line.slice(4)}</h4>);
+    } else if (line.startsWith("> ")) {
+      flushList();
+      elements.push(
+        <blockquote key={key++} style={{ borderLeft: "3px solid var(--accent)", paddingLeft: 16, marginBottom: 16, marginTop: 4 }}>
+          <p style={{ fontSize: 15, color: "var(--muted)", lineHeight: 1.8, fontStyle: "italic" }}>{inlineFormat(line.slice(2))}</p>
+        </blockquote>
+      );
+    } else if (line.startsWith("- ") || line.startsWith("* ")) {
+      listItems.push(line.slice(2));
+    } else if (line.trim() === "") {
+      flushList();
+      elements.push(<div key={key++} style={{ height: 8 }} />);
+    } else {
+      flushList();
+      elements.push(<p key={key++} style={{ fontSize: 15, color: "var(--muted)", lineHeight: 1.8, marginBottom: 6 }}>{inlineFormat(line)}</p>);
+    }
+  }
+  flushList();
+  return elements;
+}
 
 function CheckIcon({ size = 14 }: { size?: number }) {
   return (
@@ -148,33 +220,72 @@ export default function LessonPlayerClient({ course, lesson }: LessonPlayerClien
           </p>
         )}
 
-        {/* Video / media area */}
-        <div style={{
-          background: "var(--card)", border: "1px solid var(--border)",
-          borderRadius: 16, overflow: "hidden", marginBottom: 24,
-        }}>
+        {/* Video embed */}
+        {lesson.videoUrl && (() => {
+          const embedUrl = getEmbedUrl(lesson.videoUrl);
+          return embedUrl ? (
+            <div style={{
+              background: "var(--card)", border: "1px solid var(--border)",
+              borderRadius: 16, overflow: "hidden", marginBottom: 24,
+            }}>
+              <div style={{ position: "relative", paddingTop: "56.25%" }}>
+                <iframe
+                  src={embedUrl}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                />
+              </div>
+            </div>
+          ) : (
+            <div style={{
+              background: "var(--card)", border: "1px solid var(--border)",
+              borderRadius: 16, overflow: "hidden", marginBottom: 24,
+            }}>
+              <video
+                controls
+                src={lesson.videoUrl}
+                style={{ width: "100%", display: "block", maxHeight: 480, background: "#000" }}
+              />
+            </div>
+          );
+        })()}
+
+        {/* Written content */}
+        {lesson.content && (
           <div style={{
-            aspectRatio: "16/9",
-            background: "linear-gradient(135deg, rgba(109,92,247,0.1) 0%, rgba(109,92,247,0.04) 100%)",
+            background: "var(--card)", border: "1px solid var(--border)",
+            borderRadius: 16, padding: "28px 32px", marginBottom: 24,
+          }}>
+            {renderContent(lesson.content)}
+          </div>
+        )}
+
+        {/* Empty state — no content yet */}
+        {!lesson.videoUrl && !lesson.content && (
+          <div style={{
+            background: "var(--card)", border: "1px dashed var(--border)",
+            borderRadius: 16, marginBottom: 24,
             display: "flex", flexDirection: "column",
-            alignItems: "center", justifyContent: "center", gap: 14,
-            minHeight: 260,
+            alignItems: "center", justifyContent: "center", gap: 10,
+            padding: "56px 24px", textAlign: "center",
           }}>
             <div style={{
-              width: 64, height: 64, borderRadius: "50%",
-              background: "var(--accent)",
+              width: 52, height: 52, borderRadius: "50%",
+              background: "var(--accent-bg)", border: "1px solid var(--accent-border)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 4px 28px var(--accent-glow)",
             }}>
-              <svg viewBox="0 0 24 24" width={26} height={26} fill="white" stroke="none">
-                <path d="M8 5.5v13l10-6.5z" />
+              <svg viewBox="0 0 24 24" width={22} height={22} fill="none" stroke="var(--accent-hover)" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
               </svg>
             </div>
-            <p style={{ fontSize: 13, color: "var(--subtle)" }}>
-              Lesson media — video or interactive content goes here
+            <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>Content coming soon</p>
+            <p style={{ fontSize: 13, color: "var(--subtle)", maxWidth: 300 }}>
+              The instructor hasn&apos;t added content to this lesson yet. Check back later or mark it complete to continue.
             </p>
           </div>
-        </div>
+        )}
 
         {/* Mark complete */}
         <div style={{

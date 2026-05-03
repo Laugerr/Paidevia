@@ -26,19 +26,15 @@ export async function updateProfileAction(
 }
 
 export async function uploadAvatarAction(
-  formData: FormData
+  dataUrl: string
 ): Promise<ProfileActionState> {
   const session = await auth();
   if (!session?.user?.email) return { error: "Not authenticated." };
 
-  const file = formData.get("file") as File | null;
-  if (!file || file.size === 0) return { error: "No file selected." };
-  if (!file.type.startsWith("image/")) return { error: "Only image files are allowed." };
-  if (file.size > 2 * 1024 * 1024) return { error: "Image must be under 2 MB." };
+  if (!dataUrl.startsWith("data:image/")) return { error: "Invalid image format." };
 
-  const bytes = await file.arrayBuffer();
-  const base64 = Buffer.from(bytes).toString("base64");
-  const dataUrl = `data:${file.type};base64,${base64}`;
+  // Rough size check: base64 string length * 0.75 ≈ bytes
+  if (dataUrl.length * 0.75 > 2 * 1024 * 1024) return { error: "Image must be under 2 MB." };
 
   await prisma.user.update({
     where: { email: session.user.email },

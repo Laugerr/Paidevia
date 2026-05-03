@@ -17,6 +17,7 @@ type CourseSearchParams = {
   lessonTitle?: string;
   lessonSlug?: string;
   lessonSummary?: string;
+  lessonVideoUrl?: string;
   editingLessonId?: string;
 };
 
@@ -310,11 +311,14 @@ export default async function ManageInstructorCoursePage({
     const slugInput = String(formData.get("lessonSlug") ?? "").trim();
     const slug = normalizeSlug(slugInput || title);
     const summary = String(formData.get("lessonSummary") ?? "").trim();
+    const content = String(formData.get("lessonContent") ?? "").trim();
+    const videoUrl = String(formData.get("lessonVideoUrl") ?? "").trim();
 
     const params = new URLSearchParams({
       lessonTitle: title,
       lessonSlug: slugInput,
       lessonSummary: summary,
+      lessonVideoUrl: videoUrl,
     });
 
     if (!title || !slug) {
@@ -371,6 +375,8 @@ export default async function ManageInstructorCoursePage({
           title,
           slug,
           summary: summary || null,
+          content: content || null,
+          videoUrl: videoUrl || null,
           position: nextPosition,
         },
       }),
@@ -398,6 +404,8 @@ export default async function ManageInstructorCoursePage({
     const slugInput = String(formData.get("slug") ?? "").trim();
     const slug = normalizeSlug(slugInput || title);
     const summary = String(formData.get("summary") ?? "").trim();
+    const content = String(formData.get("content") ?? "").trim();
+    const videoUrl = String(formData.get("videoUrl") ?? "").trim();
 
     const params = new URLSearchParams({
       editingLessonId: lessonId,
@@ -476,6 +484,8 @@ export default async function ManageInstructorCoursePage({
         title,
         slug,
         summary: summary || null,
+        content: content || null,
+        videoUrl: videoUrl || null,
       },
     });
 
@@ -635,6 +645,7 @@ export default async function ManageInstructorCoursePage({
   const lessonTitleValue = resolvedSearchParams.lessonTitle ?? "";
   const lessonSlugValue = resolvedSearchParams.lessonSlug ?? "";
   const lessonSummaryValue = resolvedSearchParams.lessonSummary ?? "";
+  const lessonVideoUrlValue = resolvedSearchParams.lessonVideoUrl ?? "";
   const editingLessonId = resolvedSearchParams.editingLessonId;
   const firstName = user.name?.split(" ")[0] ?? "Instructor";
   const publishReadiness = getPublishReadiness({
@@ -866,8 +877,16 @@ export default async function ManageInstructorCoursePage({
                 <input name="lessonSlug" type="text" defaultValue={lessonSlugValue} placeholder="auto-generated if blank" style={inputStyle} />
               </div>
               <div>
-                <label style={labelStyle}>Summary</label>
-                <textarea name="lessonSummary" rows={3} defaultValue={lessonSummaryValue} placeholder="Short planning note for this lesson" style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
+                <label style={labelStyle}>Summary <span style={{ color: "var(--subtle)", fontWeight: 400 }}>(optional)</span></label>
+                <textarea name="lessonSummary" rows={2} defaultValue={lessonSummaryValue} placeholder="Short description shown below the title" style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
+              </div>
+              <div>
+                <label style={labelStyle}>Video URL <span style={{ color: "var(--subtle)", fontWeight: 400 }}>(YouTube / Vimeo)</span></label>
+                <input name="lessonVideoUrl" type="url" defaultValue={lessonVideoUrlValue} placeholder="https://youtube.com/watch?v=…" style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Lesson Content <span style={{ color: "var(--subtle)", fontWeight: 400 }}>(supports # headings, **bold**, `code`, - lists)</span></label>
+                <textarea name="lessonContent" rows={8} placeholder={"# Introduction\n\nWrite your lesson content here.\n\n- Bullet point\n- Another point\n\n**Bold text** and `inline code` are supported."} style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6, fontFamily: "monospace", fontSize: 13 }} />
               </div>
               <button type="submit" style={{
                 width: "100%", padding: "11px",
@@ -992,7 +1011,15 @@ export default async function ManageInstructorCoursePage({
                           </div>
                           <div>
                             <label style={labelStyle}>Summary</label>
-                            <textarea name="summary" rows={3} defaultValue={isEditing ? lessonSummaryValue || lesson.summary || "" : lesson.summary || ""} style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
+                            <textarea name="summary" rows={2} defaultValue={isEditing ? lessonSummaryValue || lesson.summary || "" : lesson.summary || ""} style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
+                          </div>
+                          <div>
+                            <label style={labelStyle}>Video URL <span style={{ color: "var(--subtle)", fontWeight: 400 }}>(YouTube / Vimeo)</span></label>
+                            <input name="videoUrl" type="url" defaultValue={isEditing ? lessonVideoUrlValue || lesson.videoUrl || "" : lesson.videoUrl || ""} placeholder="https://youtube.com/watch?v=…" style={inputStyle} />
+                          </div>
+                          <div>
+                            <label style={labelStyle}>Lesson Content <span style={{ color: "var(--subtle)", fontWeight: 400 }}>(# headings, **bold**, `code`, - lists)</span></label>
+                            <textarea name="content" rows={10} defaultValue={isEditing ? lesson.content || "" : lesson.content || ""} placeholder={"# Introduction\n\nWrite your lesson content here."} style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6, fontFamily: "monospace", fontSize: 13 }} />
                           </div>
                           <button type="submit" style={{
                             alignSelf: "flex-start",

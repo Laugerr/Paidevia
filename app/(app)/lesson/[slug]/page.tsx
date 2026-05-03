@@ -54,6 +54,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
         title: lesson.title,
         slug: lesson.slug,
         summary: lesson.summary,
+        content: lesson.content,
+        videoUrl: lesson.videoUrl,
       }}
     />
   );

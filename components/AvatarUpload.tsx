@@ -26,23 +26,32 @@ export default function AvatarUpload({ size, currentImage, fallback, pencilSize 
     if (!file) return;
     setError(null);
 
-    // Optimistic preview
+    if (!file.type.startsWith("image/")) {
+      setError("Only image files are allowed.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setError("Image must be under 2 MB.");
+      return;
+    }
+
+    // Convert to base64 on the client, then call the server action with the string
     const reader = new FileReader();
-    reader.onload = (ev) => setPreview(ev.target?.result as string);
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setPreview(dataUrl);
+
+      startTransition(async () => {
+        const result = await uploadAvatarAction(dataUrl);
+        if (result?.error) {
+          setError(result.error);
+          setPreview(null);
+        } else {
+          router.refresh();
+        }
+      });
+    };
     reader.readAsDataURL(file);
-
-    const fd = new FormData();
-    fd.append("file", file);
-
-    startTransition(async () => {
-      const result = await uploadAvatarAction(fd);
-      if (result?.error) {
-        setError(result.error);
-        setPreview(null);
-      } else {
-        router.refresh();
-      }
-    });
 
     // Reset input so the same file can be re-selected
     e.target.value = "";
