@@ -42,12 +42,17 @@ export default function AvatarUpload({ size, currentImage, fallback, pencilSize 
       setPreview(dataUrl);
 
       startTransition(async () => {
-        const result = await uploadAvatarAction(dataUrl);
-        if (result?.error) {
-          setError(result.error);
+        try {
+          const result = await uploadAvatarAction(dataUrl);
+          if (result?.error) {
+            setError(result.error);
+            setPreview(null);
+          } else {
+            router.refresh();
+          }
+        } catch {
+          setError("Upload failed. Try a smaller image.");
           setPreview(null);
-        } else {
-          router.refresh();
         }
       });
     };
