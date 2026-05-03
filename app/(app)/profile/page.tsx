@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { isUserRole } from "@/lib/roles";
 import { EditNameForm, ChangePasswordForm } from "@/components/ProfileForms";
+import AvatarUpload from "@/components/AvatarUpload";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -57,34 +58,7 @@ export default async function ProfilePage() {
         {/* Left content */}
         <div style={{ flex: 1, padding: "32px 32px", display: "flex", alignItems: "center", gap: 24, minWidth: 0 }}>
           {/* Avatar */}
-          <div style={{ position: "relative", flexShrink: 0 }}>
-            {user.image ? (
-              <img src={user.image} alt="avatar" referrerPolicy="no-referrer"
-                style={{ width: 88, height: 88, borderRadius: "50%", objectFit: "cover", border: "3px solid var(--border)" }} />
-            ) : (
-              <div style={{
-                width: 88, height: 88, borderRadius: "50%",
-                background: "linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 32, fontWeight: 800, color: "#fff",
-                border: "3px solid var(--border)",
-              }}>
-                {fallback}
-              </div>
-            )}
-            {/* Edit overlay */}
-            <div style={{
-              position: "absolute", bottom: 2, right: 2,
-              width: 24, height: 24, borderRadius: "50%",
-              background: "var(--accent)", border: "2px solid var(--card)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <svg viewBox="0 0 24 24" width={11} height={11} fill="none" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-            </div>
-          </div>
+          <AvatarUpload size={88} currentImage={user.image} fallback={fallback} pencilSize={11} />
 
           {/* Info */}
           <div style={{ minWidth: 0 }}>
@@ -211,32 +185,7 @@ export default async function ProfilePage() {
           <div style={{ padding: "24px" }}>
             {/* Avatar preview */}
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-              <div style={{ position: "relative" }}>
-                {user.image ? (
-                  <img src={user.image} alt="avatar" referrerPolicy="no-referrer"
-                    style={{ width: 54, height: 54, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--border)" }} />
-                ) : (
-                  <div style={{
-                    width: 54, height: 54, borderRadius: "50%",
-                    background: "linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 20, fontWeight: 800, color: "#fff",
-                    border: "2px solid var(--border)",
-                  }}>
-                    {fallback}
-                  </div>
-                )}
-                <div style={{
-                  position: "absolute", bottom: 0, right: 0,
-                  width: 20, height: 20, borderRadius: "50%",
-                  background: "var(--accent)", border: "2px solid var(--card)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <svg viewBox="0 0 24 24" width={9} height={9} fill="none" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                  </svg>
-                </div>
-              </div>
+              <AvatarUpload size={54} currentImage={user.image} fallback={fallback} pencilSize={9} />
               <div>
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{user.name ?? "User"}</p>
                 <p style={{ fontSize: 11, color: "var(--subtle)", textTransform: "capitalize" }}>{role}</p>

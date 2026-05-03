@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 
 type Props = {
@@ -12,7 +13,9 @@ type Props = {
 
 export default function TopBar({ userName, userImage, userEmail }: Props) {
   const [profileOpen, setProfileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const profileRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -32,17 +35,44 @@ export default function TopBar({ userName, userImage, userEmail }: Props) {
     }}>
 
       {/* Left: search */}
-      <Link href="/courses" style={{
-        display: "flex", alignItems: "center", gap: 9,
-        padding: "7px 14px", borderRadius: 9,
-        background: "var(--card)", border: "1px solid var(--border)",
-        color: "var(--subtle)", fontSize: 13, width: 220,
-      }}>
-        <svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const q = searchQuery.trim();
+          router.push(q ? `/courses?q=${encodeURIComponent(q)}` : "/courses");
+        }}
+        style={{
+          display: "flex", alignItems: "center", gap: 9,
+          padding: "7px 14px", borderRadius: 9,
+          background: "var(--card)", border: "1px solid var(--border)",
+          width: 240,
+        }}
+      >
+        <svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="var(--subtle)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
           <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
         </svg>
-        Search for courses…
-      </Link>
+        <input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search for courses…"
+          style={{
+            flex: 1, background: "transparent", border: "none",
+            outline: "none", fontSize: 13, color: "var(--text)",
+            minWidth: 0,
+          }}
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => setSearchQuery("")}
+            style={{ color: "var(--subtle)", flexShrink: 0, padding: 0, lineHeight: 1 }}
+          >
+            <svg viewBox="0 0 24 24" width={12} height={12} fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </form>
 
       {/* Right: bell + profile */}
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

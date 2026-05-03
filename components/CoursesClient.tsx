@@ -18,6 +18,7 @@ type Props = {
   courses: Course[];
   enrolledSlugs: string[];
   totalEnrollments: number;
+  initialSearch?: string;
 };
 
 const LEVELS = ["All Courses", "Beginner", "Intermediate", "Advanced"] as const;
@@ -54,9 +55,9 @@ const CATEGORIES = [
   "Mobile Development",
 ];
 
-export default function CoursesClient({ courses, enrolledSlugs, totalEnrollments }: Props) {
+export default function CoursesClient({ courses, enrolledSlugs, totalEnrollments, initialSearch = "" }: Props) {
   const [activeLevel, setActiveLevel] = useState<string>("All Courses");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialSearch);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const enrolledSet = new Set(enrolledSlugs);

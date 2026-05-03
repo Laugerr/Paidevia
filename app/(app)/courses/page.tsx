@@ -2,7 +2,12 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import CoursesClient from "@/components/CoursesClient";
 
-export default async function CoursesPage() {
+export default async function CoursesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   const session = await auth();
 
   const [courses, totalEnrollments, userEnrollments] = await Promise.all([
@@ -46,6 +51,7 @@ export default async function CoursesPage() {
       courses={shaped}
       enrolledSlugs={enrolledSlugs}
       totalEnrollments={totalEnrollments}
+      initialSearch={q ?? ""}
     />
   );
 }
