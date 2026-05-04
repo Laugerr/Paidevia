@@ -5,17 +5,57 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 
+type Notification = {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  read: boolean;
+  link: string | null;
+  createdAt: string;
+};
+
 type Props = {
   userName: string | null;
   userImage: string | null;
   userEmail: string | null;
 };
 
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+const typeIcon: Record<string, string> = {
+  enrollment: "📘",
+  course_complete: "🎉",
+};
+
 export default function TopBar({ userName, userImage, userEmail }: Props) {
   const [profileOpen, setProfileOpen] = useState(false);
+  const [bellOpen, setBellOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unread, setUnread] = useState(0);
+
   const profileRef = useRef<HTMLDivElement>(null);
+  const bellRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    fetch("/api/notifications")
+      .then((r) => r.json())
+      .then((d) => {
+        setNotifications(d.notifications ?? []);
+        setUnread(d.unread ?? 0);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -26,6 +66,25 @@ export default function TopBar({ userName, userImage, userEmail }: Props) {
     if (profileOpen) document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [profileOpen]);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+        setBellOpen(false);
+      }
+    }
+    if (bellOpen) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [bellOpen]);
+
+  function openBell() {
+    setBellOpen((v) => !v);
+    if (!bellOpen && unread > 0) {
+      setUnread(0);
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      fetch("/api/notifications", { method: "POST" }).catch(() => {});
+    }
+  }
 
   return (
     <header className="desktop-topbar" style={{
@@ -78,16 +137,82 @@ export default function TopBar({ userName, userImage, userEmail }: Props) {
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
 
         {/* Bell */}
-        <div style={{
-          width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-          background: "var(--card)", border: "1px solid var(--border)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          color: "var(--muted)",
-        }}>
-          <svg viewBox="0 0 24 24" width={15} height={15} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
+        <div ref={bellRef} style={{ position: "relative" }}>
+          <button
+            onClick={openBell}
+            style={{
+              width: 36, height: 36, borderRadius: 9, flexShrink: 0,
+              background: "var(--card)", border: "1px solid var(--border)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: bellOpen ? "var(--text)" : "var(--muted)",
+              cursor: "pointer", position: "relative",
+            }}
+          >
+            <svg viewBox="0 0 24 24" width={15} height={15} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            {unread > 0 && (
+              <span style={{
+                position: "absolute", top: 6, right: 6,
+                width: 7, height: 7, borderRadius: "50%",
+                background: "var(--accent)", border: "2px solid var(--surface)",
+              }} />
+            )}
+          </button>
+
+          {bellOpen && (
+            <div style={{
+              position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 200,
+              background: "var(--card)", border: "1px solid var(--border)",
+              borderRadius: 10, width: 300, overflow: "hidden",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
+            }}>
+              <div style={{ padding: "10px 14px 9px", borderBottom: "1px solid var(--border-subtle)" }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>Notifications</p>
+              </div>
+
+              {notifications.length === 0 ? (
+                <div style={{ padding: "28px 16px", textAlign: "center" }}>
+                  <p style={{ fontSize: 13, color: "var(--subtle)" }}>No notifications yet</p>
+                </div>
+              ) : (
+                <div style={{ maxHeight: 320, overflowY: "auto" }}>
+                  {notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      onClick={() => {
+                        setBellOpen(false);
+                        if (n.link) router.push(n.link);
+                      }}
+                      style={{
+                        display: "flex", gap: 10, padding: "10px 14px",
+                        borderBottom: "1px solid var(--border-subtle)",
+                        cursor: n.link ? "pointer" : "default",
+                        background: n.read ? "transparent" : "rgba(99,102,241,0.05)",
+                        transition: "background 0.15s",
+                      }}
+                    >
+                      <span style={{ fontSize: 18, flexShrink: 0, lineHeight: 1.4 }}>
+                        {typeIcon[n.type] ?? "🔔"}
+                      </span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text)", marginBottom: 2 }}>{n.title}</p>
+                        <p style={{ fontSize: 11, color: "var(--muted)", lineHeight: 1.5, marginBottom: 4 }}>{n.message}</p>
+                        <p style={{ fontSize: 10, color: "var(--subtle)" }}>{timeAgo(n.createdAt)}</p>
+                      </div>
+                      {!n.read && (
+                        <span style={{
+                          width: 6, height: 6, borderRadius: "50%",
+                          background: "var(--accent)", flexShrink: 0, marginTop: 5,
+                        }} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Profile dropdown */}

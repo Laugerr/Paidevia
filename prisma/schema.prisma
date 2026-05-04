@@ -26,6 +26,7 @@ model User {
   enrollments   Enrollment[]
   lessonProgress LessonProgress[]
   createdCourses Course[] @relation("InstructorCourses")
+  notifications  Notification[]
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -136,4 +137,17 @@ model LessonProgress {
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([userId, lessonSlug])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

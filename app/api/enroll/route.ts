@@ -54,7 +54,22 @@ export async function POST(request: Request) {
     );
   }
 
+  const courseWithTitle = await prisma.course.findUnique({
+    where: { slug: courseSlug },
+    select: { title: true },
+  });
+
   await enrollUserInCourse(user.id, course.id);
+
+  await prisma.notification.create({
+    data: {
+      userId: user.id,
+      type: "enrollment",
+      title: "Enrolled successfully",
+      message: `You're now enrolled in "${courseWithTitle?.title ?? courseSlug}". Start learning!`,
+      link: `/courses/${courseSlug}`,
+    },
+  });
 
   return NextResponse.json({ success: true });
 }

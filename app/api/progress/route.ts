@@ -107,5 +107,38 @@ export async function POST(request: Request) {
   // Progress is stored per user and lesson so resume flows stay consistent.
   await markLessonCompleted(user.id, course.id, lessonSlug);
 
+  // Check if this completion finishes the entire course
+  const [allLessons, completedLessons] = await Promise.all([
+    prisma.lesson.findMany({ where: { courseId: course.id }, select: { slug: true } }),
+    prisma.lessonProgress.findMany({
+      where: { userId: user.id, courseId: course.id, completed: true },
+      select: { lessonSlug: true },
+    }),
+  ]);
+
+  const completedSlugs = new Set(completedLessons.map((l) => l.lessonSlug));
+  const allDone = allLessons.every((l) => completedSlugs.has(l.slug));
+
+  if (allDone && allLessons.length > 0) {
+    const courseData = await prisma.course.findUnique({
+      where: { slug: courseSlug },
+      select: { title: true },
+    });
+    const existing = await prisma.notification.findFirst({
+      where: { userId: user.id, type: "course_complete", link: `/courses/${courseSlug}` },
+    });
+    if (!existing) {
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          type: "course_complete",
+          title: "Course completed!",
+          message: `You've completed "${courseData?.title ?? courseSlug}". Great work!`,
+          link: `/courses/${courseSlug}`,
+        },
+      });
+    }
+  }
+
   return NextResponse.json({ success: true });
 }
