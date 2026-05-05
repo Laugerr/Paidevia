@@ -310,8 +310,7 @@ export default async function AdminPage() {
           {[
             { label: "Course Moderation", sub: "Review published, draft, and archived states", href: "/admin/courses", color: "var(--accent)" },
             { label: "User Reports", sub: "Manage user accounts and role assignments", href: "/admin/users", color: "var(--red)" },
-            { label: "System Logs", sub: `${totalCompletedLessons} lessons completed across all users`, href: "/admin", color: "var(--green)" },
-            { label: "Backup & Settings", sub: "Role-based access controls active on all routes", href: "/admin", color: "var(--yellow)" },
+            { label: "System Logs", sub: `${totalCompletedLessons} lessons completed across all users`, href: "/admin/analytics", color: "var(--green)" },
           ].map((item, i, arr) => (
             <Link key={item.label} href={item.href} style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -342,7 +341,6 @@ export default async function AdminPage() {
         <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
           <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <p style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>Live Activity</p>
-            <span style={{ fontSize: 11, color: "var(--accent-hover)", fontWeight: 600, cursor: "pointer" }}>Clear All</span>
           </div>
           <div style={{ padding: "6px 0" }}>
             {recentActivity.length > 0 ? recentActivity.map((a, i) => {
@@ -430,8 +428,7 @@ export default async function AdminPage() {
             {[
               { label: "Manage Users", sub: "Roles & accounts", href: "/admin/users" },
               { label: "Moderation Queue", sub: "Review pending content", href: "/admin/courses" },
-              { label: "Reports & Logs", sub: "Platform activity", href: "/admin" },
-              { label: "Backup & Settings", sub: "System configuration", href: "/admin" },
+              { label: "Reports & Logs", sub: "Platform activity", href: "/admin/analytics" },
             ].map((item, i, arr) => (
               <Link key={item.label} href={item.href} style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
