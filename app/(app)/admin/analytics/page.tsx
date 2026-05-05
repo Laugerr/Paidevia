@@ -240,10 +240,10 @@ export default async function AnalyticsPage() {
               </svg>
               <span style={{ fontSize: 12, color: "var(--muted)", fontWeight: 500 }}>{dateLabel}</span>
             </div>
-            <button style={{
+            <a href="/api/admin/export" download style={{
               display: "flex", alignItems: "center", gap: 6,
               padding: "8px 14px", borderRadius: 9, fontSize: 13, fontWeight: 600,
-              color: "#fff", background: "var(--accent)", border: "none", cursor: "pointer",
+              color: "#fff", background: "var(--accent)", textDecoration: "none",
               boxShadow: "0 2px 10px var(--accent-glow)",
             }}>
               <svg viewBox="0 0 24 24" width={13} height={13} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -251,7 +251,7 @@ export default async function AnalyticsPage() {
                 <polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
               </svg>
               Export Report
-            </button>
+            </a>
           </div>
         </div>
 
