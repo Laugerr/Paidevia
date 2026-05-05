@@ -99,8 +99,10 @@ export default async function DashboardPage() {
   }));
 
   // Consecutive streak count (from today backwards)
+  // If today has no activity yet, allow yesterday to anchor the streak
   let streakCount = 0;
-  for (let i = 6; i >= 0; i--) {
+  const startIdx = streakDays[6].active ? 6 : 5;
+  for (let i = startIdx; i >= 0; i--) {
     if (streakDays[i].active) streakCount++;
     else break;
   }
@@ -235,7 +237,7 @@ export default async function DashboardPage() {
               },
               {
                 label: "Lessons Completed", value: completedCount,
-                sub: completedCount === 0 ? "This week" : "This week",
+                sub: completedCount === 0 ? "Start a lesson!" : totalLessons > 0 ? `${overallProgress}% of enrolled` : "Keep going!",
                 icon: "✅", color: "var(--green)",
               },
               {
