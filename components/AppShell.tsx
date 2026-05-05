@@ -74,7 +74,7 @@ export default function AppShell({ children, userRole, userName, userImage, user
           {children}
         </div>
 
-        <BottomNav />
+        <BottomNav userRole={userRole} />
       </div>
     </div>
   );
